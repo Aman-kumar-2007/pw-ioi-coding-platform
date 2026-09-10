@@ -3,6 +3,7 @@ import Header from "./components/Header"
 import StatCard from "./components/StatCard"
 import PlatformCard from "./components/PlatformCard"
 import { Code2, BarChart3 } from "lucide-react"
+import ProfileHeader from "./components/ProfileHeader"
 
 function App() {
   return (
@@ -13,6 +14,7 @@ function App() {
       <main className="flex-1 p-8">
 
         <Header />
+        <ProfileHeader />
 
         <div className="grid grid-cols-3 gap-6">
 
