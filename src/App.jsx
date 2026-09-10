@@ -1,6 +1,8 @@
 import Sidebar from "./components/Sidebar"
 import Header from "./components/Header"
 import StatCard from "./components/StatCard"
+import PlatformCard from "./components/PlatformCard"
+import { Code2, BarChart3 } from "lucide-react"
 
 function App() {
   return (
@@ -33,6 +35,49 @@ function App() {
             value="0"
             description="Overall coding activity"
             icon="📈"
+          />
+
+        </div>
+
+        <div className="grid grid-cols-3 gap-6 mt-6">
+
+          <PlatformCard
+            platform="LeetCode"
+            username="your_username"
+            mainLabel="Problems Solved"
+            mainValue="0"
+            icon={Code2}
+            stats={[
+              { label: "Easy", value: "0" },
+              { label: "Medium", value: "0" },
+              { label: "Hard", value: "0" },
+            ]}
+          />
+
+          <PlatformCard
+            platform="Codeforces"
+            username="your_username"
+            mainLabel="Current Rating"
+            mainValue="0"
+            icon={BarChart3}
+            stats={[
+              { label: "Max", value: "0" },
+              { label: "Rank", value: "-" },
+              { label: "Contests", value: "0" },
+            ]}
+          />
+
+          <PlatformCard
+            platform="GitHub"
+            username="your_username"
+            mainLabel="Commits"
+            mainValue="0"
+            icon={Code2}
+            stats={[
+              { label: "Repos", value: "0" },
+              { label: "PRs", value: "0" },
+              { label: "Active Days", value: "0" },
+            ]}
           />
 
         </div>
