@@ -1,30 +1,35 @@
+import Sidebar from "./components/Sidebar"
+import Header from "./components/Header"
+import StatCard from "./components/StatCard"
+
 function App() {
   return (
     <div className="min-h-screen bg-gray-100 flex">
       
-      {/* Sidebar */}
-      <aside className="w-64 bg-gray-900 text-white p-6">
-        <h1 className="text-2xl font-bold mb-10">
-          PW IOI
-        </h1>
+      <Sidebar />
 
-        <nav className="space-y-4">
-          <p>Dashboard</p>
-          <p>My Profile</p>
-          <p>Leaderboard</p>
-          <p>Settings</p>
-        </nav>
-      </aside>
-
-      {/* Main Content */}
       <main className="flex-1 p-8">
-        <h2 className="text-3xl font-bold text-gray-900">
-          Dashboard
-        </h2>
+        <Header />
 
-        <p className="mt-2 text-gray-600">
-          Welcome to PW IOI Coding Platform
-        </p>
+        <div className="grid grid-cols-3 gap-6">
+          <StatCard
+            title="Problems Solved"
+            value="0"
+            description="Across coding platforms"
+          />
+
+          <StatCard
+            title="Current Streak"
+            value="0 Days"
+            description="Keep coding!"
+          />
+
+          <StatCard
+            title="Activity Score"
+            value="0"
+            description="Overall coding activity"
+          />
+        </div>
       </main>
 
     </div>
