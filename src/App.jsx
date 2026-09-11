@@ -25,8 +25,6 @@ function App() {
                     <QuickStats />
                     <PlatformCards />
                     <RatingProgress />
-                    <CodingHeatmap />
-                    <TopicProgress />
                 </>
             )}
 
