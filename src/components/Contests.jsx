@@ -273,8 +273,8 @@ function ContestCard({ contest }) {
     return (
         <div
             className={`group relative overflow-hidden rounded-xl border bg-card transition-all duration-300 hover:-translate-y-0.5 hover:bg-secondary/30 ${isLeetCode
-                    ? "border-orange-500/20 hover:border-orange-500/40"
-                    : "border-blue-500/20 hover:border-blue-500/40"
+                ? "border-orange-500/20 hover:border-orange-500/40"
+                : "border-blue-500/20 hover:border-blue-500/40"
                 }`}
         >
             {/* Platform accent */}
@@ -298,8 +298,8 @@ function ContestCard({ contest }) {
                     <div className="mt-2 flex flex-wrap items-center gap-2">
                         <span
                             className={`rounded-md px-2 py-1 text-[9px] font-semibold ${isLeetCode
-                                    ? "bg-orange-500/10 text-orange-400"
-                                    : "bg-blue-500/10 text-blue-400"
+                                ? "bg-orange-500/10 text-orange-400"
+                                : "bg-blue-500/10 text-blue-400"
                                 }`}
                         >
                             {contest.platform}
@@ -422,11 +422,13 @@ function ContestCalendar({
         }
     )
 
-    const filteredContests = contests.filter(
-        (contest) =>
-            selectedPlatform === "All Platforms" ||
-            contest.platform === selectedPlatform
-    )
+    const filteredContests = useMemo(() => {
+        return contests.filter(
+            (contest) =>
+                selectedPlatform === "All Platforms" ||
+                contest.platform === selectedPlatform
+        )
+    }, [selectedPlatform])
 
     const contestDates = new Map()
 
@@ -558,14 +560,14 @@ function ContestCalendar({
                                 )
                             }
                             className={`relative flex h-10 flex-col items-center justify-center rounded-lg transition-all duration-200 ${isSelected
-                                    ? "bg-primary/15 text-primary"
-                                    : "hover:bg-secondary"
+                                ? "bg-primary/15 text-primary"
+                                : "hover:bg-secondary"
                                 }`}
                         >
                             <span
                                 className={`flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-medium ${isToday(day)
-                                        ? "border border-primary bg-primary/10 text-primary"
-                                        : "text-muted-foreground"
+                                    ? "border border-primary bg-primary/10 text-primary"
+                                    : "text-muted-foreground"
                                     }`}
                             >
                                 {day}
@@ -784,6 +786,7 @@ function SelectedDateContests({
    ========================================================= */
 
 function Contests() {
+    const [searchQuery, setSearchQuery] = useState("")
     const [selectedPlatform, setSelectedPlatform] =
         useState("All Platforms")
 
@@ -795,6 +798,14 @@ function Contests() {
 
     const filteredContests = useMemo(() => {
         return contests.filter(
+            (contest) =>
+                selectedPlatform === "All Platforms" ||
+                contest.platform === selectedPlatform
+        )
+    }, [selectedPlatform])
+
+    const filteredPastContests = useMemo(() => {
+        return pastContests.filter(
             (contest) =>
                 selectedPlatform === "All Platforms" ||
                 contest.platform === selectedPlatform
@@ -898,8 +909,8 @@ function Contests() {
                                     setSelectedDate(null)
                                 }}
                                 className={`flex h-9 items-center gap-2 rounded-lg border px-3 text-xs font-medium transition-all duration-200 ${active
-                                        ? "border-primary/50 bg-primary/10 text-primary shadow-sm"
-                                        : "border-border bg-secondary text-muted-foreground hover:border-primary/30 hover:bg-muted hover:text-foreground"
+                                    ? "border-primary/50 bg-primary/10 text-primary shadow-sm"
+                                    : "border-border bg-secondary text-muted-foreground hover:border-primary/30 hover:bg-muted hover:text-foreground"
                                     }`}
                             >
                                 <Icon size={14} />
@@ -921,8 +932,8 @@ function Contests() {
                                     setSelectedView(view)
                                 }
                                 className={`rounded-md px-4 py-1.5 text-xs font-medium transition-all duration-200 ${active
-                                        ? "bg-primary text-primary-foreground shadow-sm"
-                                        : "text-muted-foreground hover:text-foreground"
+                                    ? "bg-primary text-primary-foreground shadow-sm"
+                                    : "text-muted-foreground hover:text-foreground"
                                     }`}
                             >
                                 {view}
@@ -1173,7 +1184,7 @@ function Contests() {
                             </span>
                         </div>
 
-                        {pastContests.map((contest) => {
+                        {filteredPastContests.map((contest) => {
                             const isLeetCode =
                                 contest.platform === "LeetCode"
 
@@ -1190,8 +1201,8 @@ function Contests() {
                                         <div className="flex min-w-0 items-center gap-3">
                                             <div
                                                 className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${isLeetCode
-                                                        ? "bg-orange-500/10 text-orange-400"
-                                                        : "bg-blue-500/10 text-blue-400"
+                                                    ? "bg-orange-500/10 text-orange-400"
+                                                    : "bg-blue-500/10 text-blue-400"
                                                     }`}
                                             >
                                                 {isLeetCode ? (
@@ -1227,8 +1238,8 @@ function Contests() {
                                         <div>
                                             <span
                                                 className={`inline-flex rounded-md px-2 py-1 text-[9px] font-semibold ${isLeetCode
-                                                        ? "bg-orange-500/10 text-orange-400"
-                                                        : "bg-blue-500/10 text-blue-400"
+                                                    ? "bg-orange-500/10 text-orange-400"
+                                                    : "bg-blue-500/10 text-blue-400"
                                                     }`}
                                             >
                                                 {contest.platform}
@@ -1261,8 +1272,8 @@ function Contests() {
                                             <div className="text-right">
                                                 <span
                                                     className={`inline-flex items-center gap-1 rounded-md px-2 py-1 font-mono text-[10px] font-semibold ${isPositive
-                                                            ? "bg-emerald-500/10 text-emerald-400"
-                                                            : "bg-red-500/10 text-red-400"
+                                                        ? "bg-emerald-500/10 text-emerald-400"
+                                                        : "bg-red-500/10 text-red-400"
                                                         }`}
                                                 >
                                                     {isPositive ? (
@@ -1301,8 +1312,8 @@ function Contests() {
                                     <div className="flex items-center gap-3 lg:hidden">
                                         <div
                                             className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${isLeetCode
-                                                    ? "bg-orange-500/10 text-orange-400"
-                                                    : "bg-blue-500/10 text-blue-400"
+                                                ? "bg-orange-500/10 text-orange-400"
+                                                : "bg-blue-500/10 text-blue-400"
                                                 }`}
                                         >
                                             {isLeetCode ? (
@@ -1320,8 +1331,8 @@ function Contests() {
                                             <div className="mt-1 flex items-center gap-2">
                                                 <span
                                                     className={`text-[9px] font-medium ${isLeetCode
-                                                            ? "text-orange-400"
-                                                            : "text-blue-400"
+                                                        ? "text-orange-400"
+                                                        : "text-blue-400"
                                                         }`}
                                                 >
                                                     {contest.platform}
@@ -1339,8 +1350,8 @@ function Contests() {
 
                                         <span
                                             className={`font-mono text-[10px] font-semibold ${isPositive
-                                                    ? "text-emerald-400"
-                                                    : "text-red-400"
+                                                ? "text-emerald-400"
+                                                : "text-red-400"
                                                 }`}
                                         >
                                             {isPositive ? "+" : ""}
