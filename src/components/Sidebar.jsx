@@ -117,7 +117,7 @@ function Sidebar() {
       </div>
 
       {/* Collapse button */}
-      <button className="absolute -right-3 top-[58px] flex h-6 w-6 items-center justify-center rounded-full border border-border bg-card text-muted-foreground transition-colors hover:text-foreground">
+      <button className="fixed left-[226px] top-[58px] z-[100] flex h-6 w-6 items-center justify-center rounded-full border border-border bg-card text-muted-foreground transition-colors hover:text-foreground">
         <ChevronLeft size={14} />
       </button>
     </aside>

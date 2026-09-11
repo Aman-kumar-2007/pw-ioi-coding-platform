@@ -7,7 +7,7 @@ import {
 
 function Topbar() {
   return (
-    <header className="flex h-[72px] items-center justify-between border-b border-border px-8">
+    <header className="fixed left-[240px] right-0 top-0 z-50 flex h-[72px] items-center justify-between border-b border-border bg-background px-8">
       {/* Left */}
       <div className="flex items-center gap-4">
         <button className="hidden text-muted-foreground hover:text-foreground">
