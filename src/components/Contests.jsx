@@ -817,6 +817,32 @@ function Contests() {
         })
     }, [selectedPlatform, searchQuery])
 
+    const pastStats = useMemo(() => {
+        if (filteredPastContests.length === 0) {
+            return {
+                total: 0,
+                bestRank: "-",
+                averageRank: "-",
+                ratingChange: 0,
+            }
+        }
+
+        const ranks = filteredPastContests.map((contest) => contest.rank)
+
+        return {
+            total: filteredPastContests.length,
+            bestRank: Math.min(...ranks),
+            averageRank: Math.round(
+                ranks.reduce((sum, rank) => sum + rank, 0) / ranks.length
+            ),
+            ratingChange: filteredPastContests.reduce(
+                (sum, contest) => sum + contest.ratingChange,
+                0
+            ),
+        }
+    }, [filteredPastContests])
+
+
     return (
         <section className="px-8 pb-10 pt-7">
             {/* =================================================
@@ -1090,7 +1116,7 @@ function Contests() {
                             </div>
 
                             <p className="mt-2 font-mono text-xl font-bold">
-                                42
+                                {pastStats.total}
                             </p>
 
                             <p className="mt-1 text-[9px] text-muted-foreground">
@@ -1111,7 +1137,7 @@ function Contests() {
                             </div>
 
                             <p className="mt-2 font-mono text-xl font-bold">
-                                #421
+                                #{pastStats.bestRank}
                             </p>
 
                             <p className="mt-1 text-[9px] text-muted-foreground">
@@ -1132,7 +1158,10 @@ function Contests() {
                             </div>
 
                             <p className="mt-2 font-mono text-xl font-bold">
-                                1847
+                                <p>
+                                    {pastStats.ratingChange > 0 ? "+" : ""}
+                                    {pastStats.ratingChange}
+                                </p>
                             </p>
 
                             <p className="mt-1 text-[9px] text-muted-foreground">
@@ -1153,7 +1182,7 @@ function Contests() {
                             </div>
 
                             <p className="mt-2 font-mono text-xl font-bold">
-                                #1.2K
+                               {pastStats.averageRank}
                             </p>
 
                             <p className="mt-1 text-[9px] text-muted-foreground">
