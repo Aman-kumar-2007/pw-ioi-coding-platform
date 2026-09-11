@@ -1,41 +1,86 @@
 import {
-  ArrowUpRight,
-  RefreshCw,
+    Pencil,
+    GraduationCap,
+    Building2,
 } from "lucide-react"
 
 function DashboardHeader() {
-  return (
-    <section className="px-8 pb-7 pt-8">
-      <div className="flex items-start justify-between">
-        <div>
-          <p className="mb-2 text-xs font-medium uppercase tracking-wider text-primary">
-            Student Dashboard
-          </p>
+    return (
+        <section className="px-8 pb-6 pt-7">
+            <div className="relative h-[150px] overflow-hidden rounded-2xl border border-primary/20 bg-gradient-to-r from-[#151832] via-[#11152a] to-[#0e1220]">
+                
+                {/* Subtle background glow */}
+                <div className="pointer-events-none absolute -right-20 -top-24 h-64 w-64 rounded-full bg-primary/20 blur-3xl" />
 
-          <h1 className="text-3xl font-bold tracking-tight">
-            Welcome back, Aman.
-          </h1>
+                <div className="pointer-events-none absolute bottom-[-90px] left-[48%] h-[180px] w-[320px] rounded-[50%] bg-indigo-500/10 blur-2xl" />
 
-          <p className="mt-2 max-w-xl text-sm leading-6 text-muted-foreground">
-            Track your coding progress, contest ratings, and
-            contribution activity across platforms.
-          </p>
-        </div>
+                {/* Content */}
+                <div className="relative flex h-full items-center justify-between px-7">
+                    
+                    {/* Left */}
+                    <div className="flex h-full flex-col justify-between py-5">
+                        <div>
+                            <h1 className="text-2xl font-bold tracking-tight">
+                                Good evening, Aman.
+                            </h1>
 
-        <div className="flex items-center gap-2">
-          <button className="flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground">
-            <RefreshCw size={14} />
-            Sync data
-          </button>
+                            <p className="mt-1 text-sm text-muted-foreground">
+                                Keep solving, keep growing!
+                            </p>
+                        </div>
 
-          <button className="flex items-center gap-2 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground transition-opacity hover:opacity-90">
-            View profile
-            <ArrowUpRight size={14} />
-          </button>
-        </div>
-      </div>
-    </section>
-  )
+                        {/* Profile info */}
+                        <div className="flex items-center gap-5">
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                <GraduationCap
+                                    size={15}
+                                    className="text-primary"
+                                />
+
+                                <span>
+                                    CSE
+                                </span>
+
+                                <span className="text-border">
+                                    •
+                                </span>
+
+                                <span>
+                                    3rd Year
+                                </span>
+                            </div>
+
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                <Building2
+                                    size={15}
+                                    className="text-primary"
+                                />
+
+                                <span>
+                                    PW IOI
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Quote */}
+                    <div className="absolute right-[180px] top-1/2 hidden -translate-y-1/2 text-center lg:block">
+                        <p className="max-w-[230px] text-sm font-medium leading-6 text-foreground/80">
+                            “Discipline today,
+                            <br />
+                            better results tomorrow.”
+                        </p>
+                    </div>
+
+                    {/* Edit Profile */}
+                    <button className="absolute right-6 top-5 flex items-center gap-2 rounded-lg border border-primary/50 bg-primary/5 px-4 py-2.5 text-xs font-semibold text-foreground transition-colors hover:bg-primary/10">
+                        <Pencil size={14} />
+                        Edit Profile
+                    </button>
+                </div>
+            </div>
+        </section>
+    )
 }
 
 export default DashboardHeader
