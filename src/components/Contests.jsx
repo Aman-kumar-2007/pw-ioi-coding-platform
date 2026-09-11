@@ -805,12 +805,17 @@ function Contests() {
     }, [selectedPlatform])
 
     const filteredPastContests = useMemo(() => {
-        return pastContests.filter(
-            (contest) =>
+        return pastContests.filter((contest) => {
+            const matchesPlatform =
                 selectedPlatform === "All Platforms" ||
                 contest.platform === selectedPlatform
-        )
-    }, [selectedPlatform])
+
+            const matchesSearch =
+                contest.name.toLowerCase().includes(searchQuery.toLowerCase())
+
+            return matchesPlatform && matchesSearch
+        })
+    }, [selectedPlatform, searchQuery])
 
     return (
         <section className="px-8 pb-10 pt-7">
@@ -1061,6 +1066,8 @@ function Contests() {
                             />
 
                             <input
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
                                 type="text"
                                 placeholder="Search contests..."
                                 className="w-[160px] bg-transparent text-xs outline-none placeholder:text-muted-foreground"
