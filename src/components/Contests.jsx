@@ -33,6 +33,7 @@ const contests = [
         type: "Rated",
         participants: "18K+",
         accent: "orange",
+        url: "#",
     },
     {
         id: 2,
@@ -44,6 +45,7 @@ const contests = [
         type: "Rated",
         participants: "14K+",
         accent: "blue",
+        url: "#",
     },
     {
         id: 3,
@@ -55,6 +57,7 @@ const contests = [
         type: "Rated",
         participants: "12K+",
         accent: "orange",
+        url: "#",
     },
     {
         id: 4,
@@ -66,6 +69,7 @@ const contests = [
         type: "Rated",
         participants: "20K+",
         accent: "blue",
+        url: "#",
     },
     {
         id: 5,
@@ -77,6 +81,7 @@ const contests = [
         type: "Rated",
         participants: "17K+",
         accent: "orange",
+        url: "#",
     },
     {
         id: 6,
@@ -88,6 +93,7 @@ const contests = [
         type: "Rated",
         participants: "15K+",
         accent: "blue",
+        url: "#",
     },
 ]
 
@@ -103,6 +109,7 @@ const pastContests = [
         ratingChange: 18,
         rating: 1865,
         type: "Rated",
+        url: "#",
     },
     {
         id: 102,
@@ -114,6 +121,7 @@ const pastContests = [
         ratingChange: 32,
         rating: 1879,
         type: "Rated",
+        url: "#",
     },
     {
         id: 103,
@@ -125,6 +133,7 @@ const pastContests = [
         ratingChange: -8,
         rating: 1852,
         type: "Rated",
+        url: "#",
     },
     {
         id: 104,
@@ -136,6 +145,7 @@ const pastContests = [
         ratingChange: 21,
         rating: 1847,
         type: "Rated",
+        url: "#",
     },
     {
         id: 105,
@@ -146,6 +156,7 @@ const pastContests = [
         participants: 20142,
         ratingChange: -15,
         rating: 1847,
+        url: "#",
         type: "Rated",
     },
     {
@@ -158,6 +169,7 @@ const pastContests = [
         ratingChange: 27,
         rating: 1826,
         type: "Rated",
+        url: "#",
     },
     {
         id: 107,
@@ -169,6 +181,7 @@ const pastContests = [
         ratingChange: 11,
         rating: 1862,
         type: "Rated",
+        url: "#",
     },
 ]
 
@@ -370,7 +383,13 @@ function ContestCard({ contest }) {
                     </button>
 
                     <button className="hidden h-9 items-center gap-1.5 rounded-lg border border-border bg-secondary px-3 text-[10px] font-semibold text-foreground transition-all duration-200 hover:border-primary/40 hover:bg-primary/10 hover:text-primary sm:flex">
-                        View
+                        <a
+                            href={contest.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            View
+                        </a>
                         <ExternalLink size={11} />
                     </button>
                 </div>
@@ -1182,7 +1201,7 @@ function Contests() {
                             </div>
 
                             <p className="mt-2 font-mono text-xl font-bold">
-                               {pastStats.averageRank}
+                                {pastStats.averageRank}
                             </p>
 
                             <p className="mt-1 text-[9px] text-muted-foreground">
@@ -1336,7 +1355,13 @@ function Contests() {
                                         {/* Action */}
                                         <div className="flex justify-end">
                                             <button className="flex h-8 items-center gap-1.5 rounded-lg border border-border bg-secondary px-2.5 text-[9px] font-semibold text-muted-foreground transition-all hover:border-primary/30 hover:bg-primary/10 hover:text-primary">
-                                                View
+                                                <a
+                                                    href={contest.url}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                >
+                                                    View
+                                                </a>
                                                 <ExternalLink
                                                     size={10}
                                                 />
