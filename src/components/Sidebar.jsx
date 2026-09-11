@@ -1,41 +1,125 @@
-function Sidebar() {
-  return (
-    <aside className="w-64 min-h-screen bg-[#171124] text-white p-6 flex flex-col">
-      <div className="flex items-center gap-3 mb-10">
-        <div className="w-10 h-10 rounded-xl bg-purple-600 flex items-center justify-center font-bold">
-          P
-        </div>
+import {
+  LayoutDashboard,
+  Code2,
+  Trophy,
+  GitBranch,
+  BarChart3,
+  Settings,
+  LogOut,
+  ChevronLeft,
+} from "lucide-react"
 
-        <div>
-          <h1 className="font-bold text-lg">PW IOI</h1>
-          <p className="text-xs text-gray-400">Coding Platform</p>
+function Sidebar() {
+  const menuItems = [
+    {
+      label: "Dashboard",
+      icon: LayoutDashboard,
+      active: true,
+    },
+    {
+      label: "Problems",
+      icon: Code2,
+    },
+    {
+      label: "Contests",
+      icon: Trophy,
+    },
+    {
+      label: "GitHub",
+      icon: GitBranch,
+    },
+    {
+      label: "Analytics",
+      icon: BarChart3,
+    },
+  ]
+
+  return (
+    <aside className="fixed left-0 top-0 z-40 flex h-screen w-[240px] flex-col border-r border-border bg-background">
+
+      {/* Logo */}
+      <div className="flex h-[72px] items-center border-b border-border px-5">
+        <div className="flex items-center gap-3">
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
+            <Code2 size={20} strokeWidth={2.5} />
+          </div>
+
+          <div>
+            <h1 className="text-sm font-bold tracking-tight">
+              PW IOI
+            </h1>
+            <p className="text-[10px] font-medium text-muted-foreground">
+              CODING PLATFORM
+            </p>
+          </div>
         </div>
       </div>
 
-      <nav className="space-y-2">
-        <p className="bg-purple-600/20 text-purple-300 px-4 py-3 rounded-xl">
-          🏠 Dashboard
+      {/* Navigation */}
+      <nav className="flex-1 space-y-1 px-3 py-5">
+        <p className="mb-3 px-3 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+          Overview
         </p>
 
-        <p className="text-gray-400 hover:bg-white/5 px-4 py-3 rounded-xl cursor-pointer">
-          👤 My Profile
+        {menuItems.map((item) => {
+          const Icon = item.icon
+
+          return (
+            <button
+              key={item.label}
+              className={`group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all ${item.active
+                  ? "bg-primary/10 text-primary"
+                  : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                }`}
+            >
+              <Icon size={18} strokeWidth={1.8} />
+              <span>{item.label}</span>
+
+              {item.active && (
+                <span className="ml-auto h-1.5 w-1.5 rounded-full bg-primary" />
+              )}
+            </button>
+          )
+        })}
+
+        <div className="my-5 border-t border-border" />
+
+        <p className="mb-3 px-3 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+          Account
         </p>
 
-        <p className="text-gray-400 hover:bg-white/5 px-4 py-3 rounded-xl cursor-pointer">
-          🏆 Leaderboard
-        </p>
-
-        <p className="text-gray-400 hover:bg-white/5 px-4 py-3 rounded-xl cursor-pointer">
-          ⚙️ Settings
-        </p>
+        <button className="group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground transition-all hover:bg-secondary hover:text-foreground">
+          <Settings size={18} strokeWidth={1.8} />
+          <span>Settings</span>
+        </button>
       </nav>
 
-      <div className="mt-auto bg-white/5 rounded-2xl p-4">
-        <p className="text-sm font-semibold">Keep coding 🚀</p>
-        <p className="text-xs text-gray-400 mt-1">
-          Build • Learn • Grow
-        </p>
+      {/* User section */}
+      <div className="border-t border-border p-3">
+        <div className="flex items-center gap-3 rounded-lg p-2">
+          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-muted text-xs font-bold">
+            AK
+          </div>
+
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-semibold">
+              Aman Kumar
+            </p>
+            <p className="truncate text-[11px] text-muted-foreground">
+              Student
+            </p>
+          </div>
+
+          <button className="text-muted-foreground transition-colors hover:text-foreground">
+            <LogOut size={16} />
+          </button>
+        </div>
       </div>
+
+      {/* Collapse button */}
+      <button className="absolute -right-3 top-[58px] flex h-6 w-6 items-center justify-center rounded-full border border-border bg-card text-muted-foreground transition-colors hover:text-foreground">
+        <ChevronLeft size={14} />
+      </button>
     </aside>
   )
 }

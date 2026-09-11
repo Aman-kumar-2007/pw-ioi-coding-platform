@@ -1,10 +1,18 @@
+import Layout from "./components/Layout"
+
 function App() {
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <h1 className="p-8 text-2xl font-bold">
-        PW IOI Coding Platform
-      </h1>
-    </div>
+    <Layout>
+      <div className="p-8">
+        <h1 className="text-2xl font-bold">
+          PW IOI Coding Platform
+        </h1>
+
+        <p className="mt-2 text-sm text-muted-foreground">
+          Your coding journey, all in one place.
+        </p>
+      </div>
+    </Layout>
   )
 }
 
