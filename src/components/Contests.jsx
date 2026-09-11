@@ -1433,9 +1433,10 @@ function Contests() {
                                 recent contests
                             </p>
 
-                            <button className="flex items-center gap-1.5 rounded-lg border border-border bg-secondary px-3 py-1.5 text-[9px] font-semibold text-muted-foreground transition-all hover:border-primary/30 hover:bg-primary/10 hover:text-primary">
+                            <button className="flex items-center gap-1.5 rounded-lg border border-border bg-secondary px-3 py-1.5 text-[9px] font-semibold text-muted-foreground transition-all hover:border-primary/30 hover:bg-primary/10 hover:text-primary"
+                                onClick={() => setSelectedView("Past")} >
                                 View All
-                                <ChevronRight size={11} />
+                                <ChevronRight size={16} />
                             </button>
                         </div>
                     </div>
