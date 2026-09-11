@@ -8,6 +8,7 @@ import RatingProgress from "./components/RatingSection"
 import CodingHeatmap from "./components/CodingHeatmap"
 import LearningProgress from "./components/LearningProgress"
 import Leaderboard from "./components/Leaderboard"
+import Contests from "./components/Contests"
 
 function App() {
     const [activePage, setActivePage] = useState("Dashboard")
@@ -30,6 +31,10 @@ function App() {
 
             {activePage === "Leaderboard" && (
                 <Leaderboard />
+            )}
+
+            {activePage === "Contests" && (
+                <Contests />
             )}
         </Layout>
     )
