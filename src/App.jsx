@@ -6,10 +6,10 @@ import QuickStats from "./components/QuickStats"
 import PlatformCards from "./components/PlatformCards"
 import RatingProgress from "./components/RatingSection"
 import CodingHeatmap from "./components/CodingHeatmap"
-import LearningProgress from "./components/LearningProgress"
 import Leaderboard from "./components/Leaderboard"
 import Contests from "./components/Contests"
 import Analytics from "./components/Analytics"
+import TopicProgress from "./components/TopicProgress"
 
 function App() {
     const [activePage, setActivePage] = useState("Dashboard")
@@ -26,7 +26,7 @@ function App() {
                     <PlatformCards />
                     <RatingProgress />
                     <CodingHeatmap />
-                    <LearningProgress />
+                    <TopicProgress />
                 </>
             )}
 

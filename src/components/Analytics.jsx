@@ -23,6 +23,7 @@ import {
     Trophy,
     ExternalLink,
 } from "lucide-react"
+import TopicProgress from "./TopicProgress"
 
 /* =========================================================
    DATA
@@ -122,39 +123,6 @@ const difficultyData = [
     {
         name: "Hard",
         value: 50,
-        color: "bg-red-400",
-    },
-]
-
-const topicData = [
-    {
-        name: "Arrays",
-        solved: 85,
-        total: 100,
-        color: "bg-blue-400",
-    },
-    {
-        name: "Strings",
-        solved: 70,
-        total: 100,
-        color: "bg-emerald-400",
-    },
-    {
-        name: "Dynamic Programming",
-        solved: 45,
-        total: 100,
-        color: "bg-amber-400",
-    },
-    {
-        name: "Graphs",
-        solved: 40,
-        total: 100,
-        color: "bg-purple-400",
-    },
-    {
-        name: "Bit Manipulation",
-        solved: 35,
-        total: 100,
         color: "bg-red-400",
     },
 ]
@@ -951,72 +919,6 @@ function DifficultyDistribution() {
 }
 
 /* =========================================================
-   TOPIC PROGRESS
-   ========================================================= */
-
-function TopicProgress() {
-    return (
-        <AnalyticsCard>
-            <div className="mb-5 flex items-start justify-between">
-                <div>
-                    <div className="flex items-center gap-2">
-                        <div className="h-5 w-1 rounded-full bg-emerald-400" />
-
-                        <h2 className="text-sm font-bold">
-                            Topic-wise Progress
-                        </h2>
-                    </div>
-
-                    <p className="mt-1 text-[9px] text-muted-foreground">
-                        Your strongest coding areas
-                    </p>
-                </div>
-
-                <button className="text-[9px] font-semibold text-primary transition-colors hover:text-primary/80">
-                    View All
-                </button>
-            </div>
-
-            <div className="space-y-4">
-                {topicData.map((topic) => {
-                    const percentage =
-                        (topic.solved /
-                            topic.total) *
-                        100
-
-                    return (
-                        <div
-                            key={topic.name}
-                            className="group"
-                        >
-                            <div className="mb-1.5 flex items-center justify-between">
-                                <span className="max-w-[170px] truncate text-[10px] font-medium">
-                                    {topic.name}
-                                </span>
-
-                                <span className="font-mono text-[9px] text-muted-foreground">
-                                    {topic.solved}/
-                                    {topic.total}
-                                </span>
-                            </div>
-
-                            <div className="h-1.5 overflow-hidden rounded-full bg-secondary">
-                                <div
-                                    className={`h-full rounded-full transition-all duration-700 ${topic.color}`}
-                                    style={{
-                                        width: `${percentage}%`,
-                                    }}
-                                />
-                            </div>
-                        </div>
-                    )
-                })}
-            </div>
-        </AnalyticsCard>
-    )
-}
-
-/* =========================================================
    MAIN ANALYTICS PAGE
    ========================================================= */
 
@@ -1128,8 +1030,10 @@ function Analytics() {
             </div>
 
             <div className="mb-5 grid grid-cols-1 gap-5 xl:grid-cols-2">
+                <DifficultyDistribution/>
                 <ActivityChart />
                 <RatingChart />
+                <TopicProgress />
             </div>
         </section>
     )
