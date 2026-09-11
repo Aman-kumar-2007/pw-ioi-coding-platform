@@ -256,6 +256,28 @@ function getCountdown(date, time) {
     return `${hours}h ${minutes}m`
 }
 
+function createGoogleCalendarUrl(contest) {
+    const start = new Date(`${contest.date}T${contest.time}:00`)
+
+    const durationMatch = contest.duration.match(/(\d+)h\s*(\d+)?m?/)
+    const hours = Number(durationMatch?.[1] || 0)
+    const minutes = Number(durationMatch?.[2] || 0)
+
+    const end = new Date(
+        start.getTime() + (hours * 60 + minutes) * 60 * 1000
+    )
+
+    const formatDate = (date) =>
+        date.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}Z$/, "Z")
+
+    return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(
+        contest.name
+    )}&dates=${formatDate(start)}/${formatDate(end)}&details=${encodeURIComponent(
+        `${contest.platform} contest`
+    )}`
+}
+
+
 /* =========================================================
    PLATFORM ICON
    ========================================================= */
@@ -282,6 +304,7 @@ function PlatformIcon({ platform }) {
 
 function ContestCard({ contest }) {
     const isLeetCode = contest.platform === "LeetCode"
+    const [reminded, setReminded] = useState(false)
 
     return (
         <div
@@ -376,10 +399,22 @@ function ContestCard({ contest }) {
                 {/* Action */}
                 <div className="flex shrink-0 items-center gap-2">
                     <button
-                        title="Remind me"
+                        onClick={() => {
+                            const calendarUrl = createGoogleCalendarUrl(contest)
+                            window.open(calendarUrl, "_blank")
+                            setReminded(true)
+                        }}
                         className="flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-secondary text-muted-foreground transition-all duration-200 hover:border-primary/40 hover:bg-primary/10 hover:text-primary"
                     >
-                        <Bell size={14} />
+                        {reminded ? (
+                            <>
+                                <CheckCircle2 size={15} />
+                            </>
+                        ) : (
+                            <>
+                                <Bell size={15} />
+                            </>
+                        )}
                     </button>
 
                     <button className="hidden h-9 items-center gap-1.5 rounded-lg border border-border bg-secondary px-3 text-[10px] font-semibold text-foreground transition-all duration-200 hover:border-primary/40 hover:bg-primary/10 hover:text-primary sm:flex">
@@ -1433,8 +1468,7 @@ function Contests() {
                                 recent contests
                             </p>
 
-                            <button className="flex items-center gap-1.5 rounded-lg border border-border bg-secondary px-3 py-1.5 text-[9px] font-semibold text-muted-foreground transition-all hover:border-primary/30 hover:bg-primary/10 hover:text-primary"
-                                onClick={() => setSelectedView("Past")} >
+                            <button className="flex items-center gap-1.5 rounded-lg border border-border bg-secondary px-3 py-1.5 text-[9px] font-semibold text-muted-foreground transition-all hover:border-primary/30 hover:bg-primary/10 hover:text-primary" >
                                 View All
                                 <ChevronRight size={16} />
                             </button>
