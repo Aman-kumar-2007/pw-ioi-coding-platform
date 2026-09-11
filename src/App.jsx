@@ -24,6 +24,7 @@ function App() {
                     <DashboardHeader />
                     <QuickStats />
                     <PlatformCards />
+                    <CodingHeatmap/>
                     <RatingProgress />
                 </>
             )}
