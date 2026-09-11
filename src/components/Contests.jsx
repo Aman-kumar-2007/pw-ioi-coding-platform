@@ -272,17 +272,15 @@ function ContestCard({ contest }) {
 
     return (
         <div
-            className={`group relative overflow-hidden rounded-xl border bg-card transition-all duration-300 hover:-translate-y-0.5 hover:bg-secondary/30 ${
-                isLeetCode
+            className={`group relative overflow-hidden rounded-xl border bg-card transition-all duration-300 hover:-translate-y-0.5 hover:bg-secondary/30 ${isLeetCode
                     ? "border-orange-500/20 hover:border-orange-500/40"
                     : "border-blue-500/20 hover:border-blue-500/40"
-            }`}
+                }`}
         >
             {/* Platform accent */}
             <div
-                className={`absolute left-0 top-0 h-full w-[3px] ${
-                    isLeetCode ? "bg-orange-500" : "bg-blue-500"
-                }`}
+                className={`absolute left-0 top-0 h-full w-[3px] ${isLeetCode ? "bg-orange-500" : "bg-blue-500"
+                    }`}
             />
 
             <div className="flex items-center gap-4 px-5 py-4">
@@ -299,11 +297,10 @@ function ContestCard({ contest }) {
 
                     <div className="mt-2 flex flex-wrap items-center gap-2">
                         <span
-                            className={`rounded-md px-2 py-1 text-[9px] font-semibold ${
-                                isLeetCode
+                            className={`rounded-md px-2 py-1 text-[9px] font-semibold ${isLeetCode
                                     ? "bg-orange-500/10 text-orange-400"
                                     : "bg-blue-500/10 text-blue-400"
-                            }`}
+                                }`}
                         >
                             {contest.platform}
                         </span>
@@ -560,18 +557,16 @@ function ContestCalendar({
                                         : null
                                 )
                             }
-                            className={`relative flex h-10 flex-col items-center justify-center rounded-lg transition-all duration-200 ${
-                                isSelected
+                            className={`relative flex h-10 flex-col items-center justify-center rounded-lg transition-all duration-200 ${isSelected
                                     ? "bg-primary/15 text-primary"
                                     : "hover:bg-secondary"
-                            }`}
+                                }`}
                         >
                             <span
-                                className={`flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-medium ${
-                                    isToday(day)
+                                className={`flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-medium ${isToday(day)
                                         ? "border border-primary bg-primary/10 text-primary"
                                         : "text-muted-foreground"
-                                }`}
+                                    }`}
                             >
                                 {day}
                             </span>
@@ -584,16 +579,16 @@ function ContestCalendar({
                                             c.platform ===
                                             "LeetCode"
                                     ) && (
-                                        <span className="h-1 w-1 rounded-full bg-orange-500" />
-                                    )}
+                                            <span className="h-1 w-1 rounded-full bg-orange-500" />
+                                        )}
 
                                     {dayContests.some(
                                         (c) =>
                                             c.platform ===
                                             "Codeforces"
                                     ) && (
-                                        <span className="h-1 w-1 rounded-full bg-blue-500" />
-                                    )}
+                                            <span className="h-1 w-1 rounded-full bg-blue-500" />
+                                        )}
                                 </span>
                             )}
                         </button>
@@ -754,7 +749,7 @@ function SelectedDateContests({
                                 size={12}
                                 className={
                                     contest.platform ===
-                                    "LeetCode"
+                                        "LeetCode"
                                         ? "text-orange-400"
                                         : "text-blue-400"
                                 }
@@ -902,11 +897,10 @@ function Contests() {
                                     )
                                     setSelectedDate(null)
                                 }}
-                                className={`flex h-9 items-center gap-2 rounded-lg border px-3 text-xs font-medium transition-all duration-200 ${
-                                    active
+                                className={`flex h-9 items-center gap-2 rounded-lg border px-3 text-xs font-medium transition-all duration-200 ${active
                                         ? "border-primary/50 bg-primary/10 text-primary shadow-sm"
                                         : "border-border bg-secondary text-muted-foreground hover:border-primary/30 hover:bg-muted hover:text-foreground"
-                                }`}
+                                    }`}
                             >
                                 <Icon size={14} />
                                 {platform.label}
@@ -926,11 +920,10 @@ function Contests() {
                                 onClick={() =>
                                     setSelectedView(view)
                                 }
-                                className={`rounded-md px-4 py-1.5 text-xs font-medium transition-all duration-200 ${
-                                    active
+                                className={`rounded-md px-4 py-1.5 text-xs font-medium transition-all duration-200 ${active
                                         ? "bg-primary text-primary-foreground shadow-sm"
                                         : "text-muted-foreground hover:text-foreground"
-                                }`}
+                                    }`}
                             >
                                 {view}
                             </button>
@@ -1033,25 +1026,346 @@ function Contests() {
                     </div>
                 </div>
             ) : (
-                /* =================================================
-                   TEMPORARY PAST STATE
-                   ================================================= */
+                <div>
+                    {/* Past Header */}
+                    <div className="mb-5 flex items-end justify-between">
+                        <div>
+                            <div className="flex items-center gap-2">
+                                <div className="h-5 w-1 rounded-full bg-primary" />
 
-                <div className="flex min-h-[300px] items-center justify-center rounded-2xl border border-border bg-card">
-                    <div className="text-center">
-                        <BarChart3
-                            size={28}
-                            className="mx-auto text-muted-foreground"
-                        />
+                                <h2 className="text-sm font-bold">
+                                    Past Contests
+                                </h2>
+                            </div>
 
-                        <p className="mt-3 text-sm font-semibold">
-                            Past Contests
-                        </p>
+                            <p className="mt-1 text-[10px] text-muted-foreground">
+                                Review your previous contest performance.
+                            </p>
+                        </div>
 
-                        <p className="mt-1 text-xs text-muted-foreground">
-                            Contest history will be added
-                            next.
-                        </p>
+                        <div className="flex h-9 items-center gap-2 rounded-lg border border-border bg-secondary px-3">
+                            <Search
+                                size={13}
+                                className="text-muted-foreground"
+                            />
+
+                            <input
+                                type="text"
+                                placeholder="Search contests..."
+                                className="w-[160px] bg-transparent text-xs outline-none placeholder:text-muted-foreground"
+                            />
+                        </div>
+                    </div>
+
+                    {/* Performance Stats */}
+                    <div className="mb-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
+                        <div className="rounded-xl border border-border bg-card p-4 transition-all hover:border-primary/30">
+                            <div className="flex items-center justify-between">
+                                <span className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">
+                                    Contests
+                                </span>
+
+                                <Trophy
+                                    size={14}
+                                    className="text-primary"
+                                />
+                            </div>
+
+                            <p className="mt-2 font-mono text-xl font-bold">
+                                42
+                            </p>
+
+                            <p className="mt-1 text-[9px] text-muted-foreground">
+                                Total participated
+                            </p>
+                        </div>
+
+                        <div className="rounded-xl border border-border bg-card p-4 transition-all hover:border-amber-400/30">
+                            <div className="flex items-center justify-between">
+                                <span className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">
+                                    Best Rank
+                                </span>
+
+                                <Award
+                                    size={14}
+                                    className="text-amber-400"
+                                />
+                            </div>
+
+                            <p className="mt-2 font-mono text-xl font-bold">
+                                #421
+                            </p>
+
+                            <p className="mt-1 text-[9px] text-muted-foreground">
+                                Across all contests
+                            </p>
+                        </div>
+
+                        <div className="rounded-xl border border-border bg-card p-4 transition-all hover:border-blue-400/30">
+                            <div className="flex items-center justify-between">
+                                <span className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">
+                                    Current Rating
+                                </span>
+
+                                <BarChart3
+                                    size={14}
+                                    className="text-blue-400"
+                                />
+                            </div>
+
+                            <p className="mt-2 font-mono text-xl font-bold">
+                                1847
+                            </p>
+
+                            <p className="mt-1 text-[9px] text-muted-foreground">
+                                Current contest rating
+                            </p>
+                        </div>
+
+                        <div className="rounded-xl border border-border bg-card p-4 transition-all hover:border-emerald-400/30">
+                            <div className="flex items-center justify-between">
+                                <span className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">
+                                    Avg. Rank
+                                </span>
+
+                                <Users
+                                    size={14}
+                                    className="text-emerald-400"
+                                />
+                            </div>
+
+                            <p className="mt-2 font-mono text-xl font-bold">
+                                #1.2K
+                            </p>
+
+                            <p className="mt-1 text-[9px] text-muted-foreground">
+                                Last 10 contests
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* Past Contest Table */}
+                    <div className="overflow-hidden rounded-2xl border border-border bg-card">
+                        {/* Table Header */}
+                        <div className="hidden grid-cols-[minmax(0,1.7fr)_120px_120px_110px_130px_90px] items-center border-b border-border bg-secondary/30 px-5 py-3 lg:grid">
+                            <span className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">
+                                Contest
+                            </span>
+
+                            <span className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">
+                                Platform
+                            </span>
+
+                            <span className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">
+                                Date
+                            </span>
+
+                            <span className="text-right text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">
+                                Rank
+                            </span>
+
+                            <span className="text-right text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">
+                                Rating Change
+                            </span>
+
+                            <span className="text-right text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">
+                                Action
+                            </span>
+                        </div>
+
+                        {pastContests.map((contest) => {
+                            const isLeetCode =
+                                contest.platform === "LeetCode"
+
+                            const isPositive =
+                                contest.ratingChange >= 0
+
+                            return (
+                                <div
+                                    key={contest.id}
+                                    className="group border-b border-border px-5 py-4 transition-all duration-200 last:border-b-0 hover:bg-secondary/30"
+                                >
+                                    <div className="hidden grid-cols-[minmax(0,1.7fr)_120px_120px_110px_130px_90px] items-center lg:grid">
+                                        {/* Contest */}
+                                        <div className="flex min-w-0 items-center gap-3">
+                                            <div
+                                                className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${isLeetCode
+                                                        ? "bg-orange-500/10 text-orange-400"
+                                                        : "bg-blue-500/10 text-blue-400"
+                                                    }`}
+                                            >
+                                                {isLeetCode ? (
+                                                    <Code2 size={16} />
+                                                ) : (
+                                                    <BarChart3 size={16} />
+                                                )}
+                                            </div>
+
+                                            <div className="min-w-0">
+                                                <p className="truncate text-xs font-semibold">
+                                                    {contest.name}
+                                                </p>
+
+                                                <div className="mt-1 flex items-center gap-2">
+                                                    <span className="text-[9px] text-muted-foreground">
+                                                        {contest.type}
+                                                    </span>
+
+                                                    <span className="text-border">
+                                                        •
+                                                    </span>
+
+                                                    <span className="flex items-center gap-1 text-[9px] text-muted-foreground">
+                                                        <Users size={9} />
+                                                        {contest.participants.toLocaleString()}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Platform */}
+                                        <div>
+                                            <span
+                                                className={`inline-flex rounded-md px-2 py-1 text-[9px] font-semibold ${isLeetCode
+                                                        ? "bg-orange-500/10 text-orange-400"
+                                                        : "bg-blue-500/10 text-blue-400"
+                                                    }`}
+                                            >
+                                                {contest.platform}
+                                            </span>
+                                        </div>
+
+                                        {/* Date */}
+                                        <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+                                            <CalendarDays size={11} />
+
+                                            {formatDate(
+                                                contest.date
+                                            )}
+                                        </div>
+
+                                        {/* Rank */}
+                                        <div className="text-right">
+                                            <p className="font-mono text-xs font-semibold">
+                                                #{contest.rank.toLocaleString()}
+                                            </p>
+
+                                            <p className="mt-0.5 text-[8px] text-muted-foreground">
+                                                of{" "}
+                                                {contest.participants.toLocaleString()}
+                                            </p>
+                                        </div>
+
+                                        {/* Rating */}
+                                        <div className="flex justify-end">
+                                            <div className="text-right">
+                                                <span
+                                                    className={`inline-flex items-center gap-1 rounded-md px-2 py-1 font-mono text-[10px] font-semibold ${isPositive
+                                                            ? "bg-emerald-500/10 text-emerald-400"
+                                                            : "bg-red-500/10 text-red-400"
+                                                        }`}
+                                                >
+                                                    {isPositive ? (
+                                                        <ArrowUp size={10} />
+                                                    ) : (
+                                                        <ArrowDown size={10} />
+                                                    )}
+
+                                                    {isPositive
+                                                        ? "+"
+                                                        : ""}
+                                                    {
+                                                        contest.ratingChange
+                                                    }
+                                                </span>
+
+                                                <p className="mt-1 text-[8px] text-muted-foreground">
+                                                    Rating{" "}
+                                                    {contest.rating}
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        {/* Action */}
+                                        <div className="flex justify-end">
+                                            <button className="flex h-8 items-center gap-1.5 rounded-lg border border-border bg-secondary px-2.5 text-[9px] font-semibold text-muted-foreground transition-all hover:border-primary/30 hover:bg-primary/10 hover:text-primary">
+                                                View
+                                                <ExternalLink
+                                                    size={10}
+                                                />
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    {/* Mobile */}
+                                    <div className="flex items-center gap-3 lg:hidden">
+                                        <div
+                                            className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${isLeetCode
+                                                    ? "bg-orange-500/10 text-orange-400"
+                                                    : "bg-blue-500/10 text-blue-400"
+                                                }`}
+                                        >
+                                            {isLeetCode ? (
+                                                <Code2 size={16} />
+                                            ) : (
+                                                <BarChart3 size={16} />
+                                            )}
+                                        </div>
+
+                                        <div className="min-w-0 flex-1">
+                                            <p className="truncate text-xs font-semibold">
+                                                {contest.name}
+                                            </p>
+
+                                            <div className="mt-1 flex items-center gap-2">
+                                                <span
+                                                    className={`text-[9px] font-medium ${isLeetCode
+                                                            ? "text-orange-400"
+                                                            : "text-blue-400"
+                                                        }`}
+                                                >
+                                                    {contest.platform}
+                                                </span>
+
+                                                <span className="text-border">
+                                                    •
+                                                </span>
+
+                                                <span className="text-[9px] text-muted-foreground">
+                                                    #{contest.rank}
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <span
+                                            className={`font-mono text-[10px] font-semibold ${isPositive
+                                                    ? "text-emerald-400"
+                                                    : "text-red-400"
+                                                }`}
+                                        >
+                                            {isPositive ? "+" : ""}
+                                            {contest.ratingChange}
+                                        </span>
+                                    </div>
+                                </div>
+                            )
+                        })}
+
+                        {/* Footer */}
+                        <div className="flex items-center justify-between px-5 py-4">
+                            <p className="text-[10px] text-muted-foreground">
+                                Showing{" "}
+                                <span className="font-medium text-foreground">
+                                    {pastContests.length}
+                                </span>{" "}
+                                recent contests
+                            </p>
+
+                            <button className="flex items-center gap-1.5 rounded-lg border border-border bg-secondary px-3 py-1.5 text-[9px] font-semibold text-muted-foreground transition-all hover:border-primary/30 hover:bg-primary/10 hover:text-primary">
+                                View All
+                                <ChevronRight size={11} />
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}
