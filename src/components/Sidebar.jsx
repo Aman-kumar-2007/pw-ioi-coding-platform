@@ -11,27 +11,27 @@ import {
   Medal,
 } from "lucide-react"
 
-function Sidebar() {
+function Sidebar({ activePage, setActivePage }) {
   const menuItems = [
     {
-        label: "Dashboard",
-        icon: LayoutDashboard,
+      label: "Dashboard",
+      icon: LayoutDashboard,
     },
     {
-        label: "Leaderboard",
-        icon: Medal,
+      label: "Leaderboard",
+      icon: Medal,
     },
     {
-        label: "Student Profile",
-        icon: UserRound,
+      label: "Student Profile",
+      icon: UserRound,
     },
     {
-        label: "Contests",
-        icon: Trophy,
+      label: "Contests",
+      icon: Trophy,
     },
     {
-        label: "Analytics",
-        icon: BarChart3,
+      label: "Analytics",
+      icon: BarChart3,
     },
   ]
 
@@ -64,19 +64,22 @@ function Sidebar() {
 
         {menuItems.map((item) => {
           const Icon = item.icon
+          const isActive = activePage === item.label
 
           return (
             <button
               key={item.label}
-              className={`group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all ${item.active
-                ? "bg-primary/10 text-primary"
-                : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+              onClick={() => setActivePage(item.label)}
+              className={`group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all ${isActive
+                  ? "bg-primary/10 text-primary"
+                  : "text-muted-foreground hover:bg-secondary hover:text-foreground"
                 }`}
             >
               <Icon size={18} strokeWidth={1.8} />
+
               <span>{item.label}</span>
 
-              {item.active && (
+              {isActive && (
                 <span className="ml-auto h-1.5 w-1.5 rounded-full bg-primary" />
               )}
             </button>
