@@ -1,3 +1,5 @@
+import { useState } from "react"
+
 import {
     Medal,
     Search,
@@ -124,30 +126,90 @@ const students = [
     },
 ]
 
-function FilterButton({ icon: Icon, children }) {
+const cityOptions = [
+    "All Cities",
+    "Noida",
+    "Bangalore",
+    "Pune",
+    "Lucknow",
+]
+
+const yearOptions = [
+    "All Years",
+    "1st Year",
+    "2nd Year",
+    "3rd Year",
+    "4th Year",
+]
+
+function Dropdown({
+    icon: Icon,
+    value,
+    options,
+    isOpen,
+    onToggle,
+    onSelect,
+}) {
     return (
-        <button className="group flex h-9 items-center gap-2 rounded-lg border border-border bg-secondary px-3 text-xs font-medium text-muted-foreground transition-all duration-200 hover:border-primary/40 hover:bg-muted hover:text-foreground">
-            {Icon && (
-                <Icon
+        <div className="relative">
+            <button
+                onClick={onToggle}
+                className={`group flex h-9 items-center gap-2 rounded-lg border bg-secondary px-3 text-xs font-medium transition-all duration-200 ${isOpen
+                        ? "border-primary/50 bg-muted text-foreground"
+                        : "border-border text-muted-foreground hover:border-primary/40 hover:bg-muted hover:text-foreground"
+                    }`}
+            >
+                {Icon && (
+                    <Icon
+                        size={13}
+                        className={`transition-colors duration-200 ${isOpen
+                                ? "text-primary"
+                                : ""
+                            }`}
+                    />
+                )}
+
+                <span>{value}</span>
+
+                <ChevronDown
                     size={13}
-                    className="transition-transform duration-200 group-hover:scale-110"
+                    className={`transition-transform duration-200 ${isOpen
+                            ? "rotate-180 text-primary"
+                            : ""
+                        }`}
                 />
+            </button>
+
+            {isOpen && (
+                <div className="absolute right-0 top-full z-[100] mt-2 min-w-[155px] overflow-hidden rounded-xl border border-border bg-card p-1.5 shadow-2xl">
+                    {options.map((option) => {
+                        const selected = option === value
+
+                        return (
+                            <button
+                                key={option}
+                                onClick={() => onSelect(option)}
+                                className={`flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-left text-xs transition-all duration-150 ${selected
+                                        ? "bg-primary/10 font-medium text-primary"
+                                        : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                                    }`}
+                            >
+                                <span>{option}</span>
+
+                                {selected && (
+                                    <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+                                )}
+                            </button>
+                        )
+                    })}
+                </div>
             )}
-
-            <span>{children}</span>
-
-            <ChevronDown
-                size={13}
-                className="transition-transform duration-200 group-hover:translate-y-0.5"
-            />
-        </button>
+        </div>
     )
 }
 
 function PodiumCard({ student, position }) {
     const isFirst = position === 1
-    const isSecond = position === 2
-    const isThird = position === 3
 
     const rankStyles = {
         1: {
@@ -194,20 +256,18 @@ function PodiumCard({ student, position }) {
 
     return (
         <div
-            className={`group relative flex flex-col items-center rounded-2xl border bg-card px-5 text-center transition-all duration-300 hover:-translate-y-2 ${style.border} ${style.glow} ${
-                isFirst
+            className={`group relative flex flex-col items-center rounded-2xl border bg-card px-5 text-center transition-all duration-300 hover:-translate-y-2 ${style.border} ${style.glow} ${isFirst
                     ? "min-h-[390px] py-6"
                     : "min-h-[350px] py-5"
-            }`}
+                }`}
         >
-            {/* Top accent */}
+            {/* Top Accent */}
             <div
-                className={`absolute left-1/2 top-0 h-[2px] -translate-x-1/2 rounded-full transition-all duration-300 group-hover:w-28 ${
-                    isFirst ? "w-20" : "w-14"
-                } ${style.accent}`}
+                className={`absolute left-1/2 top-0 h-[2px] -translate-x-1/2 rounded-full transition-all duration-300 group-hover:w-28 ${isFirst ? "w-20" : "w-14"
+                    } ${style.accent}`}
             />
 
-            {/* Rank icon */}
+            {/* Rank Icon */}
             <div
                 className={`absolute -top-5 flex h-10 w-10 items-center justify-center rounded-xl border bg-card shadow-lg transition-all duration-300 group-hover:-translate-y-1 ${style.icon}`}
             >
@@ -221,16 +281,15 @@ function PodiumCard({ student, position }) {
             {/* Avatar */}
             <div className="relative mt-9">
                 <div
-                    className={`flex items-center justify-center rounded-full border-2 font-bold transition-all duration-300 group-hover:scale-105 group-hover:shadow-lg ${
-                        isFirst
+                    className={`flex items-center justify-center rounded-full border-2 font-bold transition-all duration-300 group-hover:scale-105 group-hover:shadow-lg ${isFirst
                             ? "h-28 w-28 text-3xl"
                             : "h-24 w-24 text-2xl"
-                    } ${style.avatar}`}
+                        } ${style.avatar}`}
                 >
                     {student.initials}
                 </div>
 
-                {/* Rank badge */}
+                {/* Rank Badge */}
                 <div
                     className={`absolute -bottom-1 -right-2 flex h-8 w-8 items-center justify-center rounded-full border-2 border-card font-mono text-xs font-bold shadow-lg transition-transform duration-300 group-hover:scale-110 ${style.badge}`}
                 >
@@ -239,7 +298,7 @@ function PodiumCard({ student, position }) {
             </div>
 
             {/* Name */}
-            <h3 className="mt-5 truncate px-3 text-base font-bold transition-colors duration-200 group-hover:text-foreground">
+            <h3 className="mt-5 truncate px-3 text-base font-bold">
                 {student.name}
             </h3>
 
@@ -252,6 +311,7 @@ function PodiumCard({ student, position }) {
             {/* Location */}
             <div className="mt-2 flex items-center gap-1.5 text-[10px] text-muted-foreground">
                 <MapPin size={11} />
+
                 {student.city}
 
                 <span className="text-border">
@@ -263,7 +323,7 @@ function PodiumCard({ student, position }) {
 
             {/* Score */}
             <div
-                className={`mx-auto mt-auto w-full max-w-[250px] rounded-xl border px-4 py-3 transition-all duration-300 group-hover:-translate-y-1 group-hover:bg-opacity-80 ${style.score}`}
+                className={`mx-auto mt-auto w-full max-w-[250px] rounded-xl border px-4 py-3 transition-all duration-300 group-hover:-translate-y-1 ${style.score}`}
             >
                 <p className="text-[9px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                     Score
@@ -280,14 +340,53 @@ function PodiumCard({ student, position }) {
 }
 
 function Leaderboard() {
+    const [selectedCity, setSelectedCity] =
+        useState("All Cities")
+
+    const [selectedYear, setSelectedYear] =
+        useState("All Years")
+
+    const [searchQuery, setSearchQuery] =
+        useState("")
+
+    const [openDropdown, setOpenDropdown] =
+        useState(null)
+
+    /* Filtering */
+    const filteredStudents = students.filter((student) => {
+        const cityMatch =
+            selectedCity === "All Cities" ||
+            student.city === selectedCity
+
+        const yearMatch =
+            selectedYear === "All Years" ||
+            student.year === selectedYear
+
+        const query =
+            searchQuery.trim().toLowerCase()
+
+        const searchMatch =
+            !query ||
+            student.name
+                .toLowerCase()
+                .includes(query) ||
+            student.username
+                .toLowerCase()
+                .includes(query)
+
+        return cityMatch && yearMatch && searchMatch
+    })
+
+    const topStudents = filteredStudents.slice(0, 3)
+
     return (
         <section className="px-8 pb-10 pt-7">
 
             {/* Header */}
-            <div className="relative mb-7 overflow-hidden rounded-2xl border border-border bg-card px-6 py-5">
+            <div className="relative mb-7 overflow-visible rounded-2xl border border-border bg-card px-6 py-5">
 
                 {/* Accent */}
-                <div className="absolute left-0 top-0 h-full w-[2px] bg-primary" />
+                <div className="absolute left-0 top-0 h-full w-[2px] rounded-full bg-primary" />
 
                 <div className="flex items-start justify-between gap-6">
                     <div>
@@ -309,14 +408,47 @@ function Leaderboard() {
                         </p>
                     </div>
 
+                    {/* Filters */}
                     <div className="flex items-center gap-2">
-                        <FilterButton icon={MapPin}>
-                            All Cities
-                        </FilterButton>
 
-                        <FilterButton>
-                            All Years
-                        </FilterButton>
+                        <Dropdown
+                            icon={MapPin}
+                            value={selectedCity}
+                            options={cityOptions}
+                            isOpen={
+                                openDropdown === "city"
+                            }
+                            onToggle={() =>
+                                setOpenDropdown(
+                                    openDropdown === "city"
+                                        ? null
+                                        : "city"
+                                )
+                            }
+                            onSelect={(value) => {
+                                setSelectedCity(value)
+                                setOpenDropdown(null)
+                            }}
+                        />
+
+                        <Dropdown
+                            value={selectedYear}
+                            options={yearOptions}
+                            isOpen={
+                                openDropdown === "year"
+                            }
+                            onToggle={() =>
+                                setOpenDropdown(
+                                    openDropdown === "year"
+                                        ? null
+                                        : "year"
+                                )
+                            }
+                            onSelect={(value) => {
+                                setSelectedYear(value)
+                                setOpenDropdown(null)
+                            }}
+                        />
                     </div>
                 </div>
 
@@ -329,35 +461,62 @@ function Leaderboard() {
 
                     <input
                         type="text"
+                        value={searchQuery}
+                        onChange={(e) =>
+                            setSearchQuery(
+                                e.target.value
+                            )
+                        }
                         placeholder="Search by name or username..."
                         className="w-full bg-transparent text-xs text-foreground outline-none placeholder:text-muted-foreground"
                     />
                 </div>
             </div>
+            {topStudents.length > 0 ? (
+                <div className="mb-7 grid grid-cols-1 items-end gap-5 md:grid-cols-3">
+                    {/* 2nd Place */}
+                    {topStudents[1] && (
+                        <PodiumCard
+                            student={topStudents[1]}
+                            position={2}
+                        />
+                    )}
 
-            {/* Podium */}
-            <div className="mb-7 grid grid-cols-1 items-end gap-5 md:grid-cols-3">
+                    {/* 1st Place */}
+                    {topStudents[0] && (
+                        <PodiumCard
+                            student={topStudents[0]}
+                            position={1}
+                        />
+                    )}
 
-                <PodiumCard
-                    student={students[1]}
-                    position={2}
-                />
+                    {/* 3rd Place */}
+                    {topStudents[2] && (
+                        <PodiumCard
+                            student={topStudents[2]}
+                            position={3}
+                        />
+                    )}
+                </div>
+            ) : (
+                <div className="mb-7 flex min-h-[220px] flex-col items-center justify-center rounded-2xl border border-border bg-card">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-muted text-muted-foreground">
+                        <Search size={20} />
+                    </div>
 
-                <PodiumCard
-                    student={students[0]}
-                    position={1}
-                />
+                    <p className="mt-4 text-sm font-semibold">
+                        No students found
+                    </p>
 
-                <PodiumCard
-                    student={students[2]}
-                    position={3}
-                />
-            </div>
-
-            {/* Leaderboard Table */}
+                    <p className="mt-1 text-xs text-muted-foreground">
+                        Try changing your filters or search.
+                    </p>
+                </div>
+            )}
+            {/* Table */}
             <div className="overflow-hidden rounded-2xl border border-border bg-card">
 
-                {/* Header */}
+                {/* Table Header */}
                 <div className="grid grid-cols-[55px_1.6fr_120px_110px_130px_120px_90px] items-center border-b border-border bg-secondary/30 px-5 py-3">
                     <span className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">
                         #
@@ -389,119 +548,126 @@ function Leaderboard() {
                 </div>
 
                 {/* Rows */}
-                {students.map((student) => {
-                    const isCurrentUser =
-                        student.name === "Aman Kumar"
+                {filteredStudents.length > 0 ? (
+                    filteredStudents.map(
+                        (student) => {
+                            const isCurrentUser =
+                                student.name ===
+                                "Aman Kumar"
 
-                    return (
-                        <div
-                            key={student.rank}
-                            className={`group grid grid-cols-[55px_1.6fr_120px_110px_130px_120px_90px] items-center border-b border-border px-5 py-3.5 transition-all duration-200 last:border-b-0 ${
-                                isCurrentUser
-                                    ? "bg-primary/[0.06] hover:bg-primary/[0.10]"
-                                    : "hover:bg-secondary/40"
-                            }`}
-                        >
-                            {/* Rank */}
-                            <div>
-                                <span
-                                    className={`font-mono text-xs font-semibold transition-transform duration-200 group-hover:translate-x-1 ${
-                                        student.rank === 1
-                                            ? "text-amber-400"
-                                            : student.rank === 2
-                                                ? "text-slate-300"
-                                                : student.rank === 3
-                                                    ? "text-orange-400"
-                                                    : "text-muted-foreground"
-                                    }`}
-                                >
-                                    {student.rank}
-                                </span>
-                            </div>
-
-                            {/* Student */}
-                            <div className="flex items-center gap-3">
+                            return (
                                 <div
-                                    className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[10px] font-bold transition-all duration-200 group-hover:scale-110 ${
-                                        isCurrentUser
-                                            ? "bg-primary/15 text-primary"
-                                            : "bg-muted text-foreground"
-                                    }`}
+                                    key={student.name}
+                                    className={`group grid grid-cols-[55px_1.6fr_120px_110px_130px_120px_90px] items-center border-b border-border px-5 py-3.5 transition-all duration-200 last:border-b-0 ${isCurrentUser
+                                            ? "bg-primary/[0.06] hover:bg-primary/[0.10]"
+                                            : "hover:bg-secondary/40"
+                                        }`}
                                 >
-                                    {student.initials}
-                                </div>
+                                    {/* Rank */}
+                                    <div>
+                                        <span
+                                            className={`font-mono text-xs font-semibold transition-transform duration-200 group-hover:translate-x-1 ${student.rank === 1
+                                                    ? "text-amber-400"
+                                                    : student.rank === 2
+                                                        ? "text-slate-300"
+                                                        : student.rank === 3
+                                                            ? "text-orange-400"
+                                                            : "text-muted-foreground"
+                                                }`}
+                                        >
+                                            {student.rank}
+                                        </span>
+                                    </div>
 
-                                <div className="min-w-0">
-                                    <p className="truncate text-xs font-semibold">
-                                        {student.name}
+                                    {/* Student */}
+                                    <div className="flex items-center gap-3">
+                                        <div
+                                            className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[10px] font-bold transition-all duration-200 group-hover:scale-110 ${isCurrentUser
+                                                    ? "bg-primary/15 text-primary"
+                                                    : "bg-muted text-foreground"
+                                                }`}
+                                        >
+                                            {student.initials}
+                                        </div>
+
+                                        <div className="min-w-0">
+                                            <p className="truncate text-xs font-semibold">
+                                                {student.name}
+                                            </p>
+
+                                            <button className="mt-0.5 flex items-center gap-1 text-[9px] text-muted-foreground transition-colors hover:text-primary">
+                                                {student.username}
+                                                <ExternalLink size={9} />
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    {/* City */}
+                                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                                        <MapPin size={11} />
+                                        {student.city}
+                                    </div>
+
+                                    {/* Year */}
+                                    <p className="text-xs text-muted-foreground">
+                                        {student.year}
                                     </p>
 
-                                    <button className="mt-0.5 flex items-center gap-1 text-[9px] text-muted-foreground transition-all duration-200 hover:text-primary">
-                                        {student.username}
-                                        <ExternalLink size={9} />
-                                    </button>
+                                    {/* Score */}
+                                    <p
+                                        className={`text-right font-mono text-xs font-semibold ${student.rank === 1
+                                                ? "text-amber-400"
+                                                : "text-foreground"
+                                            }`}
+                                    >
+                                        {student.score.toFixed(
+                                            2
+                                        )}
+                                    </p>
+
+                                    {/* Streak */}
+                                    <div className="flex justify-end">
+                                        <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-secondary px-2.5 py-1 text-[9px] font-medium text-muted-foreground transition-all duration-200 group-hover:border-primary/20 group-hover:text-foreground">
+                                            <Flame
+                                                size={10}
+                                                className="transition-transform duration-200 group-hover:scale-110"
+                                            />
+                                            {student.streak}
+                                        </span>
+                                    </div>
+
+                                    {/* Solved */}
+                                    <p className="text-right font-mono text-xs font-semibold">
+                                        {student.solved}
+                                    </p>
                                 </div>
-                            </div>
-
-                            {/* City */}
-                            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                                <MapPin size={11} />
-                                {student.city}
-                            </div>
-
-                            {/* Year */}
-                            <p className="text-xs text-muted-foreground">
-                                {student.year}
-                            </p>
-
-                            {/* Score */}
-                            <p
-                                className={`text-right font-mono text-xs font-semibold ${
-                                    student.rank === 1
-                                        ? "text-amber-400"
-                                        : "text-foreground"
-                                }`}
-                            >
-                                {student.score.toFixed(2)}
-                            </p>
-
-                            {/* Streak */}
-                            <div className="flex justify-end">
-                                <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-secondary px-2.5 py-1 text-[9px] font-medium text-muted-foreground transition-all duration-200 group-hover:border-primary/20 group-hover:text-foreground">
-                                    <Flame
-                                        size={10}
-                                        className="transition-transform duration-200 group-hover:scale-110"
-                                    />
-                                    {student.streak}
-                                </span>
-                            </div>
-
-                            {/* Solved */}
-                            <p className="text-right font-mono text-xs font-semibold">
-                                {student.solved}
-                            </p>
-                        </div>
+                            )
+                        }
                     )
-                })}
+                ) : (
+                    <div className="flex min-h-[150px] items-center justify-center">
+                        <p className="text-xs text-muted-foreground">
+                            No matching students.
+                        </p>
+                    </div>
+                )}
 
                 {/* Footer */}
                 <div className="flex items-center justify-between px-5 py-4">
-
                     <p className="text-[10px] text-muted-foreground">
                         Showing{" "}
                         <span className="font-medium text-foreground">
-                            1–10
+                            {filteredStudents.length}
                         </span>{" "}
-                        of 200 students
+                        of {students.length} students
                     </p>
 
                     <div className="flex items-center gap-1">
-
                         <button className="flex h-8 w-8 items-center justify-center rounded-lg border border-border text-muted-foreground transition-all duration-200 hover:-translate-x-0.5 hover:bg-secondary hover:text-foreground">
                             <ChevronLeft size={14} />
                         </button>
 
-                        <button className="flex h-8 w-8 items-center justify-center rounded-lg border border-primary bg-primary/10 text-xs font-semibold text-primary transition-all duration-200 hover:bg-primary/15 hover:shadow-[0_0_15px_rgba(99,102,241,0.15)]">
+                        <button className="flex h-8 w-8 items-center justify-center rounded-lg border border-primary bg-primary/10 text-xs font-semibold text-primary transition-all duration-200 hover:bg-primary/15">
                             1
                         </button>
 
@@ -517,14 +683,13 @@ function Leaderboard() {
                             ...
                         </span>
 
-                        <button className="flex h-8 w-8 items-center justify-center rounded-lg border border-border text-xs text-muted-foreground transition-all duration-200 hover:-translate-y-0.5 hover:bg-secondary hover:text-foreground">
+                        <button className="flex h-8 w-8 items-center justify-center rounded-lg border border-border text-xs text-muted-foreground hover:bg-secondary hover:text-foreground">
                             20
                         </button>
 
                         <button className="flex h-8 w-8 items-center justify-center rounded-lg border border-border text-muted-foreground transition-all duration-200 hover:translate-x-0.5 hover:bg-secondary hover:text-foreground">
                             <ChevronRight size={14} />
                         </button>
-
                     </div>
                 </div>
             </div>
