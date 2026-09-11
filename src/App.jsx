@@ -4,6 +4,7 @@ import QuickStats from "./components/QuickStats"
 import PlatformCards from "./components/PlatformCards"
 import RatingSection from "./components/RatingSection"
 import CodingHeatmap from "./components/CodingHeatmap"
+import LearningProgress from "./components/LearningProgress"
 
 function App() {
     return (
@@ -13,6 +14,7 @@ function App() {
             <PlatformCards />
             <RatingSection />
             <CodingHeatmap/>
+            <LearningProgress/>
         </Layout>
     )
 }
