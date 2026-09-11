@@ -9,7 +9,6 @@ import {
     ExternalLink,
     MapPin,
     Flame,
-    Trophy,
     Crown,
 } from "lucide-react"
 
@@ -23,7 +22,10 @@ const students = [
         year: "3rd Year",
         score: 4325.42,
         streak: 42,
-        solved: 612,
+        leetcodeSolved: 280,
+        codeforcesSolved: 180,
+        gfgSolved: 152,
+        codeforcesRating: 1900,
     },
     {
         rank: 2,
@@ -34,7 +36,10 @@ const students = [
         year: "3rd Year",
         score: 3792.61,
         streak: 38,
-        solved: 580,
+        leetcodeSolved: 260,
+        codeforcesSolved: 175,
+        gfgSolved: 145,
+        codeforcesRating: 1900,
     },
     {
         rank: 3,
@@ -45,7 +50,10 @@ const students = [
         year: "2nd Year",
         score: 3351.28,
         streak: 29,
-        solved: 498,
+        leetcodeSolved: 220,
+        codeforcesSolved: 150,
+        gfgSolved: 128,
+        codeforcesRating: 1900,
     },
     {
         rank: 4,
@@ -56,7 +64,10 @@ const students = [
         year: "3rd Year",
         score: 3120.14,
         streak: 24,
-        solved: 461,
+        leetcodeSolved: 205,
+        codeforcesSolved: 138,
+        gfgSolved: 118,
+        codeforcesRating: 1900,
     },
     {
         rank: 5,
@@ -67,7 +78,10 @@ const students = [
         year: "2nd Year",
         score: 2984.77,
         streak: 21,
-        solved: 438,
+        leetcodeSolved: 190,
+        codeforcesSolved: 130,
+        gfgSolved: 112,
+        codeforcesRating: 1900,
     },
     {
         rank: 6,
@@ -78,7 +92,10 @@ const students = [
         year: "3rd Year",
         score: 2810.36,
         streak: 19,
-        solved: 402,
+        leetcodeSolved: 175,
+        codeforcesSolved: 120,
+        gfgSolved: 107,
+        codeforcesRating: 1900,
     },
     {
         rank: 7,
@@ -89,7 +106,10 @@ const students = [
         year: "3rd Year",
         score: 2675.89,
         streak: 17,
-        solved: 389,
+        leetcodeSolved: 165,
+        codeforcesSolved: 115,
+        gfgSolved: 109,
+        codeforcesRating: 1900,
     },
     {
         rank: 8,
@@ -100,7 +120,10 @@ const students = [
         year: "1st Year",
         score: 2541.13,
         streak: 15,
-        solved: 361,
+        leetcodeSolved: 150,
+        codeforcesSolved: 108,
+        gfgSolved: 103,
+        codeforcesRating: 1900,
     },
     {
         rank: 9,
@@ -111,7 +134,10 @@ const students = [
         year: "2nd Year",
         score: 2418.67,
         streak: 14,
-        solved: 352,
+        leetcodeSolved: 145,
+        codeforcesSolved: 105,
+        gfgSolved: 102,
+        codeforcesRating: 1900,
     },
     {
         rank: 10,
@@ -122,9 +148,27 @@ const students = [
         year: "1st Year",
         score: 2290.11,
         streak: 13,
-        solved: 331,
+        leetcodeSolved: 135,
+        codeforcesSolved: 98,
+        gfgSolved: 98,
+        codeforcesRating: 1900,
     },
 ]
+
+function calculateLeaderboardScore(student) {
+    const leetcodeScore =
+        student.leetcodeSolved * 2
+
+    const gfgScore =
+        student.gfgSolved * 1.5
+
+    const codeforcesScore =
+        student.codeforcesSolved * 1 +
+        Math.max(0, student.codeforcesRating - 800) * 0.5
+
+    return leetcodeScore + gfgScore + codeforcesScore
+}
+
 
 const cityOptions = [
     "All Cities",
@@ -155,16 +199,14 @@ function Dropdown({
             <button
                 onClick={onToggle}
                 className={`group flex h-9 items-center gap-2 rounded-lg border bg-secondary px-3 text-xs font-medium transition-all duration-200 ${isOpen
-                        ? "border-primary/50 bg-muted text-foreground"
-                        : "border-border text-muted-foreground hover:border-primary/40 hover:bg-muted hover:text-foreground"
+                    ? "border-primary/50 bg-muted text-foreground"
+                    : "border-border text-muted-foreground hover:border-primary/40 hover:bg-muted hover:text-foreground"
                     }`}
             >
                 {Icon && (
                     <Icon
                         size={13}
-                        className={`transition-colors duration-200 ${isOpen
-                                ? "text-primary"
-                                : ""
+                        className={`transition-colors duration-200 ${isOpen ? "text-primary" : ""
                             }`}
                     />
                 )}
@@ -173,9 +215,7 @@ function Dropdown({
 
                 <ChevronDown
                     size={13}
-                    className={`transition-transform duration-200 ${isOpen
-                            ? "rotate-180 text-primary"
-                            : ""
+                    className={`transition-transform duration-200 ${isOpen ? "rotate-180 text-primary" : ""
                         }`}
                 />
             </button>
@@ -190,8 +230,8 @@ function Dropdown({
                                 key={option}
                                 onClick={() => onSelect(option)}
                                 className={`flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-left text-xs transition-all duration-150 ${selected
-                                        ? "bg-primary/10 font-medium text-primary"
-                                        : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                                    ? "bg-primary/10 font-medium text-primary"
+                                    : "text-muted-foreground hover:bg-secondary hover:text-foreground"
                                     }`}
                             >
                                 <span>{option}</span>
@@ -254,9 +294,15 @@ function PodiumCard({ student, position }) {
 
     const style = rankStyles[position]
 
+    const solved =
+        student.leetcodeSolved +
+        student.codeforcesSolved +
+        student.gfgSolved
+
     return (
         <div
-            className={`group relative flex flex-col items-center rounded-2xl border bg-card px-5 text-center transition-all duration-300 hover:-translate-y-2 ${style.border} ${style.glow} ${isFirst
+            className={`group relative flex flex-col items-center rounded-2xl border bg-card px-5 text-center transition-all duration-300 hover:-translate-y-2 ${style.border
+                } ${style.glow} ${isFirst
                     ? "min-h-[390px] py-6"
                     : "min-h-[350px] py-5"
                 }`}
@@ -282,8 +328,8 @@ function PodiumCard({ student, position }) {
             <div className="relative mt-9">
                 <div
                     className={`flex items-center justify-center rounded-full border-2 font-bold transition-all duration-300 group-hover:scale-105 group-hover:shadow-lg ${isFirst
-                            ? "h-28 w-28 text-3xl"
-                            : "h-24 w-24 text-2xl"
+                        ? "h-28 w-28 text-3xl"
+                        : "h-24 w-24 text-2xl"
                         } ${style.avatar}`}
                 >
                     {student.initials}
@@ -314,9 +360,7 @@ function PodiumCard({ student, position }) {
 
                 {student.city}
 
-                <span className="text-border">
-                    •
-                </span>
+                <span className="text-border">•</span>
 
                 {student.year}
             </div>
@@ -333,6 +377,10 @@ function PodiumCard({ student, position }) {
                     className={`mt-1 font-mono text-xl font-bold transition-transform duration-300 group-hover:scale-[1.03] ${style.scoreText}`}
                 >
                     {student.score.toFixed(2)}
+                </p>
+
+                <p className="mt-1 text-[9px] text-muted-foreground">
+                    {solved} problems solved
                 </p>
             </div>
         </div>
@@ -353,38 +401,52 @@ function Leaderboard() {
         useState(null)
 
     /* Filtering */
-    const filteredStudents = students.filter((student) => {
-        const cityMatch =
-            selectedCity === "All Cities" ||
-            student.city === selectedCity
+    const filteredStudents = students
+        .map((student) => ({
+            ...student,
 
-        const yearMatch =
-            selectedYear === "All Years" ||
-            student.year === selectedYear
+            solved:
+                student.leetcodeSolved +
+                student.codeforcesSolved +
+                student.gfgSolved,
 
-        const query =
-            searchQuery.trim().toLowerCase()
+            score: calculateLeaderboardScore(student),
+        }))
+        .filter((student) => {
+            const cityMatch =
+                selectedCity === "All Cities" ||
+                student.city === selectedCity
 
-        const searchMatch =
-            !query ||
-            student.name
-                .toLowerCase()
-                .includes(query) ||
-            student.username
-                .toLowerCase()
-                .includes(query)
+            const yearMatch =
+                selectedYear === "All Years" ||
+                student.year === selectedYear
 
-        return cityMatch && yearMatch && searchMatch
-    })
+            const query =
+                searchQuery.trim().toLowerCase()
+
+            const searchMatch =
+                !query ||
+                student.name
+                    .toLowerCase()
+                    .includes(query) ||
+                student.username
+                    .toLowerCase()
+                    .includes(query)
+
+            return cityMatch && yearMatch && searchMatch
+        })
+        .sort((a, b) => b.score - a.score)
+        .map((student, index) => ({
+            ...student,
+            displayRank: index + 1,
+        }))
 
     const topStudents = filteredStudents.slice(0, 3)
 
     return (
         <section className="px-8 pb-10 pt-7">
-
             {/* Header */}
             <div className="relative mb-7 overflow-visible rounded-2xl border border-border bg-card px-6 py-5">
-
                 {/* Accent */}
                 <div className="absolute left-0 top-0 h-full w-[2px] rounded-full bg-primary" />
 
@@ -410,7 +472,6 @@ function Leaderboard() {
 
                     {/* Filters */}
                     <div className="flex items-center gap-2">
-
                         <Dropdown
                             icon={MapPin}
                             value={selectedCity}
@@ -472,6 +533,8 @@ function Leaderboard() {
                     />
                 </div>
             </div>
+
+            {/* Podium */}
             {topStudents.length > 0 ? (
                 <div className="mb-7 grid grid-cols-1 items-end gap-5 md:grid-cols-3">
                     {/* 2nd Place */}
@@ -513,9 +576,9 @@ function Leaderboard() {
                     </p>
                 </div>
             )}
+
             {/* Table */}
             <div className="overflow-hidden rounded-2xl border border-border bg-card">
-
                 {/* Table Header */}
                 <div className="grid grid-cols-[55px_1.6fr_120px_110px_130px_120px_90px] items-center border-b border-border bg-secondary/30 px-5 py-3">
                     <span className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">
@@ -549,101 +612,96 @@ function Leaderboard() {
 
                 {/* Rows */}
                 {filteredStudents.length > 0 ? (
-                    filteredStudents.map(
-                        (student) => {
-                            const isCurrentUser =
-                                student.name ===
-                                "Aman Kumar"
+                    filteredStudents.map((student) => {
+                        const isCurrentUser =
+                            student.name === "Aman Kumar"
 
-                            return (
-                                <div
-                                    key={student.name}
-                                    className={`group grid grid-cols-[55px_1.6fr_120px_110px_130px_120px_90px] items-center border-b border-border px-5 py-3.5 transition-all duration-200 last:border-b-0 ${isCurrentUser
-                                            ? "bg-primary/[0.06] hover:bg-primary/[0.10]"
-                                            : "hover:bg-secondary/40"
-                                        }`}
-                                >
-                                    {/* Rank */}
-                                    <div>
-                                        <span
-                                            className={`font-mono text-xs font-semibold transition-transform duration-200 group-hover:translate-x-1 ${student.rank === 1
-                                                    ? "text-amber-400"
-                                                    : student.rank === 2
-                                                        ? "text-slate-300"
-                                                        : student.rank === 3
-                                                            ? "text-orange-400"
-                                                            : "text-muted-foreground"
-                                                }`}
-                                        >
-                                            {student.rank}
-                                        </span>
-                                    </div>
-
-                                    {/* Student */}
-                                    <div className="flex items-center gap-3">
-                                        <div
-                                            className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[10px] font-bold transition-all duration-200 group-hover:scale-110 ${isCurrentUser
-                                                    ? "bg-primary/15 text-primary"
-                                                    : "bg-muted text-foreground"
-                                                }`}
-                                        >
-                                            {student.initials}
-                                        </div>
-
-                                        <div className="min-w-0">
-                                            <p className="truncate text-xs font-semibold">
-                                                {student.name}
-                                            </p>
-
-                                            <button className="mt-0.5 flex items-center gap-1 text-[9px] text-muted-foreground transition-colors hover:text-primary">
-                                                {student.username}
-                                                <ExternalLink size={9} />
-                                            </button>
-                                        </div>
-                                    </div>
-
-                                    {/* City */}
-                                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                                        <MapPin size={11} />
-                                        {student.city}
-                                    </div>
-
-                                    {/* Year */}
-                                    <p className="text-xs text-muted-foreground">
-                                        {student.year}
-                                    </p>
-
-                                    {/* Score */}
-                                    <p
-                                        className={`text-right font-mono text-xs font-semibold ${student.rank === 1
+                        return (
+                            <div
+                                key={student.name}
+                                className={`group grid grid-cols-[55px_1.6fr_120px_110px_130px_120px_90px] items-center border-b border-border px-5 py-3.5 transition-all duration-200 last:border-b-0 ${isCurrentUser
+                                    ? "bg-primary/[0.06] hover:bg-primary/[0.10]"
+                                    : "hover:bg-secondary/40"
+                                    }`}
+                            >
+                                {/* Rank */}
+                                <div>
+                                    <span
+                                        className={`font-mono text-xs font-semibold transition-transform duration-200 group-hover:translate-x-1 ${student.displayRank === 1
                                                 ? "text-amber-400"
-                                                : "text-foreground"
+                                                : student.displayRank === 2
+                                                    ? "text-slate-300"
+                                                    : student.displayRank === 3
+                                                        ? "text-orange-400"
+                                                        : "text-muted-foreground"
                                             }`}
                                     >
-                                        {student.score.toFixed(
-                                            2
-                                        )}
-                                    </p>
+                                        {student.displayRank}
+                                    </span>
+                                </div>
 
-                                    {/* Streak */}
-                                    <div className="flex justify-end">
-                                        <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-secondary px-2.5 py-1 text-[9px] font-medium text-muted-foreground transition-all duration-200 group-hover:border-primary/20 group-hover:text-foreground">
-                                            <Flame
-                                                size={10}
-                                                className="transition-transform duration-200 group-hover:scale-110"
-                                            />
-                                            {student.streak}
-                                        </span>
+                                {/* Student */}
+                                <div className="flex items-center gap-3">
+                                    <div
+                                        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[10px] font-bold transition-all duration-200 group-hover:scale-110 ${isCurrentUser
+                                            ? "bg-primary/15 text-primary"
+                                            : "bg-muted text-foreground"
+                                            }`}
+                                    >
+                                        {student.initials}
                                     </div>
 
-                                    {/* Solved */}
-                                    <p className="text-right font-mono text-xs font-semibold">
-                                        {student.solved}
-                                    </p>
+                                    <div className="min-w-0">
+                                        <p className="truncate text-xs font-semibold">
+                                            {student.name}
+                                        </p>
+
+                                        <button className="mt-0.5 flex items-center gap-1 text-[9px] text-muted-foreground transition-colors hover:text-primary">
+                                            {student.username}
+                                            <ExternalLink size={9} />
+                                        </button>
+                                    </div>
                                 </div>
-                            )
-                        }
-                    )
+
+                                {/* City */}
+                                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                                    <MapPin size={11} />
+                                    {student.city}
+                                </div>
+
+                                {/* Year */}
+                                <p className="text-xs text-muted-foreground">
+                                    {student.year}
+                                </p>
+
+                                {/* Score */}
+                                <p
+                                    className={`text-right font-mono text-xs font-semibold ${student.rank === 1
+                                        ? "text-amber-400"
+                                        : "text-foreground"
+                                        }`}
+                                >
+                                    {student.score.toFixed(2)}
+                                </p>
+
+                                {/* Streak */}
+                                <div className="flex justify-end">
+                                    <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-secondary px-2.5 py-1 text-[9px] font-medium text-muted-foreground transition-all duration-200 group-hover:border-primary/20 group-hover:text-foreground">
+                                        <Flame
+                                            size={10}
+                                            className="transition-transform duration-200 group-hover:scale-110"
+                                        />
+                                        {student.streak}
+                                    </span>
+                                </div>
+
+                                {/* Solved */}
+                                <p className="text-right font-mono text-xs font-semibold">
+                                    {student.solved}
+                                </p>
+                            </div>
+                        )
+                    })
                 ) : (
                     <div className="flex min-h-[150px] items-center justify-center">
                         <p className="text-xs text-muted-foreground">
