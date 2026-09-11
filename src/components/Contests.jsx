@@ -14,6 +14,11 @@ import {
     Timer,
     CircleDot,
     CheckCircle2,
+    Search,
+    ChevronDown,
+    ArrowUp,
+    ArrowDown,
+    Award,
 } from "lucide-react"
 
 
@@ -85,6 +90,88 @@ const contests = [
         accent: "blue",
     },
 ]
+
+
+const pastContests = [
+    {
+        id: 101,
+        name: "Weekly Contest 467",
+        platform: "LeetCode",
+        date: "2026-09-06",
+        rank: 842,
+        participants: 18432,
+        ratingChange: 18,
+        rating: 1865,
+        type: "Rated",
+    },
+    {
+        id: 102,
+        name: "Codeforces Round #1047",
+        platform: "Codeforces",
+        date: "2026-09-04",
+        rank: 421,
+        participants: 16890,
+        ratingChange: 32,
+        rating: 1879,
+        type: "Rated",
+    },
+    {
+        id: 103,
+        name: "Biweekly Contest 170",
+        platform: "LeetCode",
+        date: "2026-08-30",
+        rank: 1254,
+        participants: 15421,
+        ratingChange: -8,
+        rating: 1852,
+        type: "Rated",
+    },
+    {
+        id: 104,
+        name: "Codeforces Round #1046 (Div. 2)",
+        platform: "Codeforces",
+        date: "2026-08-28",
+        rank: 734,
+        participants: 19230,
+        ratingChange: 21,
+        rating: 1847,
+        type: "Rated",
+    },
+    {
+        id: 105,
+        name: "Weekly Contest 466",
+        platform: "LeetCode",
+        date: "2026-08-23",
+        rank: 2103,
+        participants: 20142,
+        ratingChange: -15,
+        rating: 1847,
+        type: "Rated",
+    },
+    {
+        id: 106,
+        name: "Codeforces Round #1045 (Div. 3)",
+        platform: "Codeforces",
+        date: "2026-08-20",
+        rank: 512,
+        participants: 22410,
+        ratingChange: 27,
+        rating: 1826,
+        type: "Rated",
+    },
+    {
+        id: 107,
+        name: "Weekly Contest 465",
+        platform: "LeetCode",
+        date: "2026-08-16",
+        rank: 934,
+        participants: 17680,
+        ratingChange: 11,
+        rating: 1862,
+        type: "Rated",
+    },
+]
+
 
 const platformOptions = [
     {
