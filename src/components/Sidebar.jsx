@@ -17,16 +17,8 @@ function Sidebar() {
       active: true,
     },
     {
-      label: "Problems",
-      icon: Code2,
-    },
-    {
-      label: "Contests",
+      label: "Leaderboard",
       icon: Trophy,
-    },
-    {
-      label: "GitHub",
-      icon: GitBranch,
     },
     {
       label: "Analytics",
