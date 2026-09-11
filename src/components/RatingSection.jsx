@@ -26,23 +26,47 @@ const codeforcesData = [
     { month: "Apr", rating: 1540 },
     { month: "May", rating: 1610 },
     { month: "Jun", rating: 1585 },
-    { month: "Jul", rating: 1690 },
-    { month: "Aug", rating: 1780 },
+    { month: "Jul", rating: 1685 },
+    { month: "Aug", rating: 1775 },
     { month: "Sep", rating: 1847 },
 ]
 
+function RatingTooltip({ active, payload, label, color }) {
+    if (!active || !payload?.length) {
+        return null
+    }
+
+    return (
+        <div className="rounded-lg border border-border bg-[#171b27] px-3 py-2 shadow-xl">
+            <p className="text-[10px] text-muted-foreground">
+                {label}
+            </p>
+
+            <p
+                className="mt-1 font-mono text-xs font-semibold"
+                style={{ color }}
+            >
+                Rating: {payload[0].value}
+            </p>
+        </div>
+    )
+}
+
 function RatingCard({
-    title,
-    rating,
-    maxRating,
-    icon: Icon,
-    color,
+    platform,
     data,
+    currentRating,
+    maxRating,
+    color,
+    icon,
 }) {
+    const ratingIncrease =
+        currentRating - data[0].rating
+
     return (
         <div className="rounded-2xl border border-border bg-card p-5">
-            {/* Header */}
-            <div className="flex items-center justify-between">
+            {/* Card Header */}
+            <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3">
                     <div
                         className="flex h-10 w-10 items-center justify-center rounded-xl"
@@ -51,12 +75,12 @@ function RatingCard({
                             color,
                         }}
                     >
-                        <Icon size={21} strokeWidth={1.9} />
+                        {icon}
                     </div>
 
                     <div>
                         <h3 className="text-sm font-bold">
-                            {title}
+                            {platform}
                         </h3>
 
                         <p className="mt-0.5 text-[10px] text-muted-foreground">
@@ -70,7 +94,7 @@ function RatingCard({
                         className="font-mono text-xl font-bold"
                         style={{ color }}
                     >
-                        {rating}
+                        {currentRating}
                     </p>
 
                     <p className="text-[9px] text-muted-foreground">
@@ -81,61 +105,59 @@ function RatingCard({
 
             {/* Chart */}
             <div className="mt-5 h-[190px]">
-                <ResponsiveContainer width="100%" height="100%">
+                <ResponsiveContainer
+                    width="100%"
+                    height="100%"
+                >
                     <LineChart
                         data={data}
                         margin={{
-                            top: 8,
-                            right: 8,
+                            top: 10,
+                            right: 4,
                             left: -20,
                             bottom: 0,
                         }}
                     >
                         <CartesianGrid
-                            stroke="var(--border)"
                             strokeDasharray="3 3"
+                            stroke="#252833"
                             vertical={false}
                         />
 
                         <XAxis
                             dataKey="month"
-                            axisLine={false}
-                            tickLine={false}
                             tick={{
-                                fill: "var(--muted-foreground)",
+                                fill: "#6b6b7b",
                                 fontSize: 10,
                             }}
+                            axisLine={false}
+                            tickLine={false}
                         />
 
                         <YAxis
                             domain={[
-                                (dataMin) =>
-                                    Math.floor(dataMin / 100) * 100 - 100,
-                                (dataMax) =>
-                                    Math.ceil(dataMax / 100) * 100 + 100,
+                                "dataMin - 100",
+                                "dataMax + 100",
                             ]}
-                            axisLine={false}
-                            tickLine={false}
                             tick={{
-                                fill: "var(--muted-foreground)",
+                                fill: "#6b6b7b",
                                 fontSize: 9,
                             }}
+                            axisLine={false}
+                            tickLine={false}
                         />
 
                         <Tooltip
-                            contentStyle={{
-                                background: "var(--card)",
-                                border: "1px solid var(--border)",
-                                borderRadius: "8px",
-                                fontSize: "11px",
+                            cursor={{
+                                stroke: "#3a3d49",
+                                strokeDasharray: "4 4",
                             }}
-                            labelStyle={{
-                                color: "var(--muted-foreground)",
-                            }}
-                            formatter={(value) => [
-                                value,
-                                "Rating",
-                            ]}
+                            content={(props) => (
+                                <RatingTooltip
+                                    {...props}
+                                    color={color}
+                                />
+                            )}
                         />
 
                         <Line
@@ -144,14 +166,12 @@ function RatingCard({
                             stroke={color}
                             strokeWidth={2.5}
                             dot={{
-                                r: 3,
+                                r: 3.5,
                                 fill: color,
                                 strokeWidth: 0,
                             }}
                             activeDot={{
                                 r: 5,
-                                fill: color,
-                                strokeWidth: 0,
                             }}
                         />
                     </LineChart>
@@ -159,60 +179,72 @@ function RatingCard({
             </div>
 
             {/* Footer */}
-            <div className="flex items-center justify-between border-t border-border pt-3">
+            <div className="mt-3 flex items-center justify-between border-t border-border pt-4">
                 <div>
                     <p className="text-[9px] uppercase tracking-wider text-muted-foreground">
                         Max Rating
                     </p>
 
-                    <p className="mt-1 font-mono text-sm font-bold">
+                    <p className="mt-1 font-mono text-sm font-semibold">
                         {maxRating}
                     </p>
                 </div>
 
-                <div className="flex items-center gap-1.5 text-xs text-emerald-400">
+                <div className="flex items-center gap-1.5 text-xs font-medium text-emerald-400">
                     <TrendingUp size={13} />
-                    <span>+{rating - data[0].rating}</span>
+
+                    <span>
+                        +{ratingIncrease}
+                    </span>
                 </div>
             </div>
         </div>
     )
 }
 
-function RatingSection() {
+function RatingProgress() {
     return (
         <section className="px-8 pt-7">
+            {/* Section Header */}
             <div className="mb-4">
-                <h2 className="text-lg font-bold">
-                    Rating Progress
-                </h2>
+                <div className="flex items-center gap-2">
+                    <TrendingUp
+                        size={18}
+                        className="text-primary"
+                    />
+
+                    <h2 className="text-lg font-bold">
+                        Rating Progress
+                    </h2>
+                </div>
 
                 <p className="mt-1 text-xs text-muted-foreground">
                     Track your competitive programming performance over time.
                 </p>
             </div>
 
-            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+            {/* Rating Cards */}
+            <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
                 <RatingCard
-                    title="LeetCode"
-                    rating="1847"
-                    maxRating="1912"
-                    icon={TrendingUp}
-                    color="#f59e0b"
+                    platform="LeetCode"
                     data={leetcodeData}
+                    currentRating={1847}
+                    maxRating={1912}
+                    color="#f59e0b"
+                    icon={<TrendingUp size={20} />}
                 />
 
                 <RatingCard
-                    title="Codeforces"
-                    rating="1847"
-                    maxRating="1924"
-                    icon={Trophy}
-                    color="#2196f3"
+                    platform="Codeforces"
                     data={codeforcesData}
+                    currentRating={1847}
+                    maxRating={1924}
+                    color="#2196f3"
+                    icon={<Trophy size={20} />}
                 />
             </div>
         </section>
     )
 }
 
-export default RatingSection
+export default RatingProgress
