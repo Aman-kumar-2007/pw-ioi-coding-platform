@@ -1,13 +1,5 @@
 import { useMemo, useState } from "react"
 import {
-    Activity,
-    Award,
-    BarChart3,
-    Code2,
-    Flame,
-    Trophy,
-} from "lucide-react"
-import {
     Bar,
     BarChart,
     CartesianGrid,
@@ -21,6 +13,16 @@ import {
     XAxis,
     YAxis,
 } from "recharts"
+
+import {
+    Activity,
+    Award,
+    BarChart3,
+    Code2,
+    Flame,
+    Trophy,
+    ExternalLink,
+} from "lucide-react"
 
 /* =========================================================
    DATA
@@ -101,46 +103,25 @@ const ratingData = {
     ],
 }
 
-const platformData = [
-    {
-        name: "LeetCode",
-        value: 210,
-        color: "#f59e0b",
-    },
-    {
-        name: "Codeforces",
-        value: 120,
-        color: "#2196f3",
-    },
-    {
-        name: "CodeChef",
-        value: 70,
-        color: "#8b5cf6",
-    },
-    {
-        name: "Others",
-        value: 30,
-        color: "#f5d78e",
-    },
-]
-
 const difficultyData = [
+    {
+        name: "Basic",
+        value: 80,
+        color: "bg-green-400",
+    },
     {
         name: "Easy",
         value: 180,
-        percentage: 41.9,
         color: "bg-emerald-400",
     },
     {
         name: "Medium",
         value: 200,
-        percentage: 46.5,
         color: "bg-amber-400",
     },
     {
         name: "Hard",
         value: 50,
-        percentage: 11.6,
         color: "bg-red-400",
     },
 ]
@@ -177,6 +158,46 @@ const topicData = [
         color: "bg-red-400",
     },
 ]
+
+const platformData = [
+    {
+        name: "LeetCode",
+        icon: Code2,
+        color: "#f59e0b",
+        solved: 487,
+        easy: 220,
+        medium: 198,
+        hard: 69,
+    },
+    {
+        name: "Codeforces",
+        icon: Trophy,
+        color: "#2196f3",
+        solved: 312,
+        rating: 1847,
+        maxRating: 1924,
+        contests: 34,
+    },
+    {
+        name: "GitHub",
+        icon: Activity,
+        color: "#10b981",
+        contributions: 203,
+        repositories: 28,
+        activity: [8, 13, 17, 14, 21, 18, 24, 20, 27, 23, 30, 25, 32, 27, 35, 29, 38, 31, 42, 34],
+    },
+    {
+        name: "GeeksforGeeks",
+        icon: Code2,
+        color: "#22c55e",
+        solved: 347,
+        basic: 72,
+        easy: 126,
+        medium: 108,
+        hard: 41,
+    },
+]
+
 
 const PERIODS = ["Weekly", "Monthly", "Yearly"]
 
@@ -257,11 +278,10 @@ function PeriodSelector({ value, onChange }) {
                     <button
                         key={period}
                         onClick={() => onChange(period)}
-                        className={`rounded-md px-2.5 py-1.5 text-[9px] font-semibold transition-all duration-200 ${
-                            active
-                                ? "bg-primary text-primary-foreground shadow-sm"
-                                : "text-muted-foreground hover:text-foreground"
-                        }`}
+                        className={`rounded-md px-2.5 py-1.5 text-[9px] font-semibold transition-all duration-200 ${active
+                            ? "bg-primary text-primary-foreground shadow-sm"
+                            : "text-muted-foreground hover:text-foreground"
+                            }`}
                     >
                         {period}
                     </button>
@@ -572,114 +592,286 @@ function RatingChart() {
    ========================================================= */
 
 function PlatformBreakdown() {
-    const total = platformData.reduce(
-        (sum, item) => sum + item.value,
-        0
-    )
-
     return (
-        <AnalyticsCard>
-            <div className="mb-5">
+        <div className="lg:col-span-3">
+            <div className="mb-4">
                 <div className="flex items-center gap-2">
                     <div className="h-5 w-1 rounded-full bg-purple-400" />
 
                     <h2 className="text-sm font-bold">
-                        Platform Breakdown
+                        Platform Overview
                     </h2>
                 </div>
 
                 <p className="mt-1 text-[9px] text-muted-foreground">
-                    Where you solve the most
+                    Your coding activity across platforms
                 </p>
             </div>
 
-            <div className="flex items-center gap-5">
-                <div className="relative h-[155px] w-[155px] shrink-0">
-                    <ResponsiveContainer
-                        width="100%"
-                        height="100%"
-                    >
-                        <PieChart>
-                            <Pie
-                                data={platformData}
-                                dataKey="value"
-                                nameKey="name"
-                                cx="50%"
-                                cy="50%"
-                                innerRadius={47}
-                                outerRadius={69}
-                                paddingAngle={3}
-                                stroke="none"
-                            >
-                                {platformData.map(
-                                    (entry) => (
-                                        <Cell
-                                            key={entry.name}
-                                            fill={entry.color}
-                                        />
-                                    )
-                                )}
-                            </Pie>
-                        </PieChart>
-                    </ResponsiveContainer>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                {platformData.map((platform) => {
+                    const Icon = platform.icon
 
-                    <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-                        <span className="font-mono text-xl font-bold">
-                            {total}
-                        </span>
+                    return (
+                        <div
+                            key={platform.name}
+                            className="group relative min-h-[245px] overflow-hidden rounded-2xl border bg-card p-5 transition-all duration-300 hover:-translate-y-1"
+                            style={{
+                                borderColor: `${platform.color}55`,
+                            }}
+                        >
+                            {/* Glow */}
+                            <div
+                                className="pointer-events-none absolute -right-16 -top-16 h-36 w-36 rounded-full blur-3xl opacity-10 transition-opacity duration-300 group-hover:opacity-20"
+                                style={{
+                                    backgroundColor: platform.color,
+                                }}
+                            />
 
-                        <span className="text-[8px] text-muted-foreground">
-                            Problems
-                        </span>
-                    </div>
-                </div>
-
-                <div className="flex-1 space-y-3">
-                    {platformData.map(
-                        (platform) => {
-                            const percentage =
-                                (
-                                    (platform.value /
-                                        total) *
-                                    100
-                                ).toFixed(1)
-
-                            return (
-                                <div
-                                    key={
-                                        platform.name
-                                    }
-                                    className="flex items-center justify-between"
-                                >
-                                    <div className="flex items-center gap-2">
-                                        <span
-                                            className="h-2 w-2 rounded-full"
+                            <div className="relative flex h-full flex-col">
+                                {/* Header */}
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-4">
+                                        <div
+                                            className="flex h-12 w-12 items-center justify-center rounded-xl"
                                             style={{
-                                                backgroundColor:
-                                                    platform.color,
+                                                backgroundColor: `${platform.color}18`,
+                                                color: platform.color,
                                             }}
-                                        />
+                                        >
+                                            <Icon size={24} />
+                                        </div>
 
-                                        <span className="text-[10px] text-muted-foreground">
-                                            {
-                                                platform.name
-                                            }
-                                        </span>
+                                        <h3
+                                            className="text-lg font-bold"
+                                            style={{
+                                                color: platform.color,
+                                            }}
+                                        >
+                                            {platform.name}
+                                        </h3>
                                     </div>
 
-                                    <span className="font-mono text-[9px] text-muted-foreground">
-                                        {
-                                            platform.value
-                                        }{" "}
-                                        ({percentage}%)
-                                    </span>
+                                    <button
+                                        className="flex items-center gap-1.5 text-xs font-semibold transition-opacity hover:opacity-70"
+                                        style={{
+                                            color: platform.color,
+                                        }}
+                                    >
+                                        View Profile
+                                        <ExternalLink size={15} />
+                                    </button>
                                 </div>
-                            )
-                        }
-                    )}
-                </div>
+
+                                {/* LeetCode */}
+                                {platform.name === "LeetCode" && (
+                                    <div className="mt-auto grid grid-cols-[0.8fr_1.2fr] items-end gap-6">
+                                        <div>
+                                            <p className="font-mono text-5xl font-bold tracking-tight">
+                                                {platform.solved}
+                                            </p>
+
+                                            <p className="mt-2 text-sm text-muted-foreground">
+                                                Problems Solved
+                                            </p>
+                                        </div>
+
+                                        <div className="space-y-4">
+                                            <DifficultyBar
+                                                label="Easy"
+                                                value={platform.easy}
+                                                color="#10b981"
+                                            />
+
+                                            <DifficultyBar
+                                                label="Medium"
+                                                value={platform.medium}
+                                                color="#f59e0b"
+                                            />
+
+                                            <DifficultyBar
+                                                label="Hard"
+                                                value={platform.hard}
+                                                color="#fb7185"
+                                            />
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Codeforces */}
+                                {platform.name === "Codeforces" && (
+                                    <div className="mt-auto">
+                                        <div className="grid grid-cols-2 gap-6">
+                                            <div>
+                                                <p className="font-mono text-5xl font-bold tracking-tight">
+                                                    {platform.solved}
+                                                </p>
+
+                                                <p className="mt-2 text-sm text-muted-foreground">
+                                                    Problems Solved
+                                                </p>
+                                            </div>
+
+                                            <div>
+                                                <p
+                                                    className="font-mono text-5xl font-bold tracking-tight"
+                                                    style={{
+                                                        color: platform.color,
+                                                    }}
+                                                >
+                                                    {platform.rating}
+                                                </p>
+
+                                                <p className="mt-2 text-sm text-muted-foreground">
+                                                    Current Rating
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <div className="mt-6 grid grid-cols-2 border-t border-border pt-4">
+                                            <div>
+                                                <p className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">
+                                                    Max Rating
+                                                </p>
+
+                                                <p className="mt-1 font-mono text-lg font-semibold">
+                                                    {platform.maxRating}
+                                                </p>
+                                            </div>
+
+                                            <div className="border-l border-border pl-6">
+                                                <p className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">
+                                                    Contests
+                                                </p>
+
+                                                <p className="mt-1 font-mono text-lg font-semibold">
+                                                    {platform.contests}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* GitHub */}
+                                {platform.name === "GitHub" && (
+                                    <div className="mt-auto">
+                                        <div className="flex items-end justify-between gap-5">
+                                            <div>
+                                                <p className="font-mono text-5xl font-bold tracking-tight">
+                                                    {platform.contributions}
+                                                </p>
+
+                                                <p className="mt-2 text-sm text-muted-foreground">
+                                                    Contributions
+                                                </p>
+                                            </div>
+
+                                            <div className="flex h-24 flex-1 items-end justify-end gap-1">
+                                                {platform.activity.map(
+                                                    (height, index) => (
+                                                        <div
+                                                            key={index}
+                                                            className="w-2 rounded-t-md transition-all duration-300 group-hover:opacity-80"
+                                                            style={{
+                                                                height: `${height * 2}px`,
+                                                                backgroundColor:
+                                                                    platform.color,
+                                                            }}
+                                                        />
+                                                    )
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        <div className="mt-6 flex items-center justify-between border-t border-border pt-4">
+                                            <span className="text-sm text-muted-foreground">
+                                                Total Repositories
+                                            </span>
+
+                                            <span className="font-mono text-lg font-semibold">
+                                                {platform.repositories}
+                                            </span>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* GFG */}
+                                {platform.name === "GeeksforGeeks" && (
+                                    <div className="mt-auto grid grid-cols-[0.8fr_1.2fr] items-end gap-6">
+                                        <div>
+                                            <p className="font-mono text-5xl font-bold tracking-tight">
+                                                {platform.solved}
+                                            </p>
+
+                                            <p className="mt-2 text-sm text-muted-foreground">
+                                                Problems Solved
+                                            </p>
+                                        </div>
+
+                                        <div className="space-y-4">
+                                            <DifficultyBar
+                                                label="Basic"
+                                                value={platform.basic}
+                                                color="#22c55e"
+                                            />
+
+                                            <DifficultyBar
+                                                label="Easy"
+                                                value={platform.easy}
+                                                color="#34d399"
+                                            />
+
+                                            <DifficultyBar
+                                                label="Medium"
+                                                value={platform.medium}
+                                                color="#f59e0b"
+                                            />
+
+                                            <DifficultyBar
+                                                label="Hard"
+                                                value={platform.hard}
+                                                color="#fb7185"
+                                            />
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )
+                })}
             </div>
-        </AnalyticsCard>
+        </div>
+    )
+}
+
+function DifficultyBar({ label, value, color }) {
+    const percentage = Math.min((value / 250) * 100, 100)
+
+    return (
+        <div>
+            <div className="mb-1.5 flex items-center justify-between">
+                <span
+                    className="text-xs font-medium"
+                    style={{ color }}
+                >
+                    {label}
+                </span>
+
+                <span className="font-mono text-[10px] text-muted-foreground">
+                    {value}
+                </span>
+            </div>
+
+            <div className="h-2 overflow-hidden rounded-full bg-secondary">
+                <div
+                    className="h-full rounded-full transition-all duration-700"
+                    style={{
+                        width: `${percentage}%`,
+                        backgroundColor: color,
+                    }}
+                />
+            </div>
+        </div>
     )
 }
 
@@ -688,6 +880,11 @@ function PlatformBreakdown() {
    ========================================================= */
 
 function DifficultyDistribution() {
+    const total = difficultyData.reduce(
+        (sum, difficulty) => sum + difficulty.value,
+        0
+    )
+
     return (
         <AnalyticsCard>
             <div className="mb-6">
@@ -704,33 +901,25 @@ function DifficultyDistribution() {
                 </p>
             </div>
 
-            <div className="space-y-6">
-                {difficultyData.map(
-                    (difficulty) => (
-                        <div
-                            key={
-                                difficulty.name
-                            }
-                        >
+            <div className="space-y-5">
+                {difficultyData.map((difficulty) => {
+                    const percentage =
+                        (difficulty.value / total) * 100
+
+                    return (
+                        <div key={difficulty.name}>
                             <div className="mb-2 flex items-center justify-between">
                                 <span className="text-[10px] font-medium">
-                                    {
-                                        difficulty.name
-                                    }
+                                    {difficulty.name}
                                 </span>
 
                                 <div className="flex items-center gap-2">
                                     <span className="font-mono text-[10px] font-semibold">
-                                        {
-                                            difficulty.value
-                                        }
+                                        {difficulty.value}
                                     </span>
 
                                     <span className="text-[9px] text-muted-foreground">
-                                        {
-                                            difficulty.percentage
-                                        }
-                                        %
+                                        {percentage.toFixed(1)}%
                                     </span>
                                 </div>
                             </div>
@@ -739,13 +928,23 @@ function DifficultyDistribution() {
                                 <div
                                     className={`h-full rounded-full transition-all duration-700 ${difficulty.color}`}
                                     style={{
-                                        width: `${difficulty.percentage}%`,
+                                        width: `${percentage}%`,
                                     }}
                                 />
                             </div>
                         </div>
                     )
-                )}
+                })}
+            </div>
+
+            <div className="mt-6 flex items-center justify-between border-t border-border pt-4">
+                <span className="text-[9px] uppercase tracking-wider text-muted-foreground">
+                    Total Problems
+                </span>
+
+                <span className="font-mono text-sm font-bold">
+                    {total}
+                </span>
             </div>
         </AnalyticsCard>
     )
@@ -924,17 +1123,13 @@ function Analytics() {
                 />
             </div>
 
-            {/* Charts */}
+            <div className="mb-5">
+                <PlatformBreakdown />
+            </div>
+
             <div className="mb-5 grid grid-cols-1 gap-5 xl:grid-cols-2">
                 <ActivityChart />
                 <RatingChart />
-            </div>
-
-            {/* Breakdown */}
-            <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
-                <PlatformBreakdown />
-                <DifficultyDistribution />
-                <TopicProgress />
             </div>
         </section>
     )
