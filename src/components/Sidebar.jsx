@@ -7,22 +7,31 @@ import {
   Settings,
   LogOut,
   ChevronLeft,
+  UserRound,
+  Medal,
 } from "lucide-react"
 
 function Sidebar() {
   const menuItems = [
     {
-      label: "Dashboard",
-      icon: LayoutDashboard,
-      active: true,
+        label: "Dashboard",
+        icon: LayoutDashboard,
     },
     {
-      label: "Leaderboard",
-      icon: Trophy,
+        label: "Leaderboard",
+        icon: Medal,
     },
     {
-      label: "Analytics",
-      icon: BarChart3,
+        label: "Student Profile",
+        icon: UserRound,
+    },
+    {
+        label: "Contests",
+        icon: Trophy,
+    },
+    {
+        label: "Analytics",
+        icon: BarChart3,
     },
   ]
 
@@ -60,8 +69,8 @@ function Sidebar() {
             <button
               key={item.label}
               className={`group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all ${item.active
-                  ? "bg-primary/10 text-primary"
-                  : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                ? "bg-primary/10 text-primary"
+                : "text-muted-foreground hover:bg-secondary hover:text-foreground"
                 }`}
             >
               <Icon size={18} strokeWidth={1.8} />
