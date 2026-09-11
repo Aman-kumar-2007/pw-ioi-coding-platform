@@ -148,30 +148,35 @@ function PlatformCards() {
                         </div>
                     </div>
 
-                    {/* Bottom Stats */}
-                    <div className="mt-5 flex items-center border-t border-border pt-3">
-                        <div className="flex-1">
-                            <p className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">
-                                Max Rating
-                            </p>
+                   {/* Bottom Stats */}
+<div className="relative mt-5 border-t border-border pt-3">
+    <div className="grid grid-cols-2">
+        {/* Max Rating */}
+        <div>
+            <p className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">
+                Max Rating
+            </p>
 
-                            <p className="mt-1 font-mono text-sm font-bold">
-                                1924
-                            </p>
-                        </div>
+            <p className="mt-1 font-mono text-sm font-bold">
+                1924
+            </p>
+        </div>
 
-                        <div className="h-7 w-px bg-border" />
+        {/* Contests */}
+        <div className="pl-6">
+            <p className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">
+                Contests
+            </p>
 
-                        <div className="flex-1 pl-38">
-                            <p className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">
-                                Contests
-                            </p>
+            <p className="mt-1 font-mono text-sm font-bold">
+                34
+            </p>
+        </div>
+    </div>
 
-                            <p className="mt-1 font-mono text-sm font-bold">
-                                34
-                            </p>
-                        </div>
-                    </div>
+    {/* Center Divider */}
+    <div className="absolute left-1/2 top-1/2 h-7 w-px -translate-x-1/2 -translate-y-1/2 bg-border" />
+</div>
                 </div>
 
                 {/* GitHub */}
