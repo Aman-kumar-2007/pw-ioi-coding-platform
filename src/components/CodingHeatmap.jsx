@@ -5,6 +5,7 @@ const platforms = [
     "All Platforms",
     "LeetCode",
     "Codeforces",
+    "GeeksforGeeks",
     "GitHub",
 ]
 
@@ -16,19 +17,60 @@ const intensityClasses = [
     "bg-primary",
 ]
 
-function getSubmissions(monthIndex, weekIndex, dayIndex, platform) {
+function getPlatformSubmissions(
+    monthIndex,
+    weekIndex,
+    dayIndex,
+    platform
+) {
     const seed =
-        (monthIndex * 19 +
-            weekIndex * 13 +
-            dayIndex * 29 +
-            platform.length * 7) %
-        15
+        monthIndex * 19 +
+        weekIndex * 13 +
+        dayIndex * 29 +
+        platform.length * 7
 
-    if (seed < 4) return 0
-    if (seed < 7) return 1
-    if (seed < 10) return 2
-    if (seed < 13) return 4
+    const value = Math.abs(seed) % 15
+
+    if (value < 4) return 0
+    if (value < 7) return 1
+    if (value < 10) return 2
+    if (value < 13) return 4
+
     return 7
+}
+
+function getSubmissions(
+    monthIndex,
+    weekIndex,
+    dayIndex,
+    platform
+) {
+    if (platform === "All Platforms") {
+        const codingPlatforms = [
+            "LeetCode",
+            "Codeforces",
+            "GeeksforGeeks",
+        ]
+
+        return codingPlatforms.reduce(
+            (total, currentPlatform) =>
+                total +
+                getPlatformSubmissions(
+                    monthIndex,
+                    weekIndex,
+                    dayIndex,
+                    currentPlatform
+                ),
+            0
+        )
+    }
+
+    return getPlatformSubmissions(
+        monthIndex,
+        weekIndex,
+        dayIndex,
+        platform
+    )
 }
 
 function getIntensity(submissions) {
@@ -148,6 +190,12 @@ function CodingHeatmap() {
         return {
             total,
             activeDays,
+            label:
+                selectedPlatform === "All Platforms"
+                    ? "Total Solved"
+                    : selectedPlatform === "GitHub"
+                        ? "Contributions"
+                        : `${selectedPlatform} Solved`,
         }
     }, [months])
 
@@ -195,8 +243,8 @@ function CodingHeatmap() {
                         <ChevronDown
                             size={15}
                             className={`text-muted-foreground transition-transform ${isOpen
-                                    ? "rotate-180"
-                                    : ""
+                                ? "rotate-180"
+                                : ""
                                 }`}
                         />
                     </button>
@@ -216,9 +264,9 @@ function CodingHeatmap() {
                                             )
                                         }}
                                         className={`w-full rounded-md px-3 py-2 text-left text-xs transition-colors ${selectedPlatform ===
-                                                platform
-                                                ? "bg-primary/10 text-primary"
-                                                : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                                            platform
+                                            ? "bg-primary/10 text-primary"
+                                            : "text-muted-foreground hover:bg-muted hover:text-foreground"
                                             }`}
                                     >
                                         {platform}
@@ -359,7 +407,7 @@ function CodingHeatmap() {
                             </p>
 
                             <p className="mt-1 text-[10px] uppercase tracking-wider text-muted-foreground">
-                                Total Contributions
+                                {stats.label}
                             </p>
                         </div>
 
