@@ -1,0 +1,235 @@
+import {
+    Code2,
+    Trophy,
+    GitBranch,
+    ExternalLink,
+} from "lucide-react"
+
+function DifficultyRow({ type, count, dotClass }) {
+    return (
+        <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+                <span className={`h-2.5 w-2.5 rounded-full ${dotClass}`} />
+                <span className="text-sm text-foreground">
+                    {type}
+                </span>
+            </div>
+
+            <span className="font-mono text-sm font-semibold">
+                {count}
+            </span>
+        </div>
+    )
+}
+
+function ProgressRing({ percentage, className }) {
+    return (
+        <div
+            className={`relative flex h-[120px] w-[120px] items-center justify-center rounded-full ${className}`}
+        >
+            <div className="absolute inset-[9px] flex items-center justify-center rounded-full bg-card">
+                <span className="font-mono text-sm font-bold">
+                    {percentage}%
+                </span>
+            </div>
+        </div>
+    )
+}
+
+function PlatformCards() {
+    return (
+        <section className="px-8 pt-7">
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+
+                {/* LeetCode */}
+                <div className="h-[230px] rounded-2xl border border-[#f59e0b]/30 bg-card p-5">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#f59e0b]/15 text-[#f59e0b]">
+                                <Code2 size={24} strokeWidth={2} />
+                            </div>
+
+                            <h3 className="text-lg font-bold text-[#f59e0b]">
+                                LeetCode
+                            </h3>
+                        </div>
+
+                        <button className="flex items-center gap-1.5 text-sm font-semibold text-[#c084fc] transition-opacity hover:opacity-80">
+                            View Profile
+                            <ExternalLink size={15} />
+                        </button>
+                    </div>
+
+                    <div className="mt-7 flex items-center justify-between gap-6">
+                        <div>
+                            <p className="font-mono text-5xl font-bold">
+                                487
+                            </p>
+
+                            <p className="mt-2 text-sm text-muted-foreground">
+                                Problems Solved
+                            </p>
+                        </div>
+
+                        <div className="w-[140px] space-y-3">
+                            <div>
+                                <div className="mb-1.5 flex justify-between text-xs">
+                                    <span className="text-emerald-400">Easy</span>
+                                    <span className="font-mono">220</span>
+                                </div>
+                                <div className="h-1.5 rounded-full bg-muted">
+                                    <div className="h-full w-[85%] rounded-full bg-emerald-400" />
+                                </div>
+                            </div>
+
+                            <div>
+                                <div className="mb-1.5 flex justify-between text-xs">
+                                    <span className="text-amber-400">Medium</span>
+                                    <span className="font-mono">198</span>
+                                </div>
+                                <div className="h-1.5 rounded-full bg-muted">
+                                    <div className="h-full w-[76%] rounded-full bg-amber-400" />
+                                </div>
+                            </div>
+
+                            <div>
+                                <div className="mb-1.5 flex justify-between text-xs">
+                                    <span className="text-red-400">Hard</span>
+                                    <span className="font-mono">69</span>
+                                </div>
+                                <div className="h-1.5 rounded-full bg-muted">
+                                    <div className="h-full w-[35%] rounded-full bg-red-400" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Codeforces */}
+                <div className="h-[230px] rounded-2xl border border-[#2196f3]/30 bg-card p-5">
+                    {/* Header */}
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#2196f3]/15 text-[#2196f3]">
+                                <Trophy size={22} strokeWidth={2} />
+                            </div>
+
+                            <h3 className="text-lg font-bold text-[#2196f3]">
+                                Codeforces
+                            </h3>
+                        </div>
+
+                        <button className="flex items-center gap-1.5 text-sm font-semibold text-[#2196f3] transition-opacity hover:opacity-80">
+                            View Profile
+                            <ExternalLink size={15} />
+                        </button>
+                    </div>
+
+                    {/* Main Stats */}
+                    <div className="mt-6 grid grid-cols-[190px_1fr] gap-12">
+                        <div>
+                            <p className="font-mono text-3xl font-bold leading-none">
+                                312
+                            </p>
+
+                            <p className="mt-2 text-xs text-muted-foreground">
+                                Problems Solved
+                            </p>
+                        </div>
+
+                        <div>
+                            <p className="font-mono text-3xl font-bold leading-none text-[#2196f3]">
+                                1847
+                            </p>
+
+                            <p className="mt-2 text-xs text-muted-foreground">
+                                Current Rating
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* Bottom Stats */}
+                    <div className="mt-5 flex items-center border-t border-border pt-3">
+                        <div className="flex-1">
+                            <p className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">
+                                Max Rating
+                            </p>
+
+                            <p className="mt-1 font-mono text-sm font-bold">
+                                1924
+                            </p>
+                        </div>
+
+                        <div className="h-7 w-px bg-border" />
+
+                        <div className="flex-1 pl-38">
+                            <p className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">
+                                Contests
+                            </p>
+
+                            <p className="mt-1 font-mono text-sm font-bold">
+                                34
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                {/* GitHub */}
+                <div className="h-[230px] rounded-2xl border border-emerald-500/30 bg-card p-5">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-500/15 text-emerald-400">
+                                <GitBranch size={24} strokeWidth={2} />
+                            </div>
+
+                            <h3 className="text-lg font-bold text-emerald-400">
+                                GitHub
+                            </h3>
+                        </div>
+
+                        <button className="flex items-center gap-1.5 text-sm font-semibold text-emerald-400 transition-opacity hover:opacity-80">
+                            View Profile
+                            <ExternalLink size={15} />
+                        </button>
+                    </div>
+
+                    <div className="mt-7 flex items-end justify-between gap-5">
+                        <div>
+                            <p className="font-mono text-5xl font-bold">
+                                203
+                            </p>
+
+                            <p className="mt-2 text-sm text-muted-foreground">
+                                Contributions
+                            </p>
+                        </div>
+
+                        <div className="flex flex-1 flex-col items-end">
+                            <div className="flex h-[80px] items-end gap-1">
+                                {[18, 28, 42, 35, 55, 48, 62, 51, 44, 58, 68, 52, 72, 60, 78, 65, 82, 57, 70, 88].map(
+                                    (height, index) => (
+                                        <div
+                                            key={index}
+                                            className="w-[7px] rounded-t-sm bg-emerald-500/80"
+                                            style={{ height: `${height}%` }}
+                                        />
+                                    )
+                                )}
+                            </div>
+
+                            <p className="mt-4 text-sm text-muted-foreground">
+                                Total Repositories{" "}
+                                <span className="font-mono font-bold text-foreground">
+                                    28
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+    )
+}
+
+export default PlatformCards
