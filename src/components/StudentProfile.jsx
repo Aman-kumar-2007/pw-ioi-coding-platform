@@ -1344,20 +1344,17 @@ function ModalOverlay({
             className="fixed inset-0 z-[200] flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm"
             onMouseDown={onClose}
         >
-
             <div
-                className="relative max-h-[90vh] w-full overflow-y-auto rounded-2xl border border-border bg-[#0d131f] shadow-[0_30px_100px_rgba(0,0,0,0.6)]"
+                className="relative max-h-[90vh] w-full max-w-[560px] overflow-y-auto rounded-2xl border border-border bg-[#0d131f] shadow-[0_30px_100px_rgba(0,0,0,0.6)]"
                 onMouseDown={(e) =>
                     e.stopPropagation()
                 }
             >
                 {children}
             </div>
-
         </div>
     )
 }
-
 
 /* ============================================================= */
 /* MODAL HEADER                                                  */
