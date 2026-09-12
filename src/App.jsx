@@ -63,12 +63,24 @@
 // export default App
 
 import { useState } from "react"
+
 import AuthPage from "./components/AuthPage"
 import ProfileSetup from "./components/ProfileSetup"
-import Dashboard from "./components/DashboardHeader"
+import Layout from "./components/Layout"
+
+import DashboardHeader from "./components/DashboardHeader"
+import QuickStats from "./components/QuickStats"
+import PlatformCards from "./components/PlatformCards"
+import RatingProgress from "./components/RatingSection"
+import CodingHeatmap from "./components/CodingHeatmap"
+
+import Leaderboard from "./components/Leaderboard"
+import Contests from "./components/Contests"
+import Analytics from "./components/Analytics"
 
 function App() {
     const [currentPage, setCurrentPage] = useState("login")
+    const [activePage, setActivePage] = useState("Dashboard")
 
     const handleLogin = () => {
         const isFirstTimeUser = true
@@ -76,12 +88,12 @@ function App() {
         if (isFirstTimeUser) {
             setCurrentPage("setup")
         } else {
-            setCurrentPage("dashboard")
+            setCurrentPage("app")
         }
     }
 
     const handleSetupComplete = () => {
-        setCurrentPage("dashboard")
+        setCurrentPage("app")
     }
 
     if (currentPage === "login") {
@@ -96,7 +108,28 @@ function App() {
         )
     }
 
-    return <DashboardHeader />
+    return (
+        <Layout
+            activePage={activePage}
+            setActivePage={setActivePage}
+        >
+            {activePage === "Dashboard" && (
+                <>
+                    <DashboardHeader />
+                    <QuickStats />
+                    <PlatformCards />
+                    <RatingProgress />
+                    <CodingHeatmap />
+                </>
+            )}
+
+            {activePage === "Leaderboard" && <Leaderboard />}
+
+            {activePage === "Contests" && <Contests />}
+
+            {activePage === "Analytics" && <Analytics />}
+        </Layout>
+    )
 }
 
 export default App
