@@ -10,7 +10,7 @@ import {
     Users,
     Trophy,
     BarChart3,
-     Check,
+    Check,
 } from "lucide-react"
 
 function AuthPage({ onLogin }) {
@@ -377,11 +377,10 @@ function AuthPage({ onLogin }) {
                                             className="flex items-center gap-2"
                                         >
                                             <span
-                                                className={`flex h-[18px] w-[18px] items-center justify-center rounded-[4px] border transition-all ${
-                                                    rememberMe
+                                                className={`flex h-[18px] w-[18px] items-center justify-center rounded-[4px] border transition-all ${rememberMe
                                                         ? "border-violet-400 bg-violet-500 text-white"
                                                         : "border-border bg-secondary"
-                                                }`}
+                                                    }`}
                                             >
                                                 {rememberMe && (
                                                     <Check
@@ -424,6 +423,7 @@ function AuthPage({ onLogin }) {
                                     {/* Google */}
                                     <button
                                         type="button"
+                                        onClick={onLogin}
                                         className="flex h-[53px] w-full items-center justify-center gap-3 rounded-xl border border-border bg-[#101622] text-xs font-semibold text-slate-200 transition-all hover:border-slate-600 hover:bg-[#141b29]"
                                     >
                                         <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white font-bold text-[#4285F4]">

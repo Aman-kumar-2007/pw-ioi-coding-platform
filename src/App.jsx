@@ -54,10 +54,49 @@
 
 // export default App
 
+// import ProfileSetup from "./components/ProfileSetup"
+
+// function App() {
+//     return <ProfileSetup />
+// }
+
+// export default App
+
+import { useState } from "react"
+import AuthPage from "./components/AuthPage"
 import ProfileSetup from "./components/ProfileSetup"
+import Dashboard from "./components/DashboardHeader"
 
 function App() {
-    return <ProfileSetup />
+    const [currentPage, setCurrentPage] = useState("login")
+
+    const handleLogin = () => {
+        const isFirstTimeUser = true
+
+        if (isFirstTimeUser) {
+            setCurrentPage("setup")
+        } else {
+            setCurrentPage("dashboard")
+        }
+    }
+
+    const handleSetupComplete = () => {
+        setCurrentPage("dashboard")
+    }
+
+    if (currentPage === "login") {
+        return <AuthPage onLogin={handleLogin} />
+    }
+
+    if (currentPage === "setup") {
+        return (
+            <ProfileSetup
+                onComplete={handleSetupComplete}
+            />
+        )
+    }
+
+    return <DashboardHeader />
 }
 
 export default App
