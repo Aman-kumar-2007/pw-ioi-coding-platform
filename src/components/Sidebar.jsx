@@ -71,8 +71,8 @@ function Sidebar({ activePage, setActivePage }) {
               key={item.label}
               onClick={() => setActivePage(item.label)}
               className={`group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all ${isActive
-                  ? "bg-primary/10 text-primary"
-                  : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                ? "bg-primary/10 text-primary"
+                : "text-muted-foreground hover:bg-secondary hover:text-foreground"
                 }`}
             >
               <Icon size={18} strokeWidth={1.8} />
@@ -92,9 +92,20 @@ function Sidebar({ activePage, setActivePage }) {
           Account
         </p>
 
-        <button className="group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground transition-all hover:bg-secondary hover:text-foreground">
+        <button
+          onClick={() => setActivePage("Settings")}
+          className={`group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all ${activePage === "Settings"
+              ? "bg-primary/10 text-primary"
+              : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+            }`}
+        >
           <Settings size={18} strokeWidth={1.8} />
+
           <span>Settings</span>
+
+          {activePage === "Settings" && (
+            <span className="ml-auto h-1.5 w-1.5 rounded-full bg-primary" />
+          )}
         </button>
       </nav>
 
