@@ -11,22 +11,46 @@ import RatingProgress from "./components/RatingSection"
 import CodingHeatmap from "./components/CodingHeatmap"
 
 import Leaderboard from "./components/Leaderboard"
+import StudentProfile from "./components/StudentProfile"
 import Contests from "./components/Contests"
 import Analytics from "./components/Analytics"
-import StudentProfile from "./components/StudentProfile"
 import Settings from "./components/Settings"
+import Notifications from "./components/Notifications"
 
 
 function App() {
+
+    /* ===================================================== */
+    /* AUTH STATE                                            */
+    /* ===================================================== */
+
     const [currentPage, setCurrentPage] =
         useState("login")
+
+
+    /* ===================================================== */
+    /* APP NAVIGATION                                        */
+    /* ===================================================== */
 
     const [activePage, setActivePage] =
         useState("Dashboard")
 
 
+    /* ===================================================== */
+    /* LOGIN                                                 */
+    /* ===================================================== */
+
     const handleLogin = () => {
+
+        /*
+         * Temporary frontend testing.
+         *
+         * Backend aane ke baad yahin actual
+         * first-time user check hoga.
+         */
+
         const isFirstTimeUser = true
+
 
         if (isFirstTimeUser) {
             setCurrentPage("setup")
@@ -36,14 +60,18 @@ function App() {
     }
 
 
+    /* ===================================================== */
+    /* PROFILE SETUP COMPLETE                                */
+    /* ===================================================== */
+
     const handleSetupComplete = () => {
         setCurrentPage("app")
     }
 
 
-    /* ========================================= */
-    /* AUTH                                      */
-    /* ========================================= */
+    /* ===================================================== */
+    /* LOGIN PAGE                                            */
+    /* ===================================================== */
 
     if (currentPage === "login") {
         return (
@@ -54,9 +82,9 @@ function App() {
     }
 
 
-    /* ========================================= */
-    /* PROFILE SETUP                             */
-    /* ========================================= */
+    /* ===================================================== */
+    /* FIRST TIME PROFILE SETUP                              */
+    /* ===================================================== */
 
     if (currentPage === "setup") {
         return (
@@ -69,9 +97,9 @@ function App() {
     }
 
 
-    /* ========================================= */
-    /* MAIN APP                                  */
-    /* ========================================= */
+    /* ===================================================== */
+    /* MAIN APPLICATION                                      */
+    /* ===================================================== */
 
     return (
         <Layout
@@ -79,43 +107,65 @@ function App() {
             setActivePage={setActivePage}
         >
 
-            {/* DASHBOARD */}
+            {/* ================================================= */}
+            {/* DASHBOARD                                         */}
+            {/* ================================================= */}
+
             {activePage === "Dashboard" && (
                 <>
                     <DashboardHeader />
+
                     <QuickStats />
+
                     <PlatformCards />
+
                     <RatingProgress />
+
                     <CodingHeatmap />
                 </>
             )}
 
 
-            {/* LEADERBOARD */}
+            {/* ================================================= */}
+            {/* LEADERBOARD                                       */}
+            {/* ================================================= */}
+
             {activePage === "Leaderboard" && (
                 <Leaderboard />
             )}
 
 
-            {/* CONTESTS */}
-            {activePage === "Contests" && (
-                <Contests />
-            )}
+            {/* ================================================= */}
+            {/* STUDENT PROFILE                                   */}
+            {/* ================================================= */}
 
-
-            {/* ANALYTICS */}
-            {activePage === "Analytics" && (
-                <Analytics />
-            )}
-
-
-            {/* STUDENT PROFILE */}
             {activePage === "Student Profile" && (
                 <StudentProfile />
             )}
 
 
-            {/* SETTINGS */}
+            {/* ================================================= */}
+            {/* CONTESTS                                          */}
+            {/* ================================================= */}
+
+            {activePage === "Contests" && (
+                <Contests />
+            )}
+
+
+            {/* ================================================= */}
+            {/* ANALYTICS                                         */}
+            {/* ================================================= */}
+
+            {activePage === "Analytics" && (
+                <Analytics />
+            )}
+
+
+            {/* ================================================= */}
+            {/* SETTINGS                                          */}
+            {/* ================================================= */}
+
             {activePage === "Settings" && (
                 <Settings
                     onViewProfile={() =>
@@ -123,16 +173,21 @@ function App() {
                             "Student Profile"
                         )
                     }
-                    onLogout={() => {
-                        setCurrentPage(
-                            "login"
-                        )
 
-                        setActivePage(
-                            "Dashboard"
-                        )
+                    onLogout={() => {
+                        setCurrentPage("login")
+                        setActivePage("Dashboard")
                     }}
                 />
+            )}
+
+
+            {/* ================================================= */}
+            {/* NOTIFICATIONS                                     */}
+            {/* ================================================= */}
+
+            {activePage === "Notifications" && (
+                <Notifications />
             )}
 
         </Layout>
