@@ -46,10 +46,18 @@
 
 // export default App
 
-import AuthPage from "./components/AuthPage"
+// import AuthPage from "./components/AuthPage"
+
+// function App() {
+//     return <AuthPage />
+// }
+
+// export default App
+
+import ProfileSetup from "./components/ProfileSetup"
 
 function App() {
-    return <AuthPage />
+    return <ProfileSetup />
 }
 
 export default App
