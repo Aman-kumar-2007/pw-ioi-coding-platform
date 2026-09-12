@@ -77,6 +77,7 @@ import CodingHeatmap from "./components/CodingHeatmap"
 import Leaderboard from "./components/Leaderboard"
 import Contests from "./components/Contests"
 import Analytics from "./components/Analytics"
+import StudentProfile from "./components/StudentProfile"
 
 function App() {
     const [currentPage, setCurrentPage] = useState("login")
@@ -128,6 +129,8 @@ function App() {
             {activePage === "Contests" && <Contests />}
 
             {activePage === "Analytics" && <Analytics />}
+
+            {activePage === "Student Profile" && <StudentProfile />}
         </Layout>
     )
 }
