@@ -105,6 +105,10 @@ function App() {
         <Layout
             activePage={activePage}
             setActivePage={setActivePage}
+            onLogout={() => {
+                setCurrentPage("login")
+                setActivePage("Dashboard")
+            }}
         >
 
             {/* ================================================= */}

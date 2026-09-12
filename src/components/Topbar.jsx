@@ -1,568 +1,571 @@
 import { useEffect, useRef, useState } from "react"
 import {
-    Search,
-    Bell,
-    Command,
-    Menu,
-    X,
-    Trophy,
-    Zap,
-    Medal,
-    ArrowRight,
-    LayoutDashboard,
-    UserRound,
-    BarChart3,
-    Settings,
-    Check,
+  Search,
+  Bell,
+  Command,
+  Menu,
+  X,
+  Trophy,
+  Zap,
+  Medal,
+  ArrowRight,
+  LayoutDashboard,
+  UserRound,
+  BarChart3,
+  Settings,
+  Check,
 } from "lucide-react"
 
 
 const searchablePages = [
-    {
-        name: "Dashboard",
-        description: "View your coding overview",
-        icon: LayoutDashboard,
-    },
-    {
-        name: "Leaderboard",
-        description: "View student rankings",
-        icon: Medal,
-    },
-    {
-        name: "Student Profile",
-        description: "View your coding profile",
-        icon: UserRound,
-    },
-    {
-        name: "Contests",
-        description: "Upcoming and past contests",
-        icon: Trophy,
-    },
-    {
-        name: "Analytics",
-        description: "View your coding analytics",
-        icon: BarChart3,
-    },
-    {
-        name: "Settings",
-        description: "Manage your preferences",
-        icon: Settings,
-    },
+  {
+    name: "Dashboard",
+    description: "View your coding overview",
+    icon: LayoutDashboard,
+  },
+  {
+    name: "Leaderboard",
+    description: "View student rankings",
+    icon: Medal,
+  },
+  {
+    name: "Student Profile",
+    description: "View your coding profile",
+    icon: UserRound,
+  },
+  {
+    name: "Contests",
+    description: "Upcoming and past contests",
+    icon: Trophy,
+  },
+  {
+    name: "Analytics",
+    description: "View your coding analytics",
+    icon: BarChart3,
+  },
+  {
+    name: "Settings",
+    description: "Manage your preferences",
+    icon: Settings,
+  },
 ]
 
 
 function Topbar({
-    activePage = "Dashboard",
-    setActivePage,
+  activePage,
+  setActivePage,
+  sidebarCollapsed,
 }) {
-    const [searchOpen, setSearchOpen] =
-        useState(false)
+  const [searchOpen, setSearchOpen] =
+    useState(false)
 
-    const [notificationOpen, setNotificationOpen] =
-        useState(false)
+  const [notificationOpen, setNotificationOpen] =
+    useState(false)
 
-    const [searchQuery, setSearchQuery] =
-        useState("")
+  const [searchQuery, setSearchQuery] =
+    useState("")
 
-    const searchRef = useRef(null)
-
-
-    /* ========================================================= */
-    /* PAGE INFORMATION                                          */
-    /* ========================================================= */
-
-    const pageInfo = {
-        Dashboard: {
-            section: "Dashboard",
-            title: "Overview",
-        },
-
-        Leaderboard: {
-            section: "Leaderboard",
-            title: "Student Rankings",
-        },
-
-        "Student Profile": {
-            section: "Student Profile",
-            title: "Your Coding Profile",
-        },
-
-        Contests: {
-            section: "Contests",
-            title: "Upcoming & Past Contests",
-        },
-
-        Analytics: {
-            section: "Analytics",
-            title: "Coding Performance",
-        },
-
-        Settings: {
-            section: "Settings",
-            title: "Preferences",
-        },
-
-        Notifications: {
-            section: "Notifications",
-            title: "All Notifications",
-        },
-    }
+  const searchRef = useRef(null)
 
 
-    const currentPage =
-        pageInfo[activePage] ||
-        pageInfo.Dashboard
+  /* ========================================================= */
+  /* PAGE INFORMATION                                          */
+  /* ========================================================= */
+
+  const pageInfo = {
+    Dashboard: {
+      section: "Dashboard",
+      title: "Overview",
+    },
+
+    Leaderboard: {
+      section: "Leaderboard",
+      title: "Student Rankings",
+    },
+
+    "Student Profile": {
+      section: "Student Profile",
+      title: "Your Coding Profile",
+    },
+
+    Contests: {
+      section: "Contests",
+      title: "Upcoming & Past Contests",
+    },
+
+    Analytics: {
+      section: "Analytics",
+      title: "Coding Performance",
+    },
+
+    Settings: {
+      section: "Settings",
+      title: "Preferences",
+    },
+
+    Notifications: {
+      section: "Notifications",
+      title: "All Notifications",
+    },
+  }
 
 
-    /* ========================================================= */
-    /* SEARCH RESULTS                                            */
-    /* ========================================================= */
-
-    const filteredResults =
-        searchQuery.trim() === ""
-            ? searchablePages
-            : searchablePages.filter(
-                  (item) =>
-                      item.name
-                          .toLowerCase()
-                          .includes(
-                              searchQuery
-                                  .toLowerCase()
-                          ) ||
-                      item.description
-                          .toLowerCase()
-                          .includes(
-                              searchQuery
-                                  .toLowerCase()
-                          )
-              )
+  const currentPage =
+    pageInfo[activePage] ||
+    pageInfo.Dashboard
 
 
-    /* ========================================================= */
-    /* KEYBOARD SHORTCUT                                         */
-    /* ========================================================= */
+  /* ========================================================= */
+  /* SEARCH RESULTS                                            */
+  /* ========================================================= */
 
-    useEffect(() => {
-        const handleKeyDown = (event) => {
-
-            if (
-                (event.metaKey ||
-                    event.ctrlKey) &&
-                event.key.toLowerCase() === "k"
-            ) {
-                event.preventDefault()
-
-                setSearchOpen(true)
-                setNotificationOpen(false)
-            }
-
-
-            if (event.key === "Escape") {
-                setSearchOpen(false)
-                setNotificationOpen(false)
-                setSearchQuery("")
-            }
-        }
-
-
-        window.addEventListener(
-            "keydown",
-            handleKeyDown
-        )
-
-
-        return () => {
-            window.removeEventListener(
-                "keydown",
-                handleKeyDown
+  const filteredResults =
+    searchQuery.trim() === ""
+      ? searchablePages
+      : searchablePages.filter(
+        (item) =>
+          item.name
+            .toLowerCase()
+            .includes(
+              searchQuery
+                .toLowerCase()
+            ) ||
+          item.description
+            .toLowerCase()
+            .includes(
+              searchQuery
+                .toLowerCase()
             )
-        }
-    }, [])
+      )
 
 
-    /* ========================================================= */
-    /* SEARCH FOCUS                                              */
-    /* ========================================================= */
+  /* ========================================================= */
+  /* KEYBOARD SHORTCUT                                         */
+  /* ========================================================= */
 
-    useEffect(() => {
+  useEffect(() => {
+    const handleKeyDown = (event) => {
 
-        if (searchOpen) {
-            setTimeout(() => {
-                searchRef.current?.focus()
-            }, 50)
-        }
+      if (
+        (event.metaKey ||
+          event.ctrlKey) &&
+        event.key.toLowerCase() === "k"
+      ) {
+        event.preventDefault()
 
-    }, [searchOpen])
+        setSearchOpen(true)
+        setNotificationOpen(false)
+      }
 
 
-    /* ========================================================= */
-    /* NAVIGATE                                                   */
-    /* ========================================================= */
-
-    const navigateTo = (page) => {
-
-        if (setActivePage) {
-            setActivePage(page)
-        }
-
+      if (event.key === "Escape") {
         setSearchOpen(false)
         setNotificationOpen(false)
         setSearchQuery("")
+      }
     }
 
 
-    return (
-        <>
-            {/* ================================================= */}
-            {/* TOPBAR                                             */}
-            {/* ================================================= */}
-
-            <header className="fixed left-[240px] right-0 top-0 z-50 h-[72px] border-b border-border bg-background/95 backdrop-blur-xl">
-
-                <div className="flex h-full items-center justify-between px-5 sm:px-7">
-
-                    {/* LEFT */}
-                    <div className="flex min-w-0 items-center gap-3">
-
-                        <button
-                            type="button"
-                            className="hidden h-9 w-9 items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary hover:text-foreground"
-                        >
-                            <Menu size={19} />
-                        </button>
-
-
-                        <div className="min-w-0">
-
-                            <div className="flex items-center gap-2">
-
-                                <span className="text-xs font-medium text-muted-foreground">
-                                    CodeSync
-                                </span>
-
-                                <span className="text-[10px] text-muted-foreground/40">
-                                    /
-                                </span>
-
-                                <span className="truncate text-xs font-semibold text-primary">
-                                    {currentPage.section}
-                                </span>
-
-                            </div>
-
-
-                            <h2 className="mt-0.5 truncate text-base font-bold tracking-tight text-foreground">
-                                {currentPage.title}
-                            </h2>
-
-                        </div>
-
-                    </div>
-
-
-                    {/* RIGHT */}
-                    <div className="flex items-center gap-2">
-
-                        {/* SEARCH */}
-                        <button
-                            type="button"
-                            onClick={() => {
-                                setSearchOpen(true)
-                                setNotificationOpen(
-                                    false
-                                )
-                            }}
-                            className="group flex h-10 items-center gap-2 rounded-xl border border-border bg-secondary/70 px-3 text-muted-foreground transition-all hover:border-primary/30 hover:bg-primary/[0.04] hover:text-foreground sm:min-w-[190px]"
-                        >
-
-                            <Search
-                                size={16}
-                                className="group-hover:text-primary"
-                            />
-
-                            <span className="hidden flex-1 text-left text-xs sm:block">
-                                Search anything...
-                            </span>
-
-                            <span className="ml-auto hidden items-center gap-1 rounded-md border border-border bg-background px-1.5 py-1 font-mono text-[9px] sm:flex">
-                                <Command size={9} />
-                                K
-                            </span>
-
-                        </button>
-
-
-                        {/* NOTIFICATION */}
-                        <div className="relative">
-
-                            <button
-                                type="button"
-                                onClick={() => {
-                                    setNotificationOpen(
-                                        (prev) =>
-                                            !prev
-                                    )
-
-                                    setSearchOpen(false)
-                                }}
-                                className={`relative flex h-10 w-10 items-center justify-center rounded-xl border transition-all ${
-                                    notificationOpen
-                                        ? "border-primary/30 bg-primary/10 text-primary"
-                                        : "border-border bg-secondary/70 text-muted-foreground hover:border-primary/30 hover:bg-primary/[0.04] hover:text-foreground"
-                                }`}
-                            >
-
-                                <Bell
-                                    size={17}
-                                    strokeWidth={1.8}
-                                />
-
-                                <span className="absolute right-2.5 top-2 h-1.5 w-1.5 rounded-full bg-primary shadow-[0_0_8px_rgba(99,102,241,0.8)]" />
-
-                            </button>
-
-
-                            {/* NOTIFICATION DROPDOWN */}
-                            {notificationOpen && (
-
-                                <div className="absolute right-0 top-12 w-[350px] overflow-hidden rounded-2xl border border-border bg-card shadow-[0_20px_70px_rgba(0,0,0,0.35)]">
-
-                                    <div className="flex items-center justify-between border-b border-border px-4 py-3.5">
-
-                                        <div>
-                                            <p className="text-sm font-bold">
-                                                Notifications
-                                            </p>
-
-                                            <p className="mt-0.5 text-[10px] text-muted-foreground">
-                                                Your latest updates
-                                            </p>
-                                        </div>
-
-                                        <span className="rounded-full bg-primary/10 px-2 py-1 text-[9px] font-bold text-primary">
-                                            2 New
-                                        </span>
-
-                                    </div>
-
-
-                                    <div className="divide-y divide-border">
-
-                                        <NotificationItem
-                                            icon={Trophy}
-                                            iconClass="text-amber-400"
-                                            bgClass="bg-amber-400/10"
-                                            title="Contest starting soon"
-                                            description="LeetCode Weekly Contest starts in 2 hours."
-                                            time="2h"
-                                        />
-
-
-                                        <NotificationItem
-                                            icon={Medal}
-                                            iconClass="text-blue-400"
-                                            bgClass="bg-blue-400/10"
-                                            title="Leaderboard update"
-                                            description="You moved up 8 positions this week."
-                                            time="5h"
-                                        />
-
-
-                                        <NotificationItem
-                                            icon={Zap}
-                                            iconClass="text-violet-400"
-                                            bgClass="bg-violet-400/10"
-                                            title="Keep your streak alive"
-                                            description="Solve one problem today to continue."
-                                            time="Today"
-                                        />
-
-                                    </div>
-
-
-                                    {/* VIEW ALL */}
-                                    <button
-                                        type="button"
-                                        onClick={() =>
-                                            navigateTo(
-                                                "Notifications"
-                                            )
-                                        }
-                                        className="group flex w-full items-center justify-center gap-2 border-t border-border px-4 py-3.5 text-xs font-semibold text-muted-foreground transition-all hover:bg-secondary hover:text-primary"
-                                    >
-                                        View all notifications
-
-                                        <ArrowRight
-                                            size={13}
-                                            className="transition-transform group-hover:translate-x-0.5"
-                                        />
-                                    </button>
-
-                                </div>
-                            )}
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </header>
-
-
-            {/* ================================================= */}
-            {/* SEARCH MODAL                                       */}
-            {/* ================================================= */}
-
-            {searchOpen && (
-
-                <div
-                    className="fixed inset-0 z-[200] flex items-start justify-center bg-black/60 px-4 pt-[100px] backdrop-blur-sm"
-                    onMouseDown={() =>
-                        setSearchOpen(false)
-                    }
-                >
-
-                    <div
-                        className="w-full max-w-[620px] overflow-hidden rounded-2xl border border-border bg-card shadow-[0_30px_100px_rgba(0,0,0,0.55)]"
-                        onMouseDown={(e) =>
-                            e.stopPropagation()
-                        }
-                    >
-
-                        {/* Search input */}
-                        <div className="flex items-center gap-3 border-b border-border px-4 py-4">
-
-                            <Search
-                                size={19}
-                                className="shrink-0 text-primary"
-                            />
-
-                            <input
-                                ref={searchRef}
-                                value={searchQuery}
-                                onChange={(e) =>
-                                    setSearchQuery(
-                                        e.target.value
-                                    )
-                                }
-                                type="text"
-                                placeholder="Search pages..."
-                                className="w-full bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
-                            />
-
-
-                            {searchQuery && (
-                                <button
-                                    type="button"
-                                    onClick={() =>
-                                        setSearchQuery(
-                                            ""
-                                        )
-                                    }
-                                    className="flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary hover:text-foreground"
-                                >
-                                    <X size={14} />
-                                </button>
-                            )}
-
-
-                            <button
-                                type="button"
-                                onClick={() => {
-                                    setSearchOpen(
-                                        false
-                                    )
-                                    setSearchQuery("")
-                                }}
-                                className="flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary hover:text-foreground"
-                            >
-                                <X size={15} />
-                            </button>
-
-                        </div>
-
-
-                        {/* RESULTS */}
-                        <div className="max-h-[400px] overflow-y-auto p-3">
-
-                            <p className="px-2 pb-2 text-[9px] font-bold uppercase tracking-wider text-muted-foreground">
-                                {searchQuery
-                                    ? "Search Results"
-                                    : "Quick Navigation"}
-                            </p>
-
-
-                            {filteredResults.length > 0 ? (
-
-                                filteredResults.map(
-                                    (item) => (
-                                        <SearchResult
-                                            key={
-                                                item.name
-                                            }
-                                            item={item}
-                                            active={
-                                                activePage ===
-                                                item.name
-                                            }
-                                            onClick={() =>
-                                                navigateTo(
-                                                    item.name
-                                                )
-                                            }
-                                        />
-                                    )
-                                )
-
-                            ) : (
-
-                                <div className="px-4 py-10 text-center">
-
-                                    <Search
-                                        size={24}
-                                        className="mx-auto text-muted-foreground/40"
-                                    />
-
-                                    <p className="mt-3 text-sm font-semibold">
-                                        No results found
-                                    </p>
-
-                                    <p className="mt-1 text-xs text-muted-foreground">
-                                        Try searching for a page or feature.
-                                    </p>
-
-                                </div>
-
-                            )}
-
-                        </div>
-
-
-                        {/* FOOTER */}
-                        <div className="flex items-center justify-between border-t border-border bg-secondary/30 px-4 py-3">
-
-                            <span className="text-[10px] text-muted-foreground">
-                                Press{" "}
-                                <span className="font-mono text-foreground">
-                                    ESC
-                                </span>{" "}
-                                to close
-                            </span>
-
-                            <span className="text-[10px] text-muted-foreground">
-                                CodeSync Search
-                            </span>
-
-                        </div>
-
-                    </div>
-
-                </div>
-            )}
-
-        </>
+    window.addEventListener(
+      "keydown",
+      handleKeyDown
     )
+
+
+    return () => {
+      window.removeEventListener(
+        "keydown",
+        handleKeyDown
+      )
+    }
+  }, [])
+
+
+  /* ========================================================= */
+  /* SEARCH FOCUS                                              */
+  /* ========================================================= */
+
+  useEffect(() => {
+
+    if (searchOpen) {
+      setTimeout(() => {
+        searchRef.current?.focus()
+      }, 50)
+    }
+
+  }, [searchOpen])
+
+
+  /* ========================================================= */
+  /* NAVIGATE                                                   */
+  /* ========================================================= */
+
+  const navigateTo = (page) => {
+
+    if (setActivePage) {
+      setActivePage(page)
+    }
+
+    setSearchOpen(false)
+    setNotificationOpen(false)
+    setSearchQuery("")
+  }
+
+
+  return (
+    <>
+      {/* ================================================= */}
+      {/* TOPBAR                                             */}
+      {/* ================================================= */}
+
+      <header className={`fixed right-0 top-0 z-50 h-[72px] border-b border-border bg-background/95 backdrop-blur-xl ${sidebarCollapsed
+          ? "left-[76px]"
+          : "left-[240px]"
+        }`} >
+
+        <div className="flex h-full items-center justify-between px-5 sm:px-7">
+
+          {/* LEFT */}
+          <div className="flex min-w-0 items-center gap-3">
+
+            <button
+              type="button"
+              className="hidden h-9 w-9 items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary hover:text-foreground"
+            >
+              <Menu size={19} />
+            </button>
+
+
+            <div className="min-w-0">
+
+              <div className="flex items-center gap-2">
+
+                <span className="text-xs font-medium text-muted-foreground">
+                  CodeSync
+                </span>
+
+                <span className="text-[10px] text-muted-foreground/40">
+                  /
+                </span>
+
+                <span className="truncate text-xs font-semibold text-primary">
+                  {currentPage.section}
+                </span>
+
+              </div>
+
+
+              <h2 className="mt-0.5 truncate text-base font-bold tracking-tight text-foreground">
+                {currentPage.title}
+              </h2>
+
+            </div>
+
+          </div>
+
+
+          {/* RIGHT */}
+          <div className="flex items-center gap-2">
+
+            {/* SEARCH */}
+            <button
+              type="button"
+              onClick={() => {
+                setSearchOpen(true)
+                setNotificationOpen(
+                  false
+                )
+              }}
+              className="group flex h-10 items-center gap-2 rounded-xl border border-border bg-secondary/70 px-3 text-muted-foreground transition-all hover:border-primary/30 hover:bg-primary/[0.04] hover:text-foreground sm:min-w-[190px]"
+            >
+
+              <Search
+                size={16}
+                className="group-hover:text-primary"
+              />
+
+              <span className="hidden flex-1 text-left text-xs sm:block">
+                Search anything...
+              </span>
+
+              <span className="ml-auto hidden items-center gap-1 rounded-md border border-border bg-background px-1.5 py-1 font-mono text-[9px] sm:flex">
+                <Command size={9} />
+                K
+              </span>
+
+            </button>
+
+
+            {/* NOTIFICATION */}
+            <div className="relative">
+
+              <button
+                type="button"
+                onClick={() => {
+                  setNotificationOpen(
+                    (prev) =>
+                      !prev
+                  )
+
+                  setSearchOpen(false)
+                }}
+                className={`relative flex h-10 w-10 items-center justify-center rounded-xl border transition-all ${notificationOpen
+                    ? "border-primary/30 bg-primary/10 text-primary"
+                    : "border-border bg-secondary/70 text-muted-foreground hover:border-primary/30 hover:bg-primary/[0.04] hover:text-foreground"
+                  }`}
+              >
+
+                <Bell
+                  size={17}
+                  strokeWidth={1.8}
+                />
+
+                <span className="absolute right-2.5 top-2 h-1.5 w-1.5 rounded-full bg-primary shadow-[0_0_8px_rgba(99,102,241,0.8)]" />
+
+              </button>
+
+
+              {/* NOTIFICATION DROPDOWN */}
+              {notificationOpen && (
+
+                <div className="absolute right-0 top-12 w-[350px] overflow-hidden rounded-2xl border border-border bg-card shadow-[0_20px_70px_rgba(0,0,0,0.35)]">
+
+                  <div className="flex items-center justify-between border-b border-border px-4 py-3.5">
+
+                    <div>
+                      <p className="text-sm font-bold">
+                        Notifications
+                      </p>
+
+                      <p className="mt-0.5 text-[10px] text-muted-foreground">
+                        Your latest updates
+                      </p>
+                    </div>
+
+                    <span className="rounded-full bg-primary/10 px-2 py-1 text-[9px] font-bold text-primary">
+                      2 New
+                    </span>
+
+                  </div>
+
+
+                  <div className="divide-y divide-border">
+
+                    <NotificationItem
+                      icon={Trophy}
+                      iconClass="text-amber-400"
+                      bgClass="bg-amber-400/10"
+                      title="Contest starting soon"
+                      description="LeetCode Weekly Contest starts in 2 hours."
+                      time="2h"
+                    />
+
+
+                    <NotificationItem
+                      icon={Medal}
+                      iconClass="text-blue-400"
+                      bgClass="bg-blue-400/10"
+                      title="Leaderboard update"
+                      description="You moved up 8 positions this week."
+                      time="5h"
+                    />
+
+
+                    <NotificationItem
+                      icon={Zap}
+                      iconClass="text-violet-400"
+                      bgClass="bg-violet-400/10"
+                      title="Keep your streak alive"
+                      description="Solve one problem today to continue."
+                      time="Today"
+                    />
+
+                  </div>
+
+
+                  {/* VIEW ALL */}
+                  <button
+                    type="button"
+                    onClick={() =>
+                      navigateTo(
+                        "Notifications"
+                      )
+                    }
+                    className="group flex w-full items-center justify-center gap-2 border-t border-border px-4 py-3.5 text-xs font-semibold text-muted-foreground transition-all hover:bg-secondary hover:text-primary"
+                  >
+                    View all notifications
+
+                    <ArrowRight
+                      size={13}
+                      className="transition-transform group-hover:translate-x-0.5"
+                    />
+                  </button>
+
+                </div>
+              )}
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </header>
+
+
+      {/* ================================================= */}
+      {/* SEARCH MODAL                                       */}
+      {/* ================================================= */}
+
+      {searchOpen && (
+
+        <div
+          className="fixed inset-0 z-[200] flex items-start justify-center bg-black/60 px-4 pt-[100px] backdrop-blur-sm"
+          onMouseDown={() =>
+            setSearchOpen(false)
+          }
+        >
+
+          <div
+            className="w-full max-w-[620px] overflow-hidden rounded-2xl border border-border bg-card shadow-[0_30px_100px_rgba(0,0,0,0.55)]"
+            onMouseDown={(e) =>
+              e.stopPropagation()
+            }
+          >
+
+            {/* Search input */}
+            <div className="flex items-center gap-3 border-b border-border px-4 py-4">
+
+              <Search
+                size={19}
+                className="shrink-0 text-primary"
+              />
+
+              <input
+                ref={searchRef}
+                value={searchQuery}
+                onChange={(e) =>
+                  setSearchQuery(
+                    e.target.value
+                  )
+                }
+                type="text"
+                placeholder="Search pages..."
+                className="w-full bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
+              />
+
+
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    setSearchQuery(
+                      ""
+                    )
+                  }
+                  className="flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary hover:text-foreground"
+                >
+                  <X size={14} />
+                </button>
+              )}
+
+
+              <button
+                type="button"
+                onClick={() => {
+                  setSearchOpen(
+                    false
+                  )
+                  setSearchQuery("")
+                }}
+                className="flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary hover:text-foreground"
+              >
+                <X size={15} />
+              </button>
+
+            </div>
+
+
+            {/* RESULTS */}
+            <div className="max-h-[400px] overflow-y-auto p-3">
+
+              <p className="px-2 pb-2 text-[9px] font-bold uppercase tracking-wider text-muted-foreground">
+                {searchQuery
+                  ? "Search Results"
+                  : "Quick Navigation"}
+              </p>
+
+
+              {filteredResults.length > 0 ? (
+
+                filteredResults.map(
+                  (item) => (
+                    <SearchResult
+                      key={
+                        item.name
+                      }
+                      item={item}
+                      active={
+                        activePage ===
+                        item.name
+                      }
+                      onClick={() =>
+                        navigateTo(
+                          item.name
+                        )
+                      }
+                    />
+                  )
+                )
+
+              ) : (
+
+                <div className="px-4 py-10 text-center">
+
+                  <Search
+                    size={24}
+                    className="mx-auto text-muted-foreground/40"
+                  />
+
+                  <p className="mt-3 text-sm font-semibold">
+                    No results found
+                  </p>
+
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Try searching for a page or feature.
+                  </p>
+
+                </div>
+
+              )}
+
+            </div>
+
+
+            {/* FOOTER */}
+            <div className="flex items-center justify-between border-t border-border bg-secondary/30 px-4 py-3">
+
+              <span className="text-[10px] text-muted-foreground">
+                Press{" "}
+                <span className="font-mono text-foreground">
+                  ESC
+                </span>{" "}
+                to close
+              </span>
+
+              <span className="text-[10px] text-muted-foreground">
+                CodeSync Search
+              </span>
+
+            </div>
+
+          </div>
+
+        </div>
+      )}
+
+    </>
+  )
 }
 
 
@@ -571,55 +574,54 @@ function Topbar({
 /* ============================================================= */
 
 function SearchResult({
-    item,
-    active,
-    onClick,
+  item,
+  active,
+  onClick,
 }) {
-    const Icon = item.icon
+  const Icon = item.icon
 
-    return (
-        <button
-            type="button"
-            onClick={onClick}
-            className={`group flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left transition-all ${
-                active
-                    ? "bg-primary/10"
-                    : "hover:bg-secondary"
-            }`}
-        >
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`group flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left transition-all ${active
+          ? "bg-primary/10"
+          : "hover:bg-secondary"
+        }`}
+    >
 
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                <Icon size={16} />
-            </div>
-
-
-            <div className="min-w-0 flex-1">
-
-                <p className="text-xs font-semibold">
-                    {item.name}
-                </p>
-
-                <p className="mt-0.5 text-[10px] text-muted-foreground">
-                    {item.description}
-                </p>
-
-            </div>
+      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+        <Icon size={16} />
+      </div>
 
 
-            {active ? (
-                <Check
-                    size={14}
-                    className="text-primary"
-                />
-            ) : (
-                <ArrowRight
-                    size={14}
-                    className="text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-primary"
-                />
-            )}
+      <div className="min-w-0 flex-1">
 
-        </button>
-    )
+        <p className="text-xs font-semibold">
+          {item.name}
+        </p>
+
+        <p className="mt-0.5 text-[10px] text-muted-foreground">
+          {item.description}
+        </p>
+
+      </div>
+
+
+      {active ? (
+        <Check
+          size={14}
+          className="text-primary"
+        />
+      ) : (
+        <ArrowRight
+          size={14}
+          className="text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-primary"
+        />
+      )}
+
+    </button>
+  )
 }
 
 
@@ -628,52 +630,52 @@ function SearchResult({
 /* ============================================================= */
 
 function NotificationItem({
-    icon: Icon,
-    iconClass,
-    bgClass,
-    title,
-    description,
-    time,
+  icon: Icon,
+  iconClass,
+  bgClass,
+  title,
+  description,
+  time,
 }) {
-    return (
-        <button
-            type="button"
-            className="flex w-full gap-3 px-4 py-3.5 text-left transition-colors hover:bg-secondary/40"
-        >
+  return (
+    <button
+      type="button"
+      className="flex w-full gap-3 px-4 py-3.5 text-left transition-colors hover:bg-secondary/40"
+    >
 
-            <div
-                className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${bgClass}`}
-            >
-                <Icon
-                    size={16}
-                    className={iconClass}
-                />
-            </div>
-
-
-            <div className="min-w-0 flex-1">
-
-                <div className="flex items-start justify-between gap-2">
-
-                    <p className="text-xs font-semibold">
-                        {title}
-                    </p>
-
-                    <span className="shrink-0 text-[9px] text-muted-foreground">
-                        {time}
-                    </span>
-
-                </div>
+      <div
+        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${bgClass}`}
+      >
+        <Icon
+          size={16}
+          className={iconClass}
+        />
+      </div>
 
 
-                <p className="mt-1 text-[10px] leading-4 text-muted-foreground">
-                    {description}
-                </p>
+      <div className="min-w-0 flex-1">
 
-            </div>
+        <div className="flex items-start justify-between gap-2">
 
-        </button>
-    )
+          <p className="text-xs font-semibold">
+            {title}
+          </p>
+
+          <span className="shrink-0 text-[9px] text-muted-foreground">
+            {time}
+          </span>
+
+        </div>
+
+
+        <p className="mt-1 text-[10px] leading-4 text-muted-foreground">
+          {description}
+        </p>
+
+      </div>
+
+    </button>
+  )
 }
 
 
