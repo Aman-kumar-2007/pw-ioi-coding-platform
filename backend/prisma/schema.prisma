@@ -1,0 +1,475 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  STUDENT
+  ADMIN
+}
+
+enum DataSource {
+  PW_IMPORT
+  PW_API
+}
+
+enum AuthProvider {
+  GOOGLE
+  PASSWORD
+}
+
+enum CodingPlatform {
+  LEETCODE
+  CODEFORCES
+  GFG
+  GITHUB
+}
+
+enum VerificationStatus {
+  PENDING
+  VERIFIED
+  FAILED
+}
+
+enum SocialPlatform {
+  LINKEDIN
+  TWITTER
+  INSTAGRAM
+  YOUTUBE
+}
+
+enum Difficulty {
+  BASIC
+  EASY
+  MEDIUM
+  HARD
+}
+
+enum ContestPlatform {
+  LEETCODE
+  CODEFORCES
+}
+
+enum NotificationType {
+  CONTEST
+  LEADERBOARD
+  STREAK
+  SYSTEM
+}
+
+enum Theme {
+  DARK
+  LIGHT
+}
+
+enum AdminAction {
+  IMPORT_STUDENTS
+  UPDATE_STUDENT
+  DEACTIVATE_STUDENT
+  ACTIVATE_STUDENT
+  OTHER
+}
+
+enum ImportStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+enum ImportItemStatus {
+  SUCCESS
+  FAILED
+}
+
+model User {
+  id                    String   @id @default(uuid())
+  email                 String   @unique
+  username              String?  @unique
+  role                  UserRole
+  isActive              Boolean  @default(true)
+  profileSetupCompleted Boolean  @default(false)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  studentProfile       StudentProfile?
+  academicHistory      AcademicHistory[]
+  authAccounts         AuthAccount[]
+  sessions             Session[]
+  passwordResetTokens  PasswordResetToken[]
+  platformAccounts     PlatformAccount[]
+  socialAccounts       SocialAccount[]
+  dailyActivities      DailyActivity[]
+  problemActivities    ProblemActivity[]
+  contestParticipations ContestParticipation[]
+  ratingHistory        RatingHistory[]
+  analytics            StudentAnalytics?
+  notificationRecipients NotificationRecipient[]
+  preference           UserPreference?
+  adminAuditLogs       AdminAuditLog[] @relation("AdminAuditLogs")
+  targetAuditLogs      AdminAuditLog[] @relation("TargetUserAuditLogs")
+  importItems           ImportBatchItem[]
+}
+
+model StudentProfile {
+  id                String     @id @default(uuid())
+  userId            String     @unique
+  fullName          String
+  profileImage      String?
+  externalStudentId String?    @unique
+  rollNumber        String?
+  year              Int
+  city              String
+  branch            String
+  batch             String
+  dataSource        DataSource
+  lastImportedAt    DateTime?
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model AcademicHistory {
+  id        String    @id @default(uuid())
+  userId    String
+  year      Int
+  batch     String
+  branch    String
+  city      String
+  startDate DateTime
+  endDate   DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model AuthAccount {
+  id                String       @id @default(uuid())
+  userId            String
+  provider          AuthProvider
+  providerAccountId String?
+  passwordHash      String?
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id         String    @id @default(uuid())
+  userId     String
+  tokenHash  String
+  expiresAt  DateTime
+  createdAt  DateTime  @default(now())
+  lastUsedAt DateTime?
+  revokedAt  DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model PasswordResetToken {
+  id        String    @id @default(uuid())
+  userId    String
+  tokenHash String
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model PlatformAccount {
+  id                     String             @id @default(uuid())
+  userId                 String
+  platform               CodingPlatform
+  username               String
+  profileUrl             String?
+  verificationStatus     VerificationStatus
+  verificationCodeHash   String?
+  verificationExpiresAt  DateTime?
+  verifiedAt             DateTime?
+  lastSyncedAt           DateTime?
+  createdAt              DateTime           @default(now())
+  updatedAt              DateTime           @updatedAt
+
+  user         User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  stats        PlatformStats?
+  repositories GitHubRepository[]
+
+  @@unique([userId, platform])
+}
+
+model PlatformStats {
+  id               String   @id @default(uuid())
+  platformAccountId String   @unique
+  problemsSolved   Int
+  basicSolved      Int
+  easySolved       Int
+  mediumSolved     Int
+  hardSolved       Int
+  currentRating    Int?
+  maxRating        Int?
+  contestCount     Int
+  contributions    Int
+  repositoryCount  Int
+  recordedAt       DateTime
+  updatedAt        DateTime @updatedAt
+
+  platformAccount PlatformAccount @relation(fields: [platformAccountId], references: [id], onDelete: Cascade)
+}
+
+model GitHubRepository {
+  id               String   @id @default(uuid())
+  platformAccountId String
+  externalRepoId   String
+  name             String
+  fullName         String
+  description      String?
+  url              String
+  language         String?
+  stars            Int
+  forks            Int
+  isPrivate        Boolean
+  isFork           Boolean
+  pushedAt         DateTime?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  platformAccount PlatformAccount @relation(fields: [platformAccountId], references: [id], onDelete: Cascade)
+
+  @@unique([platformAccountId, externalRepoId])
+}
+
+model SocialAccount {
+  id         String         @id @default(uuid())
+  userId     String
+  platform   SocialPlatform
+  username   String
+  profileUrl String
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, platform])
+}
+
+model DailyActivity {
+  id                 String         @id @default(uuid())
+  userId             String
+  platform           CodingPlatform
+  activityDate       DateTime
+  problemCount       Int
+  submissionCount    Int
+  contestCount       Int
+  contributionCount  Int
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, platform, activityDate])
+}
+
+model Problem {
+  id                String       @id @default(uuid())
+  platform          CodingPlatform
+  externalProblemId String
+  title             String
+  difficulty        Difficulty
+  url               String
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  activities ProblemActivity[]
+  topics     ProblemTopic[]
+
+  @@unique([platform, externalProblemId])
+}
+
+model ProblemActivity {
+  id        String   @id @default(uuid())
+  userId    String
+  problemId String
+  solvedAt  DateTime
+  createdAt DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  problem Problem @relation(fields: [problemId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, problemId])
+}
+
+model Topic {
+  id   String @id @default(uuid())
+  name String @unique
+
+  problems ProblemTopic[]
+}
+
+model ProblemTopic {
+  id        String @id @default(uuid())
+  problemId String
+  topicId   String
+
+  problem Problem @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  topic   Topic   @relation(fields: [topicId], references: [id], onDelete: Cascade)
+
+  @@unique([problemId, topicId])
+}
+
+model Contest {
+  id                  String          @id @default(uuid())
+  platform            ContestPlatform
+  externalContestId   String
+  name                String
+  startTime           DateTime
+  duration            Int
+  contestType         String
+  isRated             Boolean
+  participantCount    Int?
+  url                 String
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+
+  participations ContestParticipation[]
+  ratingHistory  RatingHistory[]
+
+  @@unique([platform, externalContestId])
+}
+
+model ContestParticipation {
+  id              String   @id @default(uuid())
+  userId          String
+  contestId       String
+  rank            Int?
+  ratingChange    Int?
+  ratingAfter     Int?
+  problemsSolved  Int
+  participatedAt  DateTime
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  contest Contest @relation(fields: [contestId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, contestId])
+}
+
+model RatingHistory {
+  id           String          @id @default(uuid())
+  userId       String
+  platform     ContestPlatform
+  contestId    String?
+  ratingBefore Int
+  ratingAfter  Int
+  ratingChange Int
+  recordedAt   DateTime
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  contest Contest? @relation(fields: [contestId], references: [id], onDelete: SetNull)
+}
+
+model StudentAnalytics {
+  id                  String    @id @default(uuid())
+  userId              String    @unique
+  currentStreak       Int
+  maxStreak           Int
+  activeDays          Int
+  problemsSolved      Int
+  contestsParticipated Int
+  lastActiveAt        DateTime?
+  calculatedAt        DateTime
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Notification {
+  id        String           @id @default(uuid())
+  type      NotificationType
+  title     String
+  message   String
+  createdAt DateTime         @default(now())
+
+  recipients NotificationRecipient[]
+}
+
+model NotificationRecipient {
+  id             String   @id @default(uuid())
+  notificationId String
+  userId         String
+  isRead         Boolean
+  readAt         DateTime?
+  createdAt      DateTime @default(now())
+
+  notification Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([notificationId, userId])
+}
+
+model UserPreference {
+  id                       String   @id @default(uuid())
+  userId                   String   @unique
+  theme                    Theme
+  emailNotifications       Boolean
+  contestNotifications     Boolean
+  streakNotifications      Boolean
+  leaderboardNotifications Boolean
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model AdminAuditLog {
+  id           String      @id @default(uuid())
+  adminId      String
+  action       AdminAction
+  targetUserId String?
+  metadata     Json?
+  createdAt    DateTime    @default(now())
+
+  admin      User  @relation("AdminAuditLogs", fields: [adminId], references: [id])
+  targetUser User? @relation("TargetUserAuditLogs", fields: [targetUserId], references: [id])
+}
+
+model ImportBatch {
+  id                String       @id @default(uuid())
+  adminId           String
+  fileName          String
+  source            DataSource
+  totalRecords      Int
+  successfulRecords Int
+  failedRecords     Int
+  status            ImportStatus
+  importedAt        DateTime?
+  createdAt         DateTime     @default(now())
+
+  items ImportBatchItem[]
+}
+
+model ImportBatchItem {
+  id              String           @id @default(uuid())
+  importBatchId   String
+  rowNumber       Int
+  externalStudentId String?
+  email           String
+  userId          String?
+  status          ImportItemStatus
+  errorMessage    String?
+  createdAt       DateTime         @default(now())
+
+  importBatch ImportBatch @relation(fields: [importBatchId], references: [id], onDelete: Cascade)
+  user        User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+}
