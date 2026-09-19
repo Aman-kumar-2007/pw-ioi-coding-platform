@@ -51,22 +51,31 @@ function App() {
     /* LOGIN                                                 */
     /* ===================================================== */
 
-    const handleLogin = () => {
+    const handleLogin = async () => {
+        const {
+            data: { user },
+        } = await supabase.auth.getUser()
 
-        /*
-         * Temporary frontend testing.
-         *
-         * Backend aane ke baad yahin actual
-         * first-time user check hoga.
-         */
+        if (!user) {
+            setCurrentPage("login")
+            return
+        }
 
-        const isFirstTimeUser = true
+        const { data, error } = await supabase
+            .from("users")
+            .select("profile_setup_completed")
+            .eq("id", user.id)
+            .single()
 
+        if (error) {
+            console.error("Profile status error:", error)
+            return
+        }
 
-        if (isFirstTimeUser) {
-            setCurrentPage("setup")
-        } else {
+        if (data.profile_setup_completed) {
             setCurrentPage("app")
+        } else {
+            setCurrentPage("setup")
         }
     }
 
