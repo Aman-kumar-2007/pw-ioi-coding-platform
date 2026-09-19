@@ -1,4 +1,5 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
+import { supabase } from "./lib/supabase"
 
 import AuthPage from "./components/AuthPage"
 import ProfileSetup from "./components/ProfileSetup"
@@ -35,7 +36,17 @@ function App() {
     const [activePage, setActivePage] =
         useState("Dashboard")
 
+    useEffect(() => {
+        const checkSession = async () => {
+            const {
+                data: { session },
+            } = await supabase.auth.getSession()
 
+            console.log("Current session:", session)
+        }
+
+        checkSession()
+    }, [])
     /* ===================================================== */
     /* LOGIN                                                 */
     /* ===================================================== */
