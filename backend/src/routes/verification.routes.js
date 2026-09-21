@@ -2,6 +2,10 @@ const express = require("express")
 const supabase = require("../config/supabase")
 const requireAuth = require("../middleware/auth.middleware")
 const {
+    getCodeforcesStats,
+} = require("../services/platforms/codeforces.service")
+
+const {
     generateVerificationCode,
     hashVerificationCode,
     getCodeforcesUser,
@@ -846,6 +850,30 @@ router.get("/github/callback", async (req, res) => {
         return res.status(500).json({
             error:
                 "Something went wrong during GitHub authorization.",
+        })
+    }
+})
+
+
+router.get("/codeforces/stats/:username", async (req, res) => {
+    try {
+        const { username } = req.params
+
+        const stats = await getCodeforcesStats(username)
+
+        return res.json({
+            success: true,
+            data: stats,
+        })
+    } catch (error) {
+        console.error(
+            "Codeforces stats error:",
+            error
+        )
+
+        return res.status(500).json({
+            success: false,
+            error: error.message,
         })
     }
 })
