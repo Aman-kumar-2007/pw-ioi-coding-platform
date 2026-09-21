@@ -707,7 +707,7 @@ router.post("/gfg/verify", requireAuth, async (req, res) => {
 // START GITHUB OAUTH
 // ==========================================
 
-router.post("/github/start", requireAuth, async (req, res) => {
+router.get("/github/start", requireAuth, (req, res) => {
     try {
         const userId = req.userId
 
@@ -729,12 +729,11 @@ router.post("/github/start", requireAuth, async (req, res) => {
 
         global.githubOAuthStates.set(state, {
             userId,
-            expiresAt: Date.now() + 10 * 60 * 1000,
+            expiresAt:
+                Date.now() + 10 * 60 * 1000,
         })
 
-        return res.json({
-            authorizationUrl,
-        })
+        return res.redirect(authorizationUrl)
     } catch (error) {
         console.error(
             "GitHub OAuth start error:",
@@ -746,7 +745,6 @@ router.post("/github/start", requireAuth, async (req, res) => {
         })
     }
 })
-
 
 
 // ==========================================
