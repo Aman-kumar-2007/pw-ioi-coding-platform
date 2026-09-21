@@ -23,6 +23,14 @@ const {
     containsVerificationCode: containsGfgVerificationCode,
 } = require("../services/verification/gfg")
 
+const crypto = require("crypto")
+
+const {
+    getGitHubAuthorizationUrl,
+    exchangeCodeForToken,
+    getGitHubUser,
+} = require("../services/verification/github")
+
 const router = express.Router()
 
 
@@ -688,6 +696,154 @@ router.post("/gfg/verify", async (req, res) => {
 
         return res.status(500).json({
             error: "Something went wrong.",
+        })
+    }
+})
+
+
+// ==========================================
+// START GITHUB OAUTH
+// ==========================================
+
+router.get("/github/start", (req, res) => {
+    try {
+        const { userId } = req.query
+
+        if (!userId) {
+            return res.status(400).json({
+                error: "User ID is required.",
+            })
+        }
+
+        const state = crypto.randomBytes(32).toString("hex")
+
+        const authorizationUrl =
+            getGitHubAuthorizationUrl(state)
+
+        // Temporary local testing storage.
+        // We will move this to a proper session/state store later.
+        global.githubOAuthStates =
+            global.githubOAuthStates || new Map()
+
+        global.githubOAuthStates.set(state, {
+            userId,
+            expiresAt:
+                Date.now() + 10 * 60 * 1000,
+        })
+
+        return res.redirect(authorizationUrl)
+    } catch (error) {
+        console.error(
+            "GitHub OAuth start error:",
+            error
+        )
+
+        return res.status(500).json({
+            error: "Unable to start GitHub OAuth.",
+        })
+    }
+})
+
+
+// ==========================================
+// GITHUB OAUTH CALLBACK
+// ==========================================
+
+router.get("/github/callback", async (req, res) => {
+    try {
+        const { code, state, error } = req.query
+
+        if (error) {
+            return res.status(400).json({
+                error:
+                    "GitHub authorization was cancelled.",
+            })
+        }
+
+        if (!code || !state) {
+            return res.status(400).json({
+                error:
+                    "Missing GitHub authorization data.",
+            })
+        }
+
+        const states =
+            global.githubOAuthStates || new Map()
+
+        const stateData = states.get(state)
+
+        if (!stateData) {
+            return res.status(400).json({
+                error: "Invalid or expired OAuth state.",
+            })
+        }
+
+        states.delete(state)
+
+        if (stateData.expiresAt < Date.now()) {
+            return res.status(400).json({
+                error: "OAuth state has expired.",
+            })
+        }
+
+        const tokenData =
+            await exchangeCodeForToken(code)
+
+        const githubUser =
+            await getGitHubUser(
+                tokenData.access_token
+            )
+
+        const { error: saveError } =
+            await supabase
+                .from("platform_accounts")
+                .upsert(
+                    {
+                        user_id: stateData.userId,
+                        platform: "GITHUB",
+                        username: githubUser.login,
+                        profile_url:
+                            githubUser.html_url,
+                        verification_status:
+                            "VERIFIED",
+                        verified_at:
+                            new Date().toISOString(),
+                    },
+                    {
+                        onConflict:
+                            "user_id,platform",
+                    }
+                )
+
+        if (saveError) {
+            console.error(
+                "GitHub account save error:",
+                saveError
+            )
+
+            return res.status(500).json({
+                error:
+                    "GitHub was verified but could not be saved.",
+            })
+        }
+
+        return res.send(`
+            <html>
+                <body style="font-family: sans-serif; padding: 40px;">
+                    <h2>GitHub connected successfully.</h2>
+                    <p>You can close this window and return to CodeSync.</p>
+                </body>
+            </html>
+        `)
+    } catch (error) {
+        console.error(
+            "GitHub OAuth callback error:",
+            error
+        )
+
+        return res.status(500).json({
+            error:
+                "Something went wrong during GitHub authorization.",
         })
     }
 })
