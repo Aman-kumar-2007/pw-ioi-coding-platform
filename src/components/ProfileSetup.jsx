@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import {
     Code2,
     User,
@@ -17,9 +17,21 @@ import {
 } from "lucide-react"
 import { supabase } from "../lib/supabase"
 
+const API_BASE_URL =
+    import.meta.env.VITE_API_URL || "http://localhost:5001"
+
+const platformMap = {
+    leetcode: "leetcode",
+    codeforces: "codeforces",
+    gfg: "gfg",
+}
+
 function ProfileSetup({ onComplete }) {
     const [showPassword, setShowPassword] = useState(false)
-    const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+    const [showConfirmPassword, setShowConfirmPassword] =
+        useState(false)
+
+    const githubPollRef = useRef(null)
 
     const [formData, setFormData] = useState({
         username: "",
@@ -50,6 +62,14 @@ function ProfileSetup({ onComplete }) {
         },
     })
 
+    useEffect(() => {
+        return () => {
+            if (githubPollRef.current) {
+                clearInterval(githubPollRef.current)
+            }
+        }
+    }, [])
+
     const handleChange = (e) => {
         const { name, value } = e.target
 
@@ -59,41 +79,173 @@ function ProfileSetup({ onComplete }) {
         }))
     }
 
-    const generateCode = () => {
-        return `CS-${Math.random()
-            .toString(36)
-            .substring(2, 8)
-            .toUpperCase()}`
+    const getCurrentUser = async () => {
+        const {
+            data: { user },
+            error,
+        } = await supabase.auth.getUser()
+
+        if (error || !user) {
+            alert("Your session has expired. Please login again.")
+            return null
+        }
+
+        return user
     }
 
-    const handleVerifyClick = (platform) => {
-        const username =
-            formData[platform]
+    const handleVerifyClick = async (platform) => {
+        const username = formData[platform]?.trim()
 
-        if (!username) return
+        if (!username) {
+            return
+        }
 
-        const code = generateCode()
+        const user = await getCurrentUser()
 
-        setVerification((prev) => ({
-            ...prev,
-            [platform]: {
-                status: "pending",
-                code,
-            },
-        }))
+        if (!user) {
+            return
+        }
+
+        try {
+            setVerification((prev) => ({
+                ...prev,
+                [platform]: {
+                    ...prev[platform],
+                    status: "loading",
+                    code: "",
+                },
+            }))
+
+            const response = await fetch(
+                `${API_BASE_URL}/api/verification/${platformMap[platform]}/start`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        userId: user.id,
+                        username,
+                    }),
+                }
+            )
+
+            const data = await response.json()
+
+            if (!response.ok) {
+                throw new Error(
+                    data.error ||
+                        "Unable to start verification."
+                )
+            }
+
+            if (!data.verificationCode) {
+                throw new Error(
+                    "Verification code was not generated."
+                )
+            }
+
+            setVerification((prev) => ({
+                ...prev,
+                [platform]: {
+                    status: "pending",
+                    code: data.verificationCode,
+                },
+            }))
+        } catch (error) {
+            console.error(
+                `${platform} verification start error:`,
+                error
+            )
+
+            setVerification((prev) => ({
+                ...prev,
+                [platform]: {
+                    status: "idle",
+                    code: "",
+                },
+            }))
+
+            alert(error.message)
+        }
     }
 
-    const handleMockVerified = (platform) => {
-        setVerification((prev) => ({
-            ...prev,
-            [platform]: {
-                ...prev[platform],
-                status: "verified",
-            },
-        }))
+    const handleVerifyAccount = async (platform) => {
+        const user = await getCurrentUser()
+
+        if (!user) {
+            return
+        }
+
+        try {
+            setVerification((prev) => ({
+                ...prev,
+                [platform]: {
+                    ...prev[platform],
+                    status: "loading",
+                },
+            }))
+
+            const response = await fetch(
+                `${API_BASE_URL}/api/verification/${platformMap[platform]}/verify`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        userId: user.id,
+                    }),
+                }
+            )
+
+            const data = await response.json()
+
+            if (!response.ok || data.success !== true) {
+                throw new Error(
+                    data.error ||
+                        data.message ||
+                        "Verification failed."
+                )
+            }
+
+            if (data.status !== "VERIFIED") {
+                throw new Error(
+                    "Account could not be verified."
+                )
+            }
+
+            setVerification((prev) => ({
+                ...prev,
+                [platform]: {
+                    status: "verified",
+                    code: "",
+                },
+            }))
+        } catch (error) {
+            console.error(
+                `${platform} verification error:`,
+                error
+            )
+
+            setVerification((prev) => ({
+                ...prev,
+                [platform]: {
+                    ...prev[platform],
+                    status: "pending",
+                },
+            }))
+
+            alert(error.message)
+        }
     }
 
     const handleDisconnect = (platform) => {
+        if (platform === "github" && githubPollRef.current) {
+            clearInterval(githubPollRef.current)
+            githubPollRef.current = null
+        }
+
         setVerification((prev) => ({
             ...prev,
             [platform]: {
@@ -101,19 +253,134 @@ function ProfileSetup({ onComplete }) {
                 code: "",
             },
         }))
+
+        if (platform !== "github") {
+            setFormData((prev) => ({
+                ...prev,
+                [platform]: "",
+            }))
+        }
     }
 
-    const handleGithubConnect = () => {
-        /*
-         * Real GitHub OAuth will be connected here later.
-         */
+    const checkGithubVerification = async (userId) => {
+        const {
+            data,
+            error,
+        } = await supabase
+            .from("platform_accounts")
+            .select("username, verification_status")
+            .eq("user_id", userId)
+            .eq("platform", "GITHUB")
+            .maybeSingle()
+
+        if (error) {
+            console.error(
+                "GitHub verification check error:",
+                error
+            )
+            return false
+        }
+
+        if (
+            data?.verification_status === "VERIFIED"
+        ) {
+            setFormData((prev) => ({
+                ...prev,
+                github: data.username || "",
+            }))
+
+            setVerification((prev) => ({
+                ...prev,
+                github: {
+                    status: "verified",
+                    code: "",
+                },
+            }))
+
+            return true
+        }
+
+        return false
+    }
+
+    const handleGithubConnect = async () => {
+        const user = await getCurrentUser()
+
+        if (!user) {
+            return
+        }
+
+        if (githubPollRef.current) {
+            clearInterval(githubPollRef.current)
+            githubPollRef.current = null
+        }
+
         setVerification((prev) => ({
             ...prev,
             github: {
-                status: "pending",
+                status: "loading",
                 code: "",
             },
         }))
+
+        const oauthUrl =
+            `${API_BASE_URL}/api/verification/github/start?userId=${encodeURIComponent(
+                user.id
+            )}`
+
+        const popup = window.open(
+            oauthUrl,
+            "github-oauth",
+            "width=600,height=750"
+        )
+
+        if (!popup) {
+            setVerification((prev) => ({
+                ...prev,
+                github: {
+                    status: "idle",
+                    code: "",
+                },
+            }))
+
+            alert(
+                "GitHub popup was blocked. Please allow popups for CodeSync."
+            )
+
+            return
+        }
+
+        githubPollRef.current = setInterval(
+            async () => {
+                const verified =
+                    await checkGithubVerification(user.id)
+
+                if (verified) {
+                    clearInterval(githubPollRef.current)
+                    githubPollRef.current = null
+
+                    if (!popup.closed) {
+                        popup.close()
+                    }
+
+                    return
+                }
+
+                if (popup.closed) {
+                    clearInterval(githubPollRef.current)
+                    githubPollRef.current = null
+
+                    setVerification((prev) => ({
+                        ...prev,
+                        github: {
+                            status: "idle",
+                            code: "",
+                        },
+                    }))
+                }
+            },
+            1000
+        )
     }
 
     const handleSubmit = async (e) => {
@@ -124,18 +391,67 @@ function ProfileSetup({ onComplete }) {
             return
         }
 
-        if (formData.username.trim().length < 3) {
-            alert("Username must be at least 3 characters.")
+        if (formData.password.length < 8) {
+            alert(
+                "Password must be at least 8 characters."
+            )
             return
         }
 
-        const {
-            data: { user },
-            error: userError,
-        } = await supabase.auth.getUser()
+        if (formData.username.trim().length < 3) {
+            alert(
+                "Username must be at least 3 characters."
+            )
+            return
+        }
 
-        if (userError || !user) {
-            alert("Your session has expired. Please login again.")
+        const user = await getCurrentUser()
+
+        if (!user) {
+            return
+        }
+
+        const platformNames = {
+            leetcode: "LeetCode",
+            codeforces: "Codeforces",
+            gfg: "GeeksforGeeks",
+            github: "GitHub",
+        }
+
+        const platforms = [
+            "leetcode",
+            "codeforces",
+            "gfg",
+            "github",
+        ]
+
+        for (const platform of platforms) {
+            const username =
+                formData[platform]?.trim()
+
+            if (
+                username &&
+                verification[platform].status !==
+                    "verified"
+            ) {
+                alert(
+                    `${platformNames[platform]} account is not verified. Please verify it or remove the username.`
+                )
+
+                return
+            }
+        }
+
+        if (
+            Object.values(verification).some(
+                (item) =>
+                    item.status === "loading"
+            )
+        ) {
+            alert(
+                "Please wait for account verification to finish."
+            )
+
             return
         }
 
@@ -149,30 +465,40 @@ function ProfileSetup({ onComplete }) {
             return
         }
 
-        const { error: profileError } = await supabase
-            .from("users")
-            .update({
-                username: formData.username.trim(),
-                profile_setup_completed: true,
-            })
-            .eq("id", user.id)
+        const { error: profileError } =
+            await supabase
+                .from("users")
+                .update({
+                    username:
+                        formData.username.trim(),
+                    profile_setup_completed: true,
+                })
+                .eq("id", user.id)
 
         if (profileError) {
-            console.error("Profile update error:", profileError)
+            console.error(
+                "Profile update error:",
+                profileError
+            )
+
             alert(profileError.message)
             return
         }
 
-        alert("Account setup completed successfully.")
+        alert(
+            "Account setup completed successfully."
+        )
 
         if (onComplete) {
             onComplete()
         }
     }
+
     const verifiedCount = Object.values(
         verification
     ).filter(
-        (platform) => platform.status === "verified"
+        (platform) =>
+            platform.status === "verified"
     ).length
 
     return (
@@ -196,7 +522,6 @@ function ProfileSetup({ onComplete }) {
 
                 {/* Main */}
                 <div className="relative mx-auto flex min-h-screen max-w-[1050px] items-center justify-center px-5 py-10">
-
                     <div className="w-full">
 
                         {/* Brand */}
@@ -247,10 +572,7 @@ function ProfileSetup({ onComplete }) {
                                     className="space-y-7"
                                 >
 
-                                    {/* ================================= */}
                                     {/* ACCOUNT */}
-                                    {/* ================================= */}
-
                                     <section>
                                         <SectionTitle
                                             number="01"
@@ -277,7 +599,9 @@ function ProfileSetup({ onComplete }) {
                                                 onChange={handleChange}
                                                 placeholder="Create a password"
                                                 showPassword={showPassword}
-                                                setShowPassword={setShowPassword}
+                                                setShowPassword={
+                                                    setShowPassword
+                                                }
                                             />
 
                                             <div className="md:col-span-2">
@@ -300,10 +624,7 @@ function ProfileSetup({ onComplete }) {
                                         </div>
                                     </section>
 
-                                    {/* ================================= */}
                                     {/* PLATFORMS */}
-                                    {/* ================================= */}
-
                                     <section>
                                         <div className="flex items-start justify-between gap-4">
                                             <SectionTitle
@@ -341,7 +662,7 @@ function ProfileSetup({ onComplete }) {
                                                     )
                                                 }
                                                 onVerified={() =>
-                                                    handleMockVerified(
+                                                    handleVerifyAccount(
                                                         "leetcode"
                                                     )
                                                 }
@@ -372,7 +693,7 @@ function ProfileSetup({ onComplete }) {
                                                     )
                                                 }
                                                 onVerified={() =>
-                                                    handleMockVerified(
+                                                    handleVerifyAccount(
                                                         "codeforces"
                                                     )
                                                 }
@@ -389,7 +710,9 @@ function ProfileSetup({ onComplete }) {
                                                 placeholder="gfg_username"
                                                 icon={Code2}
                                                 iconClass="text-green-400"
-                                                value={formData.gfg}
+                                                value={
+                                                    formData.gfg
+                                                }
                                                 onChange={handleChange}
                                                 inputName="gfg"
                                                 verification={
@@ -401,7 +724,7 @@ function ProfileSetup({ onComplete }) {
                                                     )
                                                 }
                                                 onVerified={() =>
-                                                    handleMockVerified(
+                                                    handleVerifyAccount(
                                                         "gfg"
                                                     )
                                                 }
@@ -430,17 +753,13 @@ function ProfileSetup({ onComplete }) {
                                                 onVerify={
                                                     handleGithubConnect
                                                 }
-                                                onVerified={() =>
-                                                    handleMockVerified(
-                                                        "github"
-                                                    )
-                                                }
                                                 onDisconnect={() =>
                                                     handleDisconnect(
                                                         "github"
                                                     )
                                                 }
                                             />
+
                                         </div>
 
                                         <p className="mt-3 flex items-center gap-1.5 text-[9px] text-muted-foreground">
@@ -453,10 +772,7 @@ function ProfileSetup({ onComplete }) {
                                         </p>
                                     </section>
 
-                                    {/* ================================= */}
                                     {/* COMPLETE */}
-                                    {/* ================================= */}
-
                                     <div className="border-t border-border pt-6">
 
                                         <button
@@ -538,6 +854,7 @@ function InputField({
             </label>
 
             <div className="flex h-[48px] items-center gap-3 rounded-xl border border-border bg-[#101622] px-4 transition-all focus-within:border-violet-500/50">
+
                 {prefix ? (
                     <span className="text-xs font-medium text-slate-500">
                         {prefix}
@@ -583,13 +900,18 @@ function PasswordField({
             </label>
 
             <div className="flex h-[48px] items-center gap-3 rounded-xl border border-border bg-[#101622] px-4 transition-all focus-within:border-violet-500/50">
+
                 <LockKeyhole
                     size={16}
                     className="shrink-0 text-slate-500"
                 />
 
                 <input
-                    type={showPassword ? "text" : "password"}
+                    type={
+                        showPassword
+                            ? "text"
+                            : "password"
+                    }
                     name={name}
                     value={value}
                     onChange={onChange}
@@ -601,7 +923,9 @@ function PasswordField({
                 <button
                     type="button"
                     onClick={() =>
-                        setShowPassword((prev) => !prev)
+                        setShowPassword(
+                            (prev) => !prev
+                        )
                     }
                     className="text-slate-500 transition-colors hover:text-slate-300"
                 >
@@ -635,19 +959,27 @@ function PlatformCard({
     onDisconnect,
     isGithub = false,
 }) {
-    const isPending = verification.status === "pending"
-    const isVerified = verification.status === "verified"
+    const isPending =
+        verification.status === "pending"
+
+    const isLoading =
+        verification.status === "loading"
+
+    const isVerified =
+        verification.status === "verified"
 
     return (
         <div
-            className={`rounded-xl border p-4 transition-all duration-200 ${isVerified
-                ? "border-emerald-400/25 bg-emerald-400/[0.025]"
-                : "border-border bg-[#0d131f] hover:border-primary/20"
-                }`}
+            className={`rounded-xl border p-4 transition-all duration-200 ${
+                isVerified
+                    ? "border-emerald-400/25 bg-emerald-400/[0.025]"
+                    : "border-border bg-[#0d131f] hover:border-primary/20"
+            }`}
         >
             {/* Header */}
             <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-2.5">
+
                     <div
                         className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/[0.03] ${iconClass}`}
                     >
@@ -673,9 +1005,10 @@ function PlatformCard({
                 )}
             </div>
 
-            {/* Verified State */}
+            {/* Verified */}
             {isVerified ? (
                 <div className="mt-4 flex items-center justify-between rounded-lg border border-emerald-400/10 bg-emerald-400/[0.04] px-3 py-2.5">
+
                     <div>
                         <p className="text-[9px] text-muted-foreground">
                             Connected account
@@ -683,87 +1016,124 @@ function PlatformCard({
 
                         <p className="mt-0.5 text-xs font-semibold text-foreground">
                             {isGithub
-                                ? "GitHub account linked"
+                                ? `@${value || "GitHub account"}`
                                 : `@${value}`}
                         </p>
                     </div>
 
-                    <button
-                        type="button"
-                        onClick={onDisconnect}
-                        className="flex items-center gap-1 rounded-md px-2 py-1 text-[8px] text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-                    >
-                        <X size={10} />
-                        Remove
-                    </button>
+                    <span className="text-[8px] text-muted-foreground">
+                        Connected
+                    </span>
                 </div>
-            ) : isPending && !isGithub ? (
+
+            ) : isPending || isLoading ? (
+
                 /* Verification Instructions */
                 <div className="mt-4 rounded-lg border border-violet-400/15 bg-violet-400/[0.035] p-3">
+
                     <div className="flex items-start justify-between gap-3">
+
                         <div>
                             <p className="text-[10px] font-semibold text-violet-300">
-                                Verify ownership
+                                {isLoading
+                                    ? "Checking..."
+                                    : "Verify ownership"}
                             </p>
 
                             <p className="mt-1 text-[9px] leading-4 text-muted-foreground">
-                                Add this verification code to your
-                                public profile, then click verify.
+                                {isGithub
+                                    ? "Complete GitHub authorization to connect your account."
+                                    : "Add this verification code to your public profile, then click verify."}
                             </p>
                         </div>
 
-                        <button
-                            type="button"
-                            onClick={onVerify}
-                            className="text-muted-foreground hover:text-foreground"
-                            title="Generate new code"
-                        >
-                            <RefreshCw size={13} />
-                        </button>
+                        {!isGithub && (
+                            <button
+                                type="button"
+                                onClick={onVerify}
+                                disabled={isLoading}
+                                className="text-muted-foreground hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
+                                title="Generate new code"
+                            >
+                                <RefreshCw size={13} />
+                            </button>
+                        )}
                     </div>
 
-                    {/* Code */}
-                    <div className="mt-3 flex items-center justify-between rounded-lg border border-border bg-[#0b101b] px-3 py-2">
-                        <span className="font-mono text-xs font-bold tracking-wider text-violet-300">
-                            {verification.code}
-                        </span>
+                    {!isGithub && (
+                        <>
+                            {/* Code */}
+                            <div className="mt-3 flex items-center justify-between rounded-lg border border-border bg-[#0b101b] px-3 py-2">
 
-                        <button
-                            type="button"
-                            onClick={() =>
-                                navigator.clipboard?.writeText(
-                                    verification.code
-                                )
-                            }
-                            className="flex items-center gap-1 text-[8px] text-muted-foreground transition-colors hover:text-foreground"
-                        >
-                            <Copy size={10} />
-                            Copy
-                        </button>
-                    </div>
+                                <span className="font-mono text-xs font-bold tracking-wider text-violet-300">
+                                    {verification.code}
+                                </span>
 
-                    <div className="mt-3 flex gap-2">
-                        <button
-                            type="button"
-                            onClick={onVerified}
-                            className="flex h-8 flex-1 items-center justify-center gap-1.5 rounded-lg bg-emerald-500/10 text-[9px] font-semibold text-emerald-400 transition-colors hover:bg-emerald-500/15"
-                        >
-                            <Check size={11} />
-                            Verify Account
-                        </button>
+                                <button
+                                    type="button"
+                                    onClick={() =>
+                                        navigator.clipboard?.writeText(
+                                            verification.code
+                                        )
+                                    }
+                                    disabled={!verification.code}
+                                    className="flex items-center gap-1 text-[8px] text-muted-foreground transition-colors hover:text-foreground disabled:opacity-40"
+                                >
+                                    <Copy size={10} />
+                                    Copy
+                                </button>
+                            </div>
 
-                        <button
-                            type="button"
-                            onClick={onDisconnect}
-                            className="flex h-8 items-center justify-center rounded-lg border border-border px-3 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-                        >
-                            <X size={12} />
-                        </button>
-                    </div>
+                            <div className="mt-3 flex gap-2">
+
+                                <button
+                                    type="button"
+                                    onClick={onVerified}
+                                    disabled={isLoading}
+                                    className="flex h-8 flex-1 items-center justify-center gap-1.5 rounded-lg bg-emerald-500/10 text-[9px] font-semibold text-emerald-400 transition-colors hover:bg-emerald-500/15 disabled:cursor-not-allowed disabled:opacity-50"
+                                >
+                                    {isLoading ? (
+                                        "Checking..."
+                                    ) : (
+                                        <>
+                                            <Check size={11} />
+                                            Verify Account
+                                        </>
+                                    )}
+                                </button>
+
+                                <button
+                                    type="button"
+                                    onClick={onDisconnect}
+                                    disabled={isLoading}
+                                    className="flex h-8 items-center justify-center rounded-lg border border-border px-3 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground disabled:opacity-40"
+                                >
+                                    <X size={12} />
+                                </button>
+                            </div>
+                        </>
+                    )}
+
+                    {isGithub && (
+                        <div className="mt-3 flex items-center gap-2 rounded-lg border border-border bg-[#0b101b] px-3 py-2">
+
+                            <RefreshCw
+                                size={12}
+                                className="animate-spin text-violet-300"
+                            />
+
+                            <span className="text-[9px] text-muted-foreground">
+                                Waiting for GitHub authorization...
+                            </span>
+                        </div>
+                    )}
                 </div>
+
             ) : (
+
                 /* Input */
                 <div className="mt-3 flex gap-2">
+
                     {!isGithub && (
                         <input
                             type="text"
@@ -784,11 +1154,14 @@ function PlatformCard({
                     <button
                         type="button"
                         onClick={onVerify}
-                        disabled={!isGithub && !value}
-                        className={`flex h-9 shrink-0 items-center gap-1.5 rounded-lg px-3 text-[9px] font-semibold transition-all ${isGithub || value
-                            ? "bg-primary/10 text-primary hover:bg-primary/15"
-                            : "cursor-not-allowed bg-secondary text-muted-foreground"
-                            }`}
+                        disabled={
+                            !isGithub && !value
+                        }
+                        className={`flex h-9 shrink-0 items-center gap-1.5 rounded-lg px-3 text-[9px] font-semibold transition-all ${
+                            isGithub || value
+                                ? "bg-primary/10 text-primary hover:bg-primary/15"
+                                : "cursor-not-allowed bg-secondary text-muted-foreground"
+                        }`}
                     >
                         {isGithub ? (
                             <>
