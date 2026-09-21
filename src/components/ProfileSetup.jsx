@@ -15,6 +15,7 @@ import {
     RefreshCw,
     X,
 } from "lucide-react"
+import { supabase } from "../lib/supabase"
 
 function ProfileSetup({ onComplete }) {
     const [showPassword, setShowPassword] = useState(false)
@@ -115,14 +116,59 @@ function ProfileSetup({ onComplete }) {
         }))
     }
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault()
+
+        if (formData.password !== formData.confirmPassword) {
+            alert("Passwords do not match.")
+            return
+        }
+
+        if (formData.username.trim().length < 3) {
+            alert("Username must be at least 3 characters.")
+            return
+        }
+
+        const {
+            data: { user },
+            error: userError,
+        } = await supabase.auth.getUser()
+
+        if (userError || !user) {
+            alert("Your session has expired. Please login again.")
+            return
+        }
+
+        const { error: passwordError } =
+            await supabase.auth.updateUser({
+                password: formData.password,
+            })
+
+        if (passwordError) {
+            alert(passwordError.message)
+            return
+        }
+
+        const { error: profileError } = await supabase
+            .from("users")
+            .update({
+                username: formData.username.trim(),
+                profile_setup_completed: true,
+            })
+            .eq("id", user.id)
+
+        if (profileError) {
+            console.error("Profile update error:", profileError)
+            alert(profileError.message)
+            return
+        }
+
+        alert("Account setup completed successfully.")
 
         if (onComplete) {
             onComplete()
         }
     }
-
     const verifiedCount = Object.values(
         verification
     ).filter(
@@ -594,11 +640,10 @@ function PlatformCard({
 
     return (
         <div
-            className={`rounded-xl border p-4 transition-all duration-200 ${
-                isVerified
-                    ? "border-emerald-400/25 bg-emerald-400/[0.025]"
-                    : "border-border bg-[#0d131f] hover:border-primary/20"
-            }`}
+            className={`rounded-xl border p-4 transition-all duration-200 ${isVerified
+                ? "border-emerald-400/25 bg-emerald-400/[0.025]"
+                : "border-border bg-[#0d131f] hover:border-primary/20"
+                }`}
         >
             {/* Header */}
             <div className="flex items-center justify-between gap-3">
@@ -740,11 +785,10 @@ function PlatformCard({
                         type="button"
                         onClick={onVerify}
                         disabled={!isGithub && !value}
-                        className={`flex h-9 shrink-0 items-center gap-1.5 rounded-lg px-3 text-[9px] font-semibold transition-all ${
-                            isGithub || value
-                                ? "bg-primary/10 text-primary hover:bg-primary/15"
-                                : "cursor-not-allowed bg-secondary text-muted-foreground"
-                        }`}
+                        className={`flex h-9 shrink-0 items-center gap-1.5 rounded-lg px-3 text-[9px] font-semibold transition-all ${isGithub || value
+                            ? "bg-primary/10 text-primary hover:bg-primary/15"
+                            : "cursor-not-allowed bg-secondary text-muted-foreground"
+                            }`}
                     >
                         {isGithub ? (
                             <>
