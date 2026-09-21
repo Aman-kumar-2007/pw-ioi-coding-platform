@@ -6,6 +6,14 @@ const {
 } = require("../services/platforms/codeforces.service")
 
 const {
+    saveCodeforcesStats,
+} = require("../services/platformStats.service")
+
+const {
+    syncUserPlatforms,
+} = require("../services/platformSync.service")
+
+const {
     generateVerificationCode,
     hashVerificationCode,
     getCodeforcesUser,
@@ -877,5 +885,33 @@ router.get("/codeforces/stats/:username", async (req, res) => {
         })
     }
 })
+
+router.post(
+    "/sync",
+    requireAuth,
+    async (req, res) => {
+        try {
+            const result =
+                await syncUserPlatforms(
+                    req.userId
+                )
+
+            return res.json({
+                success: true,
+                data: result,
+            })
+        } catch (error) {
+            console.error(
+                "Platform sync error:",
+                error
+            )
+
+            return res.status(500).json({
+                success: false,
+                error: error.message,
+            })
+        }
+    }
+)
 
 module.exports = router
