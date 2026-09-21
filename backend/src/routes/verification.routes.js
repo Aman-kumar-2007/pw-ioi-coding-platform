@@ -16,6 +16,13 @@ const {
     containsVerificationCode: containsLeetCodeVerificationCode,
 } = require("../services/verification/leetcode")
 
+const {
+    generateVerificationCode: generateGfgVerificationCode,
+    hashVerificationCode: hashGfgVerificationCode,
+    getGfgUser,
+    containsVerificationCode: containsGfgVerificationCode,
+} = require("../services/verification/gfg")
+
 const router = express.Router()
 
 
@@ -471,6 +478,213 @@ router.post("/leetcode/verify", async (req, res) => {
             "LeetCode verify error:",
             error
         )
+
+        return res.status(500).json({
+            error: "Something went wrong.",
+        })
+    }
+})
+
+
+// ==========================================
+// START GFG VERIFICATION
+// ==========================================
+
+router.post("/gfg/start", async (req, res) => {
+    try {
+        const { userId, username } = req.body
+
+        if (!userId || !username?.trim()) {
+            return res.status(400).json({
+                error: "User ID and GFG username are required.",
+            })
+        }
+
+        const handle = username.trim()
+
+        const gfgUser = await getGfgUser(handle)
+
+        if (!gfgUser) {
+            return res.status(404).json({
+                error: "GFG account not found.",
+            })
+        }
+
+        const verificationCode =
+            generateGfgVerificationCode()
+
+        const verificationCodeHash =
+            hashGfgVerificationCode(verificationCode)
+
+        const expiresAt = new Date(
+            Date.now() + 15 * 60 * 1000
+        ).toISOString()
+
+        const { error } = await supabase
+            .from("platform_accounts")
+            .upsert(
+                {
+                    user_id: userId,
+                    platform: "GFG",
+                    username: gfgUser.username,
+                    profile_url: gfgUser.profileUrl,
+                    verification_status: "PENDING",
+                    verification_code_hash:
+                        verificationCodeHash,
+                    verification_expires_at: expiresAt,
+                },
+                {
+                    onConflict: "user_id,platform",
+                }
+            )
+
+        if (error) {
+            console.error(
+                "GFG verification save error:",
+                error
+            )
+
+            return res.status(500).json({
+                error: "Unable to start verification.",
+            })
+        }
+
+        return res.json({
+            success: true,
+            username: gfgUser.username,
+            verificationCode,
+            expiresInMinutes: 15,
+            instructions:
+                "Add this code to your GFG About Me section, then click Verify Account.",
+        })
+    } catch (error) {
+        console.error("GFG start error:", error)
+
+        return res.status(500).json({
+            error: "Something went wrong.",
+        })
+    }
+})
+
+
+// ==========================================
+// VERIFY GFG ACCOUNT
+// ==========================================
+
+router.post("/gfg/verify", async (req, res) => {
+    try {
+        const { userId } = req.body
+
+        if (!userId) {
+            return res.status(400).json({
+                error: "User ID is required.",
+            })
+        }
+
+        const {
+            data: account,
+            error: accountError,
+        } = await supabase
+            .from("platform_accounts")
+            .select("*")
+            .eq("user_id", userId)
+            .eq("platform", "GFG")
+            .single()
+
+        if (accountError || !account) {
+            return res.status(404).json({
+                error:
+                    "GFG verification request not found.",
+            })
+        }
+
+        if (
+            account.verification_status === "VERIFIED"
+        ) {
+            return res.json({
+                success: true,
+                status: "VERIFIED",
+                username: account.username,
+            })
+        }
+
+        if (
+            account.verification_expires_at &&
+            new Date(account.verification_expires_at) <
+                new Date()
+        ) {
+            await supabase
+                .from("platform_accounts")
+                .update({
+                    verification_status: "FAILED",
+                })
+                .eq("id", account.id)
+
+            return res.status(400).json({
+                error:
+                    "Verification code has expired.",
+            })
+        }
+
+        const gfgUser =
+            await getGfgUser(account.username)
+
+        if (!gfgUser) {
+            return res.status(404).json({
+                error:
+                    "GFG account could not be found.",
+            })
+        }
+
+        const verified =
+            containsGfgVerificationCode(
+                gfgUser.html,
+                account.verification_code_hash
+            )
+
+        if (!verified) {
+            return res.status(400).json({
+                success: false,
+                status: "PENDING",
+                error:
+                    "Verification code was not found on the GFG profile.",
+            })
+        }
+
+        const { error: updateError } =
+            await supabase
+                .from("platform_accounts")
+                .update({
+                    verification_status: "VERIFIED",
+                    verified_at:
+                        new Date().toISOString(),
+                    verification_code_hash: null,
+                    verification_expires_at: null,
+                })
+                .eq("id", account.id)
+
+        if (updateError) {
+            console.error(
+                "GFG verification update error:",
+                updateError
+            )
+
+            return res.status(500).json({
+                error:
+                    "Account was verified but could not be saved.",
+            })
+        }
+
+        return res.json({
+            success: true,
+            status: "VERIFIED",
+            username: account.username,
+            profileUrl: account.profile_url,
+            message:
+                "GFG account verified successfully.",
+        })
+    } catch (error) {
+        console.error("GFG verify error:", error)
 
         return res.status(500).json({
             error: "Something went wrong.",
