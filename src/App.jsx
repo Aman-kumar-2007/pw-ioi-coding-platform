@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react"
-import { supabase } from "./lib/supabase"
 
 import AuthPage from "./components/AuthPage"
 import ProfileSetup from "./components/ProfileSetup"
@@ -18,45 +17,14 @@ import Analytics from "./components/Analytics"
 import Settings from "./components/Settings"
 import Notifications from "./components/Notifications"
 
+import { supabase } from "./lib/supabase"
 
 function App() {
+    const [currentPage, setCurrentPage] = useState("login")
+    const [activePage, setActivePage] = useState("Dashboard")
 
-    /* ===================================================== */
-    /* AUTH STATE                                            */
-    /* ===================================================== */
-
-    const [currentPage, setCurrentPage] =
-        useState("login")
-
-
-    /* ===================================================== */
-    /* APP NAVIGATION                                        */
-    /* ===================================================== */
-
-    const [activePage, setActivePage] =
-        useState("Dashboard")
-
-    useEffect(() => {
-        const checkSession = async () => {
-            const {
-                data: { session },
-            } = await supabase.auth.getSession()
-
-            console.log("Current session:", session)
-        }
-
-        checkSession()
-    }, [])
-    /* ===================================================== */
-    /* LOGIN                                                 */
-    /* ===================================================== */
-
-    const handleLogin = async () => {
-        const {
-            data: { user },
-        } = await supabase.auth.getUser()
-
-        if (!user) {
+    const handleAuthenticatedUser = async (session) => {
+        if (!session?.user) {
             setCurrentPage("login")
             return
         }
@@ -64,7 +32,7 @@ function App() {
         const { data, error } = await supabase
             .from("users")
             .select("profile_setup_completed")
-            .eq("id", user.id)
+            .eq("id", session.user.id)
             .single()
 
         if (error) {
@@ -79,144 +47,98 @@ function App() {
         }
     }
 
+    useEffect(() => {
+        const initializeAuth = async () => {
+            const {
+                data: { session },
+            } = await supabase.auth.getSession()
 
-    /* ===================================================== */
-    /* PROFILE SETUP COMPLETE                                */
-    /* ===================================================== */
+            if (session) {
+                await handleAuthenticatedUser(session)
+            }
+        }
+
+        initializeAuth()
+
+        const {
+            data: { subscription },
+        } = supabase.auth.onAuthStateChange((event, session) => {
+            if (session) {
+                setTimeout(() => {
+                    handleAuthenticatedUser(session)
+                }, 0)
+            } else if (event === "SIGNED_OUT") {
+                setCurrentPage("login")
+                setActivePage("Dashboard")
+            }
+        })
+
+        return () => {
+            subscription.unsubscribe()
+        }
+    }, [])
+
+    const handleLogin = async () => {
+        const {
+            data: { session },
+        } = await supabase.auth.getSession()
+
+        await handleAuthenticatedUser(session)
+    }
 
     const handleSetupComplete = () => {
         setCurrentPage("app")
     }
 
-
-    /* ===================================================== */
-    /* LOGIN PAGE                                            */
-    /* ===================================================== */
-
     if (currentPage === "login") {
-        return (
-            <AuthPage
-                onLogin={handleLogin}
-            />
-        )
+        return <AuthPage onLogin={handleLogin} />
     }
-
-
-    /* ===================================================== */
-    /* FIRST TIME PROFILE SETUP                              */
-    /* ===================================================== */
 
     if (currentPage === "setup") {
-        return (
-            <ProfileSetup
-                onComplete={
-                    handleSetupComplete
-                }
-            />
-        )
+        return <ProfileSetup onComplete={handleSetupComplete} />
     }
-
-
-    /* ===================================================== */
-    /* MAIN APPLICATION                                      */
-    /* ===================================================== */
 
     return (
         <Layout
             activePage={activePage}
             setActivePage={setActivePage}
-            onLogout={() => {
+            onLogout={async () => {
+                await supabase.auth.signOut()
                 setCurrentPage("login")
                 setActivePage("Dashboard")
             }}
         >
-
-            {/* ================================================= */}
-            {/* DASHBOARD                                         */}
-            {/* ================================================= */}
-
             {activePage === "Dashboard" && (
                 <>
                     <DashboardHeader />
-
                     <QuickStats />
-
                     <PlatformCards />
-
                     <RatingProgress />
-
                     <CodingHeatmap />
                 </>
             )}
 
-
-            {/* ================================================= */}
-            {/* LEADERBOARD                                       */}
-            {/* ================================================= */}
-
-            {activePage === "Leaderboard" && (
-                <Leaderboard />
-            )}
-
-
-            {/* ================================================= */}
-            {/* STUDENT PROFILE                                   */}
-            {/* ================================================= */}
-
-            {activePage === "Student Profile" && (
-                <StudentProfile />
-            )}
-
-
-            {/* ================================================= */}
-            {/* CONTESTS                                          */}
-            {/* ================================================= */}
-
-            {activePage === "Contests" && (
-                <Contests />
-            )}
-
-
-            {/* ================================================= */}
-            {/* ANALYTICS                                         */}
-            {/* ================================================= */}
-
-            {activePage === "Analytics" && (
-                <Analytics />
-            )}
-
-
-            {/* ================================================= */}
-            {/* SETTINGS                                          */}
-            {/* ================================================= */}
+            {activePage === "Leaderboard" && <Leaderboard />}
+            {activePage === "Student Profile" && <StudentProfile />}
+            {activePage === "Contests" && <Contests />}
+            {activePage === "Analytics" && <Analytics />}
 
             {activePage === "Settings" && (
                 <Settings
                     onViewProfile={() =>
-                        setActivePage(
-                            "Student Profile"
-                        )
+                        setActivePage("Student Profile")
                     }
-
-                    onLogout={() => {
+                    onLogout={async () => {
+                        await supabase.auth.signOut()
                         setCurrentPage("login")
                         setActivePage("Dashboard")
                     }}
                 />
             )}
 
-
-            {/* ================================================= */}
-            {/* NOTIFICATIONS                                     */}
-            {/* ================================================= */}
-
-            {activePage === "Notifications" && (
-                <Notifications />
-            )}
-
+            {activePage === "Notifications" && <Notifications />}
         </Layout>
     )
 }
-
 
 export default App
