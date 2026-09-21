@@ -135,8 +135,8 @@ function ProfileSetup({ onComplete }) {
             if (!response.ok) {
                 throw new Error(
                     data.error ||
-                        data.message ||
-                        "Unable to start verification."
+                    data.message ||
+                    "Unable to start verification."
                 )
             }
 
@@ -204,8 +204,8 @@ function ProfileSetup({ onComplete }) {
             if (!response.ok || data.success !== true) {
                 throw new Error(
                     data.error ||
-                        data.message ||
-                        "Verification failed."
+                    data.message ||
+                    "Verification failed."
                 )
             }
 
@@ -308,87 +308,85 @@ function ProfileSetup({ onComplete }) {
     }
 
     const handleGithubConnect = async () => {
-        const {
-            data: { user },
-            error,
-        } = await supabase.auth.getUser()
+        try {
+            const token = await getAccessToken()
 
-        if (error || !user) {
-            alert("Your session has expired. Please login again.")
-            return
-        }
+            if (!token) {
+                return
+            }
 
-        if (githubPollRef.current) {
-            clearInterval(githubPollRef.current)
-            githubPollRef.current = null
-        }
-
-        setVerification((prev) => ({
-            ...prev,
-            github: {
-                status: "loading",
-                code: "",
-            },
-        }))
-
-        const oauthUrl =
-            `${API_BASE_URL}/api/verification/github/start?userId=${encodeURIComponent(
-                user.id
-            )}`
-
-        const popup = window.open(
-            oauthUrl,
-            "github-oauth",
-            "width=600,height=750"
-        )
-
-        if (!popup) {
-            setVerification((prev) => ({
-                ...prev,
-                github: {
-                    status: "idle",
-                    code: "",
-                },
-            }))
-
-            alert(
-                "GitHub popup was blocked. Please allow popups for CodeSync."
+            const response = await fetch(
+                `${API_BASE_URL}/api/verification/github/start`,
+                {
+                    method: "POST",
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
             )
 
-            return
-        }
+            const data = await response.json()
 
-        githubPollRef.current = setInterval(
-            async () => {
-                const verified =
-                    await checkGithubVerification(user.id)
+            if (!response.ok) {
+                throw new Error(
+                    data.error ||
+                    "Unable to start GitHub verification."
+                )
+            }
 
-                if (verified) {
-                    clearInterval(githubPollRef.current)
-                    githubPollRef.current = null
+            const popup = window.open(
+                data.authorizationUrl,
+                "githubOAuth",
+                "width=600,height=700"
+            )
 
-                    if (!popup.closed) {
-                        popup.close()
+            if (!popup) {
+                alert(
+                    "Popup was blocked. Please allow popups for CodeSync."
+                )
+                return
+            }
+
+            const {
+                data: { user },
+            } = await supabase.auth.getUser()
+
+            if (!user) {
+                return
+            }
+
+            const pollInterval = setInterval(async () => {
+                try {
+                    const verified =
+                        await checkGithubVerification(user.id)
+
+                    if (verified) {
+                        clearInterval(pollInterval)
+                        setGithubConnected(true)
+                        setGithubVerified(true)
                     }
-
-                    return
+                } catch (error) {
+                    console.error(
+                        "GitHub verification check error:",
+                        error
+                    )
                 }
+            }, 2000)
 
-                if (popup.closed) {
-                    clearInterval(githubPollRef.current)
-                    githubPollRef.current = null
+            setTimeout(() => {
+                clearInterval(pollInterval)
+            }, 120000)
+        } catch (error) {
+            console.error(
+                "GitHub connect error:",
+                error
+            )
 
-                    setVerification((prev) => ({
-                        ...prev,
-                        github: {
-                            status: "idle",
-                            code: "",
-                        },
-                    }))
-                }
-            },
-            1000
-        )
+            alert(
+                error.message ||
+                "Unable to connect GitHub."
+            )
+        }
     }
 
     const handleSubmit = async (e) => {
@@ -444,7 +442,7 @@ function ProfileSetup({ onComplete }) {
             if (
                 username &&
                 verification[platform].status !==
-                    "verified"
+                "verified"
             ) {
                 alert(
                     `${platformNames[platform]} account is not verified. Please verify it or remove the username.`
@@ -982,11 +980,10 @@ function PlatformCard({
 
     return (
         <div
-            className={`rounded-xl border p-4 transition-all duration-200 ${
-                isVerified
-                    ? "border-emerald-400/25 bg-emerald-400/[0.025]"
-                    : "border-border bg-[#0d131f] hover:border-primary/20"
-            }`}
+            className={`rounded-xl border p-4 transition-all duration-200 ${isVerified
+                ? "border-emerald-400/25 bg-emerald-400/[0.025]"
+                : "border-border bg-[#0d131f] hover:border-primary/20"
+                }`}
         >
             {/* Header */}
             <div className="flex items-center justify-between gap-3">
@@ -1169,11 +1166,10 @@ function PlatformCard({
                         disabled={
                             !isGithub && !value
                         }
-                        className={`flex h-9 shrink-0 items-center gap-1.5 rounded-lg px-3 text-[9px] font-semibold transition-all ${
-                            isGithub || value
-                                ? "bg-primary/10 text-primary hover:bg-primary/15"
-                                : "cursor-not-allowed bg-secondary text-muted-foreground"
-                        }`}
+                        className={`flex h-9 shrink-0 items-center gap-1.5 rounded-lg px-3 text-[9px] font-semibold transition-all ${isGithub || value
+                            ? "bg-primary/10 text-primary hover:bg-primary/15"
+                            : "cursor-not-allowed bg-secondary text-muted-foreground"
+                            }`}
                     >
                         {isGithub ? (
                             <>

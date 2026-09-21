@@ -1,7 +1,6 @@
 const express = require("express")
-
 const supabase = require("../config/supabase")
-
+const requireAuth = require("../middleware/auth.middleware")
 const {
     generateVerificationCode,
     hashVerificationCode,
@@ -38,13 +37,14 @@ const router = express.Router()
 // START CODEFORCES VERIFICATION
 // ==========================================
 
-router.post("/codeforces/start", async (req, res) => {
+router.post("/codeforces/start", requireAuth, async (req, res) => {
     try {
-        const { userId, username } = req.body
+        const { username } = req.body
+        const userId = req.userId
 
-        if (!userId || !username?.trim()) {
+        if (!username?.trim()) {
             return res.status(400).json({
-                error: "User ID and Codeforces handle are required.",
+                error: "Codeforces handle is required.",
             })
         }
 
@@ -132,9 +132,9 @@ router.post("/codeforces/start", async (req, res) => {
 // VERIFY CODEFORCES ACCOUNT
 // ==========================================
 
-router.post("/codeforces/verify", async (req, res) => {
+router.post("/codeforces/verify", requireAuth, async (req, res) => {
     try {
-        const { userId } = req.body
+        const userId = req.userId
 
         if (!userId) {
             return res.status(400).json({
@@ -279,13 +279,14 @@ router.post("/codeforces/verify", async (req, res) => {
 // START LEETCODE VERIFICATION
 // ==========================================
 
-router.post("/leetcode/start", async (req, res) => {
+router.post("/leetcode/start", requireAuth, async (req, res) => {
     try {
-        const { userId, username } = req.body
+        const { username } = req.body
+        const userId = req.userId
 
-        if (!userId || !username?.trim()) {
+        if (!username?.trim()) {
             return res.status(400).json({
-                error: "User ID and LeetCode username are required.",
+                error: "LeetCode username is required.",
             })
         }
 
@@ -365,9 +366,9 @@ router.post("/leetcode/start", async (req, res) => {
 // VERIFY LEETCODE ACCOUNT
 // ==========================================
 
-router.post("/leetcode/verify", async (req, res) => {
+router.post("/leetcode/verify", requireAuth, async (req, res) => {
     try {
-        const { userId } = req.body
+        const userId = req.userId
 
         if (!userId) {
             return res.status(400).json({
@@ -498,13 +499,14 @@ router.post("/leetcode/verify", async (req, res) => {
 // START GFG VERIFICATION
 // ==========================================
 
-router.post("/gfg/start", async (req, res) => {
+router.post("/gfg/start", requireAuth, async (req, res) => {
     try {
-        const { userId, username } = req.body
+        const { username } = req.body
+        const userId = req.userId
 
-        if (!userId || !username?.trim()) {
+        if (!username?.trim()) {
             return res.status(400).json({
-                error: "User ID and GFG username are required.",
+                error: "GFG username is required.",
             })
         }
 
@@ -579,9 +581,9 @@ router.post("/gfg/start", async (req, res) => {
 // VERIFY GFG ACCOUNT
 // ==========================================
 
-router.post("/gfg/verify", async (req, res) => {
+router.post("/gfg/verify", requireAuth, async (req, res) => {
     try {
-        const { userId } = req.body
+        const userId = req.userId
 
         if (!userId) {
             return res.status(400).json({
@@ -619,7 +621,7 @@ router.post("/gfg/verify", async (req, res) => {
         if (
             account.verification_expires_at &&
             new Date(account.verification_expires_at) <
-                new Date()
+            new Date()
         ) {
             await supabase
                 .from("platform_accounts")
@@ -705,9 +707,9 @@ router.post("/gfg/verify", async (req, res) => {
 // START GITHUB OAUTH
 // ==========================================
 
-router.get("/github/start", (req, res) => {
+router.post("/github/start", requireAuth, async (req, res) => {
     try {
-        const { userId } = req.query
+        const userId = req.userId
 
         if (!userId) {
             return res.status(400).json({
@@ -727,11 +729,12 @@ router.get("/github/start", (req, res) => {
 
         global.githubOAuthStates.set(state, {
             userId,
-            expiresAt:
-                Date.now() + 10 * 60 * 1000,
+            expiresAt: Date.now() + 10 * 60 * 1000,
         })
 
-        return res.redirect(authorizationUrl)
+        return res.json({
+            authorizationUrl,
+        })
     } catch (error) {
         console.error(
             "GitHub OAuth start error:",
@@ -743,6 +746,7 @@ router.get("/github/start", (req, res) => {
         })
     }
 })
+
 
 
 // ==========================================

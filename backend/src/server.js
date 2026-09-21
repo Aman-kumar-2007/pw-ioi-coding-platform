@@ -7,7 +7,13 @@ const verificationRoutes = require("./routes/verification.routes")
 
 const app = express()
 
-app.use(cors())
+const corsOptions = {
+    origin: "http://localhost:5173",
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+}
+
+app.use(cors(corsOptions))
 app.use(express.json())
 
 app.get("/", (req, res) => {
