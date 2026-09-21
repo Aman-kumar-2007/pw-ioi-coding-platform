@@ -79,18 +79,18 @@ function ProfileSetup({ onComplete }) {
         }))
     }
 
-    const getCurrentUser = async () => {
+    const getAccessToken = async () => {
         const {
-            data: { user },
+            data: { session },
             error,
-        } = await supabase.auth.getUser()
+        } = await supabase.auth.getSession()
 
-        if (error || !user) {
+        if (error || !session?.access_token) {
             alert("Your session has expired. Please login again.")
             return null
         }
 
-        return user
+        return session.access_token
     }
 
     const handleVerifyClick = async (platform) => {
@@ -100,9 +100,9 @@ function ProfileSetup({ onComplete }) {
             return
         }
 
-        const user = await getCurrentUser()
+        const token = await getAccessToken()
 
-        if (!user) {
+        if (!token) {
             return
         }
 
@@ -122,9 +122,9 @@ function ProfileSetup({ onComplete }) {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
                     },
                     body: JSON.stringify({
-                        userId: user.id,
                         username,
                     }),
                 }
@@ -135,6 +135,7 @@ function ProfileSetup({ onComplete }) {
             if (!response.ok) {
                 throw new Error(
                     data.error ||
+                        data.message ||
                         "Unable to start verification."
                 )
             }
@@ -171,9 +172,9 @@ function ProfileSetup({ onComplete }) {
     }
 
     const handleVerifyAccount = async (platform) => {
-        const user = await getCurrentUser()
+        const token = await getAccessToken()
 
-        if (!user) {
+        if (!token) {
             return
         }
 
@@ -192,10 +193,9 @@ function ProfileSetup({ onComplete }) {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
                     },
-                    body: JSON.stringify({
-                        userId: user.id,
-                    }),
+                    body: JSON.stringify({}),
                 }
             )
 
@@ -241,7 +241,10 @@ function ProfileSetup({ onComplete }) {
     }
 
     const handleDisconnect = (platform) => {
-        if (platform === "github" && githubPollRef.current) {
+        if (
+            platform === "github" &&
+            githubPollRef.current
+        ) {
             clearInterval(githubPollRef.current)
             githubPollRef.current = null
         }
@@ -278,6 +281,7 @@ function ProfileSetup({ onComplete }) {
                 "GitHub verification check error:",
                 error
             )
+
             return false
         }
 
@@ -304,9 +308,13 @@ function ProfileSetup({ onComplete }) {
     }
 
     const handleGithubConnect = async () => {
-        const user = await getCurrentUser()
+        const {
+            data: { user },
+            error,
+        } = await supabase.auth.getUser()
 
-        if (!user) {
+        if (error || !user) {
+            alert("Your session has expired. Please login again.")
             return
         }
 
@@ -405,9 +413,13 @@ function ProfileSetup({ onComplete }) {
             return
         }
 
-        const user = await getCurrentUser()
+        const {
+            data: { user },
+            error: userError,
+        } = await supabase.auth.getUser()
 
-        if (!user) {
+        if (userError || !user) {
+            alert("Your session has expired. Please login again.")
             return
         }
 
