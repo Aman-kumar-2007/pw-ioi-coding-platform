@@ -12,6 +12,7 @@ import {
     BarChart3,
     Check,
 } from "lucide-react"
+import { supabase } from "../lib/supabase"
 
 function AuthPage({ onLogin }) {
     const [showPassword, setShowPassword] = useState(false)
@@ -31,12 +32,42 @@ function AuthPage({ onLogin }) {
         }))
     }
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault()
 
-        // Backend authentication will be connected later.
+        const email = formData.email.trim().toLowerCase()
+
+        if (!email.endsWith("@pwioi.com")) {
+            alert("Only @pwioi.com email addresses are allowed.")
+            return
+        }
+
+        const { error } = await supabase.auth.signInWithPassword({
+            email,
+            password: formData.password,
+        })
+
+        if (error) {
+            alert(error.message)
+            return
+        }
+
         if (onLogin) {
             onLogin()
+        }
+    }
+
+    const handleGoogleLogin = async () => {
+        const { error } = await supabase.auth.signInWithOAuth({
+            provider: "google",
+            options: {
+                redirectTo: window.location.origin,
+            },
+        })
+
+        if (error) {
+            console.error("Google login error:", error)
+            alert(error.message)
         }
     }
 
@@ -423,7 +454,7 @@ function AuthPage({ onLogin }) {
                                     {/* Google */}
                                     <button
                                         type="button"
-                                        onClick={onLogin}
+                                        onClick={handleGoogleLogin}
                                         className="flex h-[53px] w-full items-center justify-center gap-3 rounded-xl border border-border bg-[#101622] text-xs font-semibold text-slate-200 transition-all hover:border-slate-600 hover:bg-[#141b29]"
                                     >
                                         <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white font-bold text-[#4285F4]">
