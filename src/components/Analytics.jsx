@@ -923,126 +923,9 @@ function DifficultyDistribution() {
    MAIN ANALYTICS PAGE
    ========================================================= */
 
-// function Analytics() {
-//     return (
-//         <section className="px-8 pb-10 pt-7">
-//             {/* Header */}
-//             <div className="relative mb-6 overflow-hidden rounded-2xl border border-border bg-card px-6 py-5">
-//                 <div className="absolute left-0 top-0 h-full w-[2px] bg-primary" />
-
-//                 <div className="absolute -right-24 -top-32 h-72 w-72 rounded-full bg-primary/10 blur-3xl" />
-
-//                 <div className="absolute bottom-0 left-[35%] h-16 w-16 rounded-full bg-indigo-500/[0.04] blur-2xl" />
-
-//                 <div className="relative flex items-center justify-between gap-6">
-//                     <div>
-//                         <div className="flex items-center gap-3">
-//                             <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-primary/20 bg-primary/10 text-primary">
-//                                 <BarChart3 size={19} />
-//                             </div>
-
-//                             <div>
-//                                 <h1 className="text-xl font-bold tracking-tight">
-//                                     Coding{" "}
-//                                     <span className="text-primary">
-//                                         Analytics
-//                                     </span>
-//                                 </h1>
-
-//                                 <p className="mt-1 text-xs text-muted-foreground">
-//                                     Understand your progress and improve
-//                                     your problem solving.
-//                                 </p>
-//                             </div>
-//                         </div>
-//                     </div>
-
-//                     <div className="hidden items-center gap-6 md:flex">
-//                         <div className="text-right">
-//                             <p className="text-[9px] uppercase tracking-wider text-muted-foreground">
-//                                 Total Problems
-//                             </p>
-
-//                             <p className="font-mono text-lg font-bold">
-//                                 430
-//                             </p>
-//                         </div>
-
-//                         <div className="h-8 w-px bg-border" />
-
-//                         <div className="text-right">
-//                             <p className="text-[9px] uppercase tracking-wider text-muted-foreground">
-//                                 Overall Growth
-//                             </p>
-
-//                             <p className="font-mono text-lg font-bold text-emerald-400">
-//                                 +18%
-//                             </p>
-//                         </div>
-//                     </div>
-//                 </div>
-//             </div>
-
-//             {/* Stats */}
-//             <div className="mb-5 grid grid-cols-2 gap-3 xl:grid-cols-5">
-//                 <StatCard
-//                     icon={Code2}
-//                     label="Problems Solved"
-//                     value="430"
-//                     subtitle="+12% from last month"
-//                     iconClass="bg-emerald-500/10 text-emerald-400"
-//                 />
-
-//                 <StatCard
-//                     icon={Trophy}
-//                     label="Contests"
-//                     value="28"
-//                     subtitle="+4% from last month"
-//                     iconClass="bg-amber-500/10 text-amber-400"
-//                 />
-
-//                 <StatCard
-//                     icon={BarChart3}
-//                     label="Current Rating"
-//                     value="1567"
-//                     subtitle="+132 since January"
-//                     iconClass="bg-blue-500/10 text-blue-400"
-//                 />
-
-//                 <StatCard
-//                     icon={Award}
-//                     label="Global Rank"
-//                     value="#124,850"
-//                     subtitle="+18,320 positions"
-//                     iconClass="bg-purple-500/10 text-purple-400"
-//                 />
-
-//                 <StatCard
-//                     icon={Flame}
-//                     label="Streak"
-//                     value="42 days"
-//                     subtitle="Keep the momentum"
-//                     iconClass="bg-orange-500/10 text-orange-400"
-//                 />
-//             </div>
-
-//             <div className="mb-5">
-//                 <PlatformBreakdown />
-//             </div>
-
-//             <div className="mb-5 grid grid-cols-1 gap-5 xl:grid-cols-2">
-//                 <DifficultyDistribution/>
-//                 <ActivityChart />
-//                 <RatingChart />
-//                 <TopicProgress />
-//             </div>
-//         </section>
-//     )
-// }
-
-
 function Analytics() {
     const [analytics, setAnalytics] = useState(null)
+    const [globalRank, setGlobalRank] = useState(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState("")
 
@@ -1078,6 +961,26 @@ function Analytics() {
                 }
 
                 setAnalytics(result.data)
+
+                const leaderboardResponse = await fetch(
+                    "http://localhost:5001/api/leaderboard",
+                    {
+                        headers: {
+                            Authorization: `Bearer ${session.access_token}`,
+                        },
+                    }
+                )
+
+                const leaderboardResult = await leaderboardResponse.json()
+
+                if (!leaderboardResponse.ok || !leaderboardResult.success) {
+                    throw new Error(
+                        leaderboardResult.message || "Failed to load leaderboard."
+                    )
+                }
+
+                setGlobalRank(leaderboardResult.data.currentUserRank)
+
             } catch (error) {
                 console.error("Analytics fetch error:", error)
                 setError(error.message)
@@ -1173,7 +1076,7 @@ function Analytics() {
                 <StatCard
                     icon={Code2}
                     label="Problems Solved"
-                   value={analytics?.summary?.totalProblemsSolved ?? 0}
+                    value={analytics?.summary?.totalProblemsSolved ?? 0}
                     subtitle="+12% from last month"
                     iconClass="bg-emerald-500/10 text-emerald-400"
                 />
@@ -1181,7 +1084,7 @@ function Analytics() {
                 <StatCard
                     icon={Trophy}
                     label="Contests"
-                   value={analytics?.summary?.totalContests ?? 0}
+                    value={analytics?.summary?.totalContests ?? 0}
                     subtitle="+4% from last month"
                     iconClass="bg-amber-500/10 text-amber-400"
                 />
@@ -1189,7 +1092,7 @@ function Analytics() {
                 <StatCard
                     icon={BarChart3}
                     label="Current Rating"
-                   value={analytics?.summary?.currentRating ?? "—"}
+                    value={analytics?.summary?.currentRating ?? "—"}
                     subtitle="+132 since January"
                     iconClass="bg-blue-500/10 text-blue-400"
                 />
@@ -1197,7 +1100,7 @@ function Analytics() {
                 <StatCard
                     icon={Award}
                     label="Global Rank"
-                    value="#124,850"
+                    value={globalRank ? `#${globalRank}` : "—"}
                     subtitle="+18,320 positions"
                     iconClass="bg-purple-500/10 text-purple-400"
                 />
