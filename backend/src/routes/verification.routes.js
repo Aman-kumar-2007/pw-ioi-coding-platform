@@ -23,6 +23,11 @@ const {
 } = require("../services/platforms/gfg.service")
 
 const {
+    getGithubStats,
+    getGithubContributions,
+} = require("../services/platforms/github.service")
+
+const {
     generateVerificationCode,
     hashVerificationCode,
     getCodeforcesUser,
@@ -817,6 +822,20 @@ router.get("/github/callback", async (req, res) => {
                 tokenData.access_token
             )
 
+        const githubStats =
+            await getGithubStats(
+                tokenData.access_token
+            )
+
+        console.log(
+            "GitHub Stats:",
+            JSON.stringify(
+                githubStats,
+                null,
+                2
+            )
+        )
+
         const { error: saveError } =
             await supabase
                 .from("platform_accounts")
@@ -831,6 +850,8 @@ router.get("/github/callback", async (req, res) => {
                             "VERIFIED",
                         verified_at:
                             new Date().toISOString(),
+                        access_token:
+                            tokenData.access_token,
                     },
                     {
                         onConflict:
@@ -971,5 +992,67 @@ router.get("/gfg/stats/:username", async (req, res) => {
         })
     }
 })
+
+router.get(
+    "/github/stats",
+    requireAuth,
+    async (req, res) => {
+        try {
+            const userId = req.userId
+
+            // Temporary:
+            // GitHub OAuth token will be fetched
+            // from your stored OAuth data in the
+            // next step.
+
+            return res.json({
+                success: true,
+                message:
+                    "GitHub stats route is ready.",
+                userId,
+            })
+        } catch (error) {
+            console.error(
+                "GitHub stats error:",
+                error
+            )
+
+            return res.status(500).json({
+                success: false,
+                error: error.message,
+            })
+        }
+    }
+)
+
+
+router.get(
+    "/github/contributions/:username",
+    async (req, res) => {
+        try {
+            const { username } = req.params
+
+            const data =
+                await getGithubContributions(
+                    username
+                )
+
+            return res.json({
+                success: true,
+                data,
+            })
+        } catch (error) {
+            console.error(
+                "GitHub contributions error:",
+                error
+            )
+
+            return res.status(500).json({
+                success: false,
+                error: error.message,
+            })
+        }
+    }
+)
 
 module.exports = router
