@@ -24,10 +24,11 @@ import {
     Trophy,
     ExternalLink,
 } from "lucide-react"
+
 import TopicProgress from "./TopicProgress"
 
 /* =========================================================
-   DATA
+   MOCK DATA
    ========================================================= */
 
 const activityData = {
@@ -105,29 +106,6 @@ const ratingData = {
     ],
 }
 
-const difficultyData = [
-    {
-        name: "Basic",
-        value: 80,
-        color: "bg-green-400",
-    },
-    {
-        name: "Easy",
-        value: 180,
-        color: "bg-emerald-400",
-    },
-    {
-        name: "Medium",
-        value: 200,
-        color: "bg-amber-400",
-    },
-    {
-        name: "Hard",
-        value: 50,
-        color: "bg-red-400",
-    },
-]
-
 const platformData = [
     {
         name: "LeetCode",
@@ -153,7 +131,28 @@ const platformData = [
         color: "#10b981",
         contributions: 203,
         repositories: 28,
-        activity: [8, 13, 17, 14, 21, 18, 24, 20, 27, 23, 30, 25, 32, 27, 35, 29, 38, 31, 42, 34],
+        activity: [
+            8,
+            13,
+            17,
+            14,
+            21,
+            18,
+            24,
+            20,
+            27,
+            23,
+            30,
+            25,
+            32,
+            27,
+            35,
+            29,
+            38,
+            31,
+            42,
+            34,
+        ],
     },
     {
         name: "GeeksforGeeks",
@@ -166,7 +165,6 @@ const platformData = [
         hard: 41,
     },
 ]
-
 
 const PERIODS = ["Weekly", "Monthly", "Yearly"]
 
@@ -248,8 +246,8 @@ function PeriodSelector({ value, onChange }) {
                         key={period}
                         onClick={() => onChange(period)}
                         className={`rounded-md px-2.5 py-1.5 text-[9px] font-semibold transition-all duration-200 ${active
-                            ? "bg-primary text-primary-foreground shadow-sm"
-                            : "text-muted-foreground hover:text-foreground"
+                                ? "bg-primary text-primary-foreground shadow-sm"
+                                : "text-muted-foreground hover:text-foreground"
                             }`}
                     >
                         {period}
@@ -589,7 +587,6 @@ function PlatformBreakdown() {
                                 borderColor: `${platform.color}55`,
                             }}
                         >
-                            {/* Glow */}
                             <div
                                 className="pointer-events-none absolute -right-16 -top-16 h-36 w-36 rounded-full blur-3xl opacity-10 transition-opacity duration-300 group-hover:opacity-20"
                                 style={{
@@ -598,7 +595,6 @@ function PlatformBreakdown() {
                             />
 
                             <div className="relative flex h-full flex-col">
-                                {/* Header */}
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-4">
                                         <div
@@ -845,10 +841,10 @@ function DifficultyBar({ label, value, color }) {
 }
 
 /* =========================================================
-   DIFFICULTY
+   DIFFICULTY DISTRIBUTION
    ========================================================= */
 
-function DifficultyDistribution() {
+function DifficultyDistribution({ difficultyData }) {
     const total = difficultyData.reduce(
         (sum, difficulty) => sum + difficulty.value,
         0
@@ -873,7 +869,9 @@ function DifficultyDistribution() {
             <div className="space-y-5">
                 {difficultyData.map((difficulty) => {
                     const percentage =
-                        (difficulty.value / total) * 100
+                        total > 0
+                            ? (difficulty.value / total) * 100
+                            : 0
 
                     return (
                         <div key={difficulty.name}>
@@ -929,6 +927,29 @@ function Analytics() {
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState("")
 
+    const difficultyData = [
+        {
+            name: "Basic",
+            value: analytics?.difficulty?.basic ?? 0,
+            color: "bg-emerald-400",
+        },
+        {
+            name: "Easy",
+            value: analytics?.difficulty?.easy ?? 0,
+            color: "bg-green-400",
+        },
+        {
+            name: "Medium",
+            value: analytics?.difficulty?.medium ?? 0,
+            color: "bg-amber-400",
+        },
+        {
+            name: "Hard",
+            value: analytics?.difficulty?.hard ?? 0,
+            color: "bg-rose-400",
+        },
+    ]
+
     useEffect(() => {
         const fetchAnalytics = async () => {
             try {
@@ -940,7 +961,9 @@ function Analytics() {
                 } = await supabase.auth.getSession()
 
                 if (!session?.access_token) {
-                    throw new Error("Authentication session not found.")
+                    throw new Error(
+                        "Authentication session not found."
+                    )
                 }
 
                 const response = await fetch(
@@ -956,7 +979,8 @@ function Analytics() {
 
                 if (!response.ok || !result.success) {
                     throw new Error(
-                        result.message || "Failed to load analytics."
+                        result.message ||
+                        "Failed to load analytics."
                     )
                 }
 
@@ -971,18 +995,28 @@ function Analytics() {
                     }
                 )
 
-                const leaderboardResult = await leaderboardResponse.json()
+                const leaderboardResult =
+                    await leaderboardResponse.json()
 
-                if (!leaderboardResponse.ok || !leaderboardResult.success) {
+                if (
+                    !leaderboardResponse.ok ||
+                    !leaderboardResult.success
+                ) {
                     throw new Error(
-                        leaderboardResult.message || "Failed to load leaderboard."
+                        leaderboardResult.message ||
+                        "Failed to load leaderboard."
                     )
                 }
 
-                setGlobalRank(leaderboardResult.data.currentUserRank)
-
+                setGlobalRank(
+                    leaderboardResult.data.currentUserRank
+                )
             } catch (error) {
-                console.error("Analytics fetch error:", error)
+                console.error(
+                    "Analytics fetch error:",
+                    error
+                )
+
                 setError(error.message)
             } finally {
                 setLoading(false)
@@ -1052,7 +1086,8 @@ function Analytics() {
                             </p>
 
                             <p className="font-mono text-lg font-bold">
-                                430
+                                {analytics?.summary?.totalProblemsSolved ??
+                                    0}
                             </p>
                         </div>
 
@@ -1076,7 +1111,10 @@ function Analytics() {
                 <StatCard
                     icon={Code2}
                     label="Problems Solved"
-                    value={analytics?.summary?.totalProblemsSolved ?? 0}
+                    value={
+                        analytics?.summary?.totalProblemsSolved ??
+                        0
+                    }
                     subtitle="+12% from last month"
                     iconClass="bg-emerald-500/10 text-emerald-400"
                 />
@@ -1084,7 +1122,9 @@ function Analytics() {
                 <StatCard
                     icon={Trophy}
                     label="Contests"
-                    value={analytics?.summary?.totalContests ?? 0}
+                    value={
+                        analytics?.summary?.totalContests ?? 0
+                    }
                     subtitle="+4% from last month"
                     iconClass="bg-amber-500/10 text-amber-400"
                 />
@@ -1092,7 +1132,9 @@ function Analytics() {
                 <StatCard
                     icon={BarChart3}
                     label="Current Rating"
-                    value={analytics?.summary?.currentRating ?? "—"}
+                    value={
+                        analytics?.summary?.currentRating ?? "—"
+                    }
                     subtitle="+132 since January"
                     iconClass="bg-blue-500/10 text-blue-400"
                 />
@@ -1100,7 +1142,11 @@ function Analytics() {
                 <StatCard
                     icon={Award}
                     label="Global Rank"
-                    value={globalRank ? `#${globalRank}` : "—"}
+                    value={
+                        globalRank
+                            ? `#${globalRank}`
+                            : "—"
+                    }
                     subtitle="+18,320 positions"
                     iconClass="bg-purple-500/10 text-purple-400"
                 />
@@ -1119,9 +1165,14 @@ function Analytics() {
             </div>
 
             <div className="mb-5 grid grid-cols-1 gap-5 xl:grid-cols-2">
-                <DifficultyDistribution />
+                <DifficultyDistribution
+                    difficultyData={difficultyData}
+                />
+
                 <ActivityChart />
+
                 <RatingChart />
+
                 <TopicProgress />
             </div>
         </section>

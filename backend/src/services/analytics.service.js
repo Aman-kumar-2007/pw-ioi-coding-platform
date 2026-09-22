@@ -65,6 +65,11 @@ const getAnalyticsSummary = async (userId) => {
     let totalContests = 0
     let currentRating = null
 
+    let basicSolved = 0
+    let easySolved = 0
+    let mediumSolved = 0
+    let hardSolved = 0
+
     const platforms = []
 
     for (const account of accounts || []) {
@@ -75,6 +80,11 @@ const getAnalyticsSummary = async (userId) => {
         if (account.platform !== "GITHUB") {
             totalProblemsSolved += stats.problems_solved || 0
             totalContests += stats.contest_count || 0
+
+            basicSolved += stats.basic_solved || 0
+            easySolved += stats.easy_solved || 0
+            mediumSolved += stats.medium_solved || 0
+            hardSolved += stats.hard_solved || 0
         }
 
         if (
@@ -159,6 +169,13 @@ const getAnalyticsSummary = async (userId) => {
             totalContests,
             currentRating,
             streak,
+        },
+
+        difficulty: {
+            basic: basicSolved,
+            easy: easySolved,
+            medium: mediumSolved,
+            hard: hardSolved,
         },
 
         platforms,
