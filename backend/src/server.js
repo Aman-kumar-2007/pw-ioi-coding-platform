@@ -4,6 +4,8 @@ require("dotenv").config()
 
 const supabase = require("./config/supabase")
 const verificationRoutes = require("./routes/verification.routes")
+const analyticsRoutes = require("./routes/analytics.routes")
+const leaderboardRoutes = require("./routes/leaderboard.routes")
 
 const {
     startPlatformSyncJob,
@@ -45,3 +47,6 @@ app.listen(PORT, () => {
     startPlatformSyncJob()
 })
 
+app.use("/api/analytics", analyticsRoutes)
+
+app.use("/api/leaderboard", leaderboardRoutes)

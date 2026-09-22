@@ -148,8 +148,6 @@ const saveCodeforcesDailyActivity = async (userId, username) => {
         const date = getIndiaDate(
             submission.creationTimeSeconds
         )
-            .toISOString()
-            .split("T")[0]
 
         if (!dailyMap.has(date)) {
             dailyMap.set(date, {
