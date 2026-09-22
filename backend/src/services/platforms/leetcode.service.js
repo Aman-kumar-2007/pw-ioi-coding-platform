@@ -1,4 +1,7 @@
-const { saveDailyActivity } = require("../dailyActivity.service")
+const {
+    saveDailyActivity,
+    getIndiaDate,
+} = require("../dailyActivity.service")
 
 const getLeetCodeUser = async (username) => {
     const response = await fetch(
@@ -251,9 +254,7 @@ const getLeetCodeCalendar = async (username) => {
     const activities = Object.entries(
         submissionCalendar
     ).map(([timestamp, count]) => ({
-        date: new Date(
-            Number(timestamp) * 1000
-        ).toISOString().split("T")[0],
+        date: getIndiaDate(timestamp),
 
         submissionCount: Number(count),
 

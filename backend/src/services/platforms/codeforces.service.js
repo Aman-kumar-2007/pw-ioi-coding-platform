@@ -1,5 +1,7 @@
-
-const { saveDailyActivity } = require("../dailyActivity.service")
+const {
+    saveDailyActivity,
+    getIndiaDate,
+} = require("../dailyActivity.service")
 
 const getCodeforcesUser = async (username) => {
     const response = await fetch(
@@ -143,8 +145,8 @@ const saveCodeforcesDailyActivity = async (userId, username) => {
             continue
         }
 
-        const date = new Date(
-            submission.creationTimeSeconds * 1000
+        const date = getIndiaDate(
+            submission.creationTimeSeconds
         )
             .toISOString()
             .split("T")[0]

@@ -36,6 +36,11 @@ const {
 } = require("../services/verification/codeforces")
 
 const {
+    getCombinedDailyActivity,
+} = require("../services/dailyActivity.service")
+
+
+const {
     generateVerificationCode: generateLeetCodeVerificationCode,
     hashVerificationCode: hashLeetCodeVerificationCode,
     getLeetCodeUser,
@@ -1067,6 +1072,30 @@ router.get("/gfg/daily/:username", async (req, res) => {
     } catch (error) {
         console.error(
             "GFG daily activity error:",
+            error
+        )
+
+        return res.status(500).json({
+            success: false,
+            message: error.message,
+        })
+    }
+})
+
+
+router.get("/activity", requireAuth, async (req, res) => {
+    try {
+        const data = await getCombinedDailyActivity(
+            req.userId
+        )
+
+        return res.json({
+            success: true,
+            data,
+        })
+    } catch (error) {
+        console.error(
+            "Daily activity error:",
             error
         )
 
