@@ -6,9 +6,10 @@ import {
 
 function DashboardHeader() {
     return (
+
         <section className="px-8 pb-6 pt-7">
             <div className="relative h-[150px] overflow-hidden rounded-2xl border border-primary/20 bg-card">
-                
+
                 {/* Subtle background glow */}
                 <div className="pointer-events-none absolute -right-20 -top-24 h-64 w-64 rounded-full bg-primary/20 blur-3xl" />
 
@@ -16,7 +17,7 @@ function DashboardHeader() {
 
                 {/* Content */}
                 <div className="relative flex h-full items-center justify-between px-7">
-                    
+
                     {/* Left */}
                     <div className="flex h-full flex-col justify-between py-5">
                         <div>
