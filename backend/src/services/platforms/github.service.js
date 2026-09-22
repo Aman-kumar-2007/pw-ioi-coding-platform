@@ -140,54 +140,89 @@ const getGithubStats = async (username) => {
 }
 
 const getGithubContributions = async (username) => {
-    const response = await fetch(
-        `https://github.com/users/${encodeURIComponent(
-            username
-        )}/contributions`,
-        {
-            headers: {
-                "User-Agent": "CodeSync/1.0",
-                Accept: "text/html",
-            },
-        }
+  const response = await fetch(
+    `https://github.com/users/${encodeURIComponent(username)}/contributions`,
+    {
+      headers: {
+        "User-Agent": "CodeSync/1.0",
+        Accept: "text/html",
+      },
+    }
+  )
+
+  if (!response.ok) {
+    throw new Error(`GitHub contributions HTTP error: ${response.status}`)
+  }
+
+  const html = await response.text()
+
+  const contributions = []
+
+  // GitHub contribution cells
+  const cellRegex =
+    /<td\b[^>]*data-date="([^"]+)"[^>]*id="([^"]+)"[^>]*>[\s\S]*?<\/td>/gi
+
+  let match
+
+  while ((match = cellRegex.exec(html)) !== null) {
+    const date = match[1]
+    const cellId = match[2]
+
+    // Find the tooltip connected to this cell
+    const escapedId = cellId.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+
+    const tooltipRegex = new RegExp(
+      `<tool-tip[^>]*for="${escapedId}"[^>]*>([\\s\\S]*?)<\\/tool-tip>`,
+      "i"
     )
 
-    if (!response.ok) {
-        throw new Error(
-            `GitHub contributions HTTP error: ${response.status}`
-        )
+    const tooltipMatch = html.match(tooltipRegex)
+
+    let count = 0
+
+    if (tooltipMatch) {
+      const tooltipText = tooltipMatch[1]
+        .replace(/<[^>]*>/g, "")
+        .trim()
+
+      const countMatch = tooltipText.match(
+        /(\d[\d,]*)\s+contributions?/i
+      )
+
+      if (countMatch) {
+        count = Number(countMatch[1].replace(/,/g, ""))
+      }
     }
 
-    const html = await response.text()
+    contributions.push({
+      date,
+      count,
+    })
+  }
 
-    // GitHub contribution calendar contains
-    // aria-label values such as:
-    // "23 contributions on September 11th"
+  // Remove duplicate dates
+  const uniqueContributions = Array.from(
+    new Map(
+      contributions.map((item) => [item.date, item])
+    ).values()
+  )
 
-    const matches = [
-        ...html.matchAll(
-            /(\d+)\s+contribution[s]?\s+on\s+([^"]+)/gi
-        ),
-    ]
+  // Sort by date
+  uniqueContributions.sort((a, b) =>
+    a.date.localeCompare(b.date)
+  )
 
-    const contributions = matches.map(
-        (match) => ({
-            count: Number(match[1]),
-            label: match[2],
-        })
-    )
+  const totalContributions = uniqueContributions.reduce(
+    (total, day) => total + day.count,
+    0
+  )
 
-    return {
-        contributions,
-        totalContributions:
-            contributions.reduce(
-                (total, day) =>
-                    total + day.count,
-                0
-            ),
-    }
+  return {
+    username,
+    contributions: uniqueContributions,
+    totalContributions,
+  }
 }
-
 module.exports = {
     getGithubUser,
     getGithubRepositories,
