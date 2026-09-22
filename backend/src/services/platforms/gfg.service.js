@@ -1,3 +1,5 @@
+const { saveDailyActivity } = require("../dailyActivity.service")
+
 const crypto = require("crypto")
 
 const GFG_STATS_API =
@@ -111,9 +113,46 @@ const containsVerificationCode = (
     )
 }
 
+const getGfgDailyActivity = async (username) => {
+    const response = await fetch(
+        `${GFG_STATS_API}/${encodeURIComponent(username)}/heatmap`
+    )
+
+    const data = await response.json()
+
+    if (!response.ok || data.status !== "success") {
+        throw new Error(
+            data.message ||
+            `GFG heatmap API error: ${response.status}`
+        )
+    }
+
+    return data.data
+}
+
+const saveGfgDailyActivity = async (userId, username) => {
+    const data = await getGfgDailyActivity(username)
+
+    const activities = (data.dailyContributions || []).map(
+        (day) => ({
+            date: day.date,
+            problemCount: 0,
+            submissionCount: day.count || 0,
+        })
+    )
+
+    return await saveDailyActivity(
+        userId,
+        "GFG",
+        activities
+    )
+}
+
 module.exports = {
     getGfgUser,
     getGfgStats,
+    getGfgDailyActivity,
+    saveGfgDailyActivity,
     generateVerificationCode,
     hashVerificationCode,
     containsVerificationCode,

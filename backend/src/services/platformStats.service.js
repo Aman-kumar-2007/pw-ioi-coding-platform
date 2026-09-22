@@ -13,6 +13,7 @@ const {
 
 const {
     getGfgStats,
+    saveGfgDailyActivity,
 } = require("./platforms/gfg.service")
 
 const {
@@ -237,6 +238,11 @@ const saveGfgStats = async (userId) => {
     }
 
     const stats = await getGfgStats(
+        platformAccount.username
+    )
+
+    await saveGfgDailyActivity(
+        userId,
         platformAccount.username
     )
 

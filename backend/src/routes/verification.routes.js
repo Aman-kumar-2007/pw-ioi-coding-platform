@@ -20,6 +20,7 @@ const {
 
 const {
     getGfgStats,
+    getGfgDailyActivity,
 } = require("../services/platforms/gfg.service")
 
 const {
@@ -1052,5 +1053,29 @@ router.get("/github/contributions/:username", async (req, res) => {
         }
     }
 )
+
+router.get("/gfg/daily/:username", async (req, res) => {
+    try {
+        const data = await getGfgDailyActivity(
+            req.params.username
+        )
+
+        return res.json({
+            success: true,
+            data,
+        })
+    } catch (error) {
+        console.error(
+            "GFG daily activity error:",
+            error
+        )
+
+        return res.status(500).json({
+            success: false,
+            message: error.message,
+        })
+    }
+})
+
 
 module.exports = router
