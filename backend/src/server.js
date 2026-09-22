@@ -5,6 +5,10 @@ require("dotenv").config()
 const supabase = require("./config/supabase")
 const verificationRoutes = require("./routes/verification.routes")
 
+const {
+    startPlatformSyncJob,
+} = require("./jobs/platformSync.job")
+
 const app = express()
 
 const corsOptions = {
@@ -35,6 +39,9 @@ app.use("/api/verification", verificationRoutes)
 const PORT = process.env.PORT || 5001
 
 app.listen(PORT, () => {
-    console.log(`CodeSync Backend running on port ${PORT}`)
+    console.log(
+        `CodeSync Backend running on port ${PORT}`
+    )
+    startPlatformSyncJob()
 })
 
