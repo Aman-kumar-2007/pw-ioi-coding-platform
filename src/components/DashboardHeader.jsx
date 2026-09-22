@@ -10,15 +10,12 @@ function DashboardHeader() {
         <section className="px-8 pb-6 pt-7">
             <div className="relative h-[150px] overflow-hidden rounded-2xl border border-primary/20 bg-card">
 
-                {/* Subtle background glow */}
                 <div className="pointer-events-none absolute -right-20 -top-24 h-64 w-64 rounded-full bg-primary/20 blur-3xl" />
 
                 <div className="pointer-events-none absolute bottom-[-90px] left-[48%] h-[180px] w-[320px] rounded-[50%] bg-indigo-500/10 blur-2xl" />
 
-                {/* Content */}
                 <div className="relative flex h-full items-center justify-between px-7">
 
-                    {/* Left */}
                     <div className="flex h-full flex-col justify-between py-5">
                         <div>
                             <h1 className="text-2xl font-bold tracking-tight">
@@ -30,7 +27,6 @@ function DashboardHeader() {
                             </p>
                         </div>
 
-                        {/* Profile info */}
                         <div className="flex items-center gap-5">
                             <div className="flex items-center gap-2 text-xs text-muted-foreground">
                                 <GraduationCap
@@ -64,7 +60,6 @@ function DashboardHeader() {
                         </div>
                     </div>
 
-                    {/* Quote */}
                     <div className="absolute right-[180px] top-1/2 hidden -translate-y-1/2 text-center lg:block">
                         <p className="max-w-[230px] text-sm font-medium leading-6 text-foreground/80">
                             “Discipline today,
@@ -80,6 +75,7 @@ function DashboardHeader() {
                     </button>
                 </div>
             </div>
+
         </section>
     )
 }
