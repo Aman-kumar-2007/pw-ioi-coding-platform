@@ -1,6 +1,7 @@
 const express = require("express")
 const supabase = require("../config/supabase")
 const requireAuth = require("../middleware/auth.middleware")
+
 const {
     getCodeforcesStats,
 } = require("../services/platforms/codeforces.service")
@@ -12,6 +13,14 @@ const {
 const {
     syncUserPlatforms,
 } = require("../services/platformSync.service")
+
+const {
+    getLeetCodeStats,
+} = require("../services/platforms/leetcode.service")
+
+const {
+    getGfgStats,
+} = require("../services/platforms/gfg.service")
 
 const {
     generateVerificationCode,
@@ -886,6 +895,34 @@ router.get("/codeforces/stats/:username", async (req, res) => {
     }
 })
 
+router.get(
+    "/leetcode/stats/:username",
+    async (req, res) => {
+        try {
+            const { username } = req.params
+
+            const stats =
+                await getLeetCodeStats(username)
+
+            return res.json({
+                success: true,
+                data: stats,
+            })
+        } catch (error) {
+            console.error(
+                "LeetCode stats error:",
+                error
+            )
+
+            return res.status(500).json({
+                success: false,
+                error: error.message,
+            })
+        }
+    }
+)
+
+
 router.post(
     "/sync",
     requireAuth,
@@ -913,5 +950,26 @@ router.post(
         }
     }
 )
+
+
+router.get("/gfg/stats/:username", async (req, res) => {
+    try {
+        const { username } = req.params
+
+        const stats = await getGfgStats(username)
+
+        return res.json({
+            success: true,
+            data: stats,
+        })
+    } catch (error) {
+        console.error("GFG stats error:", error)
+
+        return res.status(500).json({
+            success: false,
+            error: error.message,
+        })
+    }
+})
 
 module.exports = router

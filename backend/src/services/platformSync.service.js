@@ -2,8 +2,9 @@ const supabase = require("../config/supabase")
 
 const {
     saveCodeforcesStats,
+    saveLeetCodeStats,
+    saveGfgStats,
 } = require("./platformStats.service")
-
 
 const syncUserPlatforms = async (userId) => {
     // Get all verified platform accounts
@@ -43,9 +44,24 @@ const syncUserPlatforms = async (userId) => {
                 })
             }
 
-            // LeetCode, GFG and GitHub
-            // will be added here after their
-            // respective stats services are ready.
+            if (account.platform === "LEETCODE") {
+                await saveLeetCodeStats(userId)
+
+                synced.push({
+                    platform: account.platform,
+                    username: account.username,
+                })
+            }
+
+            if (account.platform === "GFG") {
+                await saveGfgStats(userId)
+
+                synced.push({
+                    platform: account.platform,
+                    username: account.username,
+                })
+            }
+
         } catch (error) {
             console.error(
                 `${account.platform} sync error:`,

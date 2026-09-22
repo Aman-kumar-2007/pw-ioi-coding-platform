@@ -9,6 +9,10 @@ const {
     getLeetCodeContestStats,
 } = require("./platforms/leetcode.service")
 
+const {
+    getGfgStats,
+} = require("./platforms/gfg.service")
+
 const saveCodeforcesStats = async (userId) => {
     // Get verified Codeforces account
     const {
@@ -191,8 +195,89 @@ const saveLeetCodeStats = async (userId) => {
     return data
 }
 
+const saveGfgStats = async (userId) => {
+    const {
+        data: platformAccount,
+        error: accountError,
+    } = await supabase
+        .from("platform_accounts")
+        .select("id, username")
+        .eq("user_id", userId)
+        .eq("platform", "GFG")
+        .eq("verification_status", "VERIFIED")
+        .single()
+
+    if (accountError || !platformAccount) {
+        throw new Error(
+            "Verified GFG account not found."
+        )
+    }
+
+    const stats = await getGfgStats(
+        platformAccount.username
+    )
+
+    const {
+        data,
+        error: statsError,
+    } = await supabase
+        .from("platform_stats")
+        .upsert(
+            {
+                platform_account_id:
+                    platformAccount.id,
+
+                problems_solved:
+                    stats.problemsSolved,
+
+                basic_solved:
+                    stats.basicSolved,
+
+                easy_solved:
+                    stats.easySolved,
+
+                medium_solved:
+                    stats.mediumSolved,
+
+                hard_solved:
+                    stats.hardSolved,
+
+                contest_count: 0,
+
+                contributions: 0,
+
+                repository_count: 0,
+
+                current_rating: null,
+
+                max_rating: null,
+
+                recorded_at:
+                    new Date().toISOString(),
+
+                updated_at:
+                    new Date().toISOString(),
+            },
+            {
+                onConflict:
+                    "platform_account_id",
+            }
+        )
+        .select()
+        .single()
+
+    if (statsError) {
+        throw new Error(
+            `Failed to save GFG stats: ${statsError.message}`
+        )
+    }
+
+    return data
+}
+
 
 module.exports = {
     saveCodeforcesStats,
     saveLeetCodeStats,
+    saveGfgStats,
 }
