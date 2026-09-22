@@ -106,66 +106,6 @@ const ratingData = {
     ],
 }
 
-const platformData = [
-    {
-        name: "LeetCode",
-        icon: Code2,
-        color: "#f59e0b",
-        solved: 487,
-        easy: 220,
-        medium: 198,
-        hard: 69,
-    },
-    {
-        name: "Codeforces",
-        icon: Trophy,
-        color: "#2196f3",
-        solved: 312,
-        rating: 1847,
-        maxRating: 1924,
-        contests: 34,
-    },
-    {
-        name: "GitHub",
-        icon: Activity,
-        color: "#10b981",
-        contributions: 203,
-        repositories: 28,
-        activity: [
-            8,
-            13,
-            17,
-            14,
-            21,
-            18,
-            24,
-            20,
-            27,
-            23,
-            30,
-            25,
-            32,
-            27,
-            35,
-            29,
-            38,
-            31,
-            42,
-            34,
-        ],
-    },
-    {
-        name: "GeeksforGeeks",
-        icon: Code2,
-        color: "#22c55e",
-        solved: 347,
-        basic: 72,
-        easy: 126,
-        medium: 108,
-        hard: 41,
-    },
-]
-
 const PERIODS = ["Weekly", "Monthly", "Yearly"]
 
 /* =========================================================
@@ -246,8 +186,8 @@ function PeriodSelector({ value, onChange }) {
                         key={period}
                         onClick={() => onChange(period)}
                         className={`rounded-md px-2.5 py-1.5 text-[9px] font-semibold transition-all duration-200 ${active
-                                ? "bg-primary text-primary-foreground shadow-sm"
-                                : "text-muted-foreground hover:text-foreground"
+                            ? "bg-primary text-primary-foreground shadow-sm"
+                            : "text-muted-foreground hover:text-foreground"
                             }`}
                     >
                         {period}
@@ -558,7 +498,41 @@ function RatingChart() {
    PLATFORM BREAKDOWN
    ========================================================= */
 
-function PlatformBreakdown() {
+function PlatformBreakdown({ platforms }) {
+    const platformMap = new Map(
+        (platforms || []).map((platform) => [
+            platform.platform,
+            platform,
+        ])
+    )
+
+    const platformData = [
+        {
+            key: "LEETCODE",
+            name: "LeetCode",
+            icon: Code2,
+            color: "#f59e0b",
+        },
+        {
+            key: "CODEFORCES",
+            name: "Codeforces",
+            icon: Trophy,
+            color: "#2196f3",
+        },
+        {
+            key: "GITHUB",
+            name: "GitHub",
+            icon: Activity,
+            color: "#10b981",
+        },
+        {
+            key: "GFG",
+            name: "GeeksforGeeks",
+            icon: Code2,
+            color: "#22c55e",
+        },
+    ]
+
     return (
         <div className="lg:col-span-3">
             <div className="mb-4">
@@ -578,10 +552,11 @@ function PlatformBreakdown() {
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 {platformData.map((platform) => {
                     const Icon = platform.icon
+                    const data = platformMap.get(platform.key)
 
                     return (
                         <div
-                            key={platform.name}
+                            key={platform.key}
                             className="group relative min-h-[245px] overflow-hidden rounded-2xl border bg-card p-5 transition-all duration-300 hover:-translate-y-1"
                             style={{
                                 borderColor: `${platform.color}55`,
@@ -629,11 +604,11 @@ function PlatformBreakdown() {
                                 </div>
 
                                 {/* LeetCode */}
-                                {platform.name === "LeetCode" && (
+                                {platform.key === "LEETCODE" && (
                                     <div className="mt-auto grid grid-cols-[0.8fr_1.2fr] items-end gap-6">
                                         <div>
                                             <p className="font-mono text-5xl font-bold tracking-tight">
-                                                {platform.solved}
+                                                {data?.problemsSolved ?? 0}
                                             </p>
 
                                             <p className="mt-2 text-sm text-muted-foreground">
@@ -644,19 +619,19 @@ function PlatformBreakdown() {
                                         <div className="space-y-4">
                                             <DifficultyBar
                                                 label="Easy"
-                                                value={platform.easy}
+                                                value={data?.easySolved ?? 0}
                                                 color="#10b981"
                                             />
 
                                             <DifficultyBar
                                                 label="Medium"
-                                                value={platform.medium}
+                                                value={data?.mediumSolved ?? 0}
                                                 color="#f59e0b"
                                             />
 
                                             <DifficultyBar
                                                 label="Hard"
-                                                value={platform.hard}
+                                                value={data?.hardSolved ?? 0}
                                                 color="#fb7185"
                                             />
                                         </div>
@@ -664,12 +639,12 @@ function PlatformBreakdown() {
                                 )}
 
                                 {/* Codeforces */}
-                                {platform.name === "Codeforces" && (
+                                {platform.key === "CODEFORCES" && (
                                     <div className="mt-auto">
                                         <div className="grid grid-cols-2 gap-6">
                                             <div>
                                                 <p className="font-mono text-5xl font-bold tracking-tight">
-                                                    {platform.solved}
+                                                    {data?.problemsSolved ?? 0}
                                                 </p>
 
                                                 <p className="mt-2 text-sm text-muted-foreground">
@@ -684,7 +659,7 @@ function PlatformBreakdown() {
                                                         color: platform.color,
                                                     }}
                                                 >
-                                                    {platform.rating}
+                                                    {data?.currentRating ?? "—"}
                                                 </p>
 
                                                 <p className="mt-2 text-sm text-muted-foreground">
@@ -700,7 +675,7 @@ function PlatformBreakdown() {
                                                 </p>
 
                                                 <p className="mt-1 font-mono text-lg font-semibold">
-                                                    {platform.maxRating}
+                                                    {data?.maxRating ?? "—"}
                                                 </p>
                                             </div>
 
@@ -710,7 +685,7 @@ function PlatformBreakdown() {
                                                 </p>
 
                                                 <p className="mt-1 font-mono text-lg font-semibold">
-                                                    {platform.contests}
+                                                    {data?.contests ?? 0}
                                                 </p>
                                             </div>
                                         </div>
@@ -718,33 +693,17 @@ function PlatformBreakdown() {
                                 )}
 
                                 {/* GitHub */}
-                                {platform.name === "GitHub" && (
+                                {platform.key === "GITHUB" && (
                                     <div className="mt-auto">
                                         <div className="flex items-end justify-between gap-5">
                                             <div>
                                                 <p className="font-mono text-5xl font-bold tracking-tight">
-                                                    {platform.contributions}
+                                                    {data?.contributions ?? 0}
                                                 </p>
 
                                                 <p className="mt-2 text-sm text-muted-foreground">
                                                     Contributions
                                                 </p>
-                                            </div>
-
-                                            <div className="flex h-24 flex-1 items-end justify-end gap-1">
-                                                {platform.activity.map(
-                                                    (height, index) => (
-                                                        <div
-                                                            key={index}
-                                                            className="w-2 rounded-t-md transition-all duration-300 group-hover:opacity-80"
-                                                            style={{
-                                                                height: `${height * 2}px`,
-                                                                backgroundColor:
-                                                                    platform.color,
-                                                            }}
-                                                        />
-                                                    )
-                                                )}
                                             </div>
                                         </div>
 
@@ -754,18 +713,18 @@ function PlatformBreakdown() {
                                             </span>
 
                                             <span className="font-mono text-lg font-semibold">
-                                                {platform.repositories}
+                                                {data?.repositories ?? 0}
                                             </span>
                                         </div>
                                     </div>
                                 )}
 
                                 {/* GFG */}
-                                {platform.name === "GeeksforGeeks" && (
+                                {platform.key === "GFG" && (
                                     <div className="mt-auto grid grid-cols-[0.8fr_1.2fr] items-end gap-6">
                                         <div>
                                             <p className="font-mono text-5xl font-bold tracking-tight">
-                                                {platform.solved}
+                                                {data?.problemsSolved ?? 0}
                                             </p>
 
                                             <p className="mt-2 text-sm text-muted-foreground">
@@ -776,25 +735,25 @@ function PlatformBreakdown() {
                                         <div className="space-y-4">
                                             <DifficultyBar
                                                 label="Basic"
-                                                value={platform.basic}
+                                                value={data?.basicSolved ?? 0}
                                                 color="#22c55e"
                                             />
 
                                             <DifficultyBar
                                                 label="Easy"
-                                                value={platform.easy}
+                                                value={data?.easySolved ?? 0}
                                                 color="#34d399"
                                             />
 
                                             <DifficultyBar
                                                 label="Medium"
-                                                value={platform.medium}
+                                                value={data?.mediumSolved ?? 0}
                                                 color="#f59e0b"
                                             />
 
                                             <DifficultyBar
                                                 label="Hard"
-                                                value={platform.hard}
+                                                value={data?.hardSolved ?? 0}
                                                 color="#fb7185"
                                             />
                                         </div>
@@ -1161,7 +1120,9 @@ function Analytics() {
             </div>
 
             <div className="mb-5">
-                <PlatformBreakdown />
+                <PlatformBreakdown
+                    platforms={analytics?.platforms}
+                />
             </div>
 
             <div className="mb-5 grid grid-cols-1 gap-5 xl:grid-cols-2">
