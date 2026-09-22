@@ -1,3 +1,5 @@
+const { saveDailyActivity } = require("../dailyActivity.service")
+
 const supabase = require("../../config/supabase")
 
 const GITHUB_API =
@@ -229,39 +231,19 @@ const getGithubContributions = async (username) => {
 const saveGithubDailyActivity = async (userId, username) => {
     const data = await getGithubContributions(username)
 
-    const rows = data.contributions.map((day) => ({
-        user_id: userId,
-        platform: "GITHUB",
-        activity_date: day.date,
-        problem_count: 0,
-        submission_count: 0,
-        contest_count: 0,
-        contribution_count: day.count,
-        updated_at: new Date().toISOString(),
+    const activities = data.contributions.map((day) => ({
+        date: day.date,
+        contributionCount: day.count,
     }))
 
-    if (rows.length === 0) {
-        return {
-            inserted: 0,
-            totalContributions: 0,
-        }
-    }
-
-    const { data: savedRows, error } = await supabase
-        .from("daily_activity")
-        .upsert(rows, {
-            onConflict: "user_id,platform,activity_date",
-        })
-        .select()
-
-    if (error) {
-        throw new Error(
-            `Failed to save GitHub daily activity: ${error.message}`
-        )
-    }
+    const result = await saveDailyActivity(
+        userId,
+        "GITHUB",
+        activities
+    )
 
     return {
-        inserted: savedRows.length,
+        ...result,
         totalContributions: data.totalContributions,
     }
 }

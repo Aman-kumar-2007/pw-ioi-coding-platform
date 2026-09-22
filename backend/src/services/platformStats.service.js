@@ -7,6 +7,7 @@ const {
 const {
     getLeetCodeStats,
     getLeetCodeContestStats,
+    getLeetCodeCalendar,
 } = require("./platforms/leetcode.service")
 
 const {
@@ -18,8 +19,9 @@ const {
     saveGithubDailyActivity,
 } = require("./platforms/github.service")
 
+const { saveDailyActivity } = require("./dailyActivity.service")
+
 const saveCodeforcesStats = async (userId) => {
-    // Get verified Codeforces account
     const {
         data: platformAccount,
         error: accountError,
@@ -112,6 +114,16 @@ const saveLeetCodeStats = async (userId) => {
 
     const stats = await getLeetCodeStats(
         platformAccount.username
+    )
+
+    const calendar = await getLeetCodeCalendar(
+        platformAccount.username
+    )
+
+    await saveDailyActivity(
+        userId,
+        "LEETCODE",
+        calendar.activities
     )
 
     const contestStats =

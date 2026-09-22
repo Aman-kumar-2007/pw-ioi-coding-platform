@@ -1,3 +1,5 @@
+const { saveDailyActivity } = require("../dailyActivity.service")
+
 const getLeetCodeUser = async (username) => {
     const response = await fetch(
         "https://leetcode.com/graphql/",
@@ -178,8 +180,105 @@ const getLeetCodeContestStats = async (username) => {
     }
 }
 
+const getLeetCodeCalendar = async (username) => {
+    const response = await fetch(
+        "https://leetcode.com/graphql/",
+        {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "User-Agent": "Mozilla/5.0",
+                "Referer": "https://leetcode.com/",
+            },
+            body: JSON.stringify({
+                query: `
+                    query userProfileCalendar(
+                        $username: String!
+                        $year: Int
+                    ) {
+                        matchedUser(username: $username) {
+                            userCalendar(year: $year) {
+                                activeYears
+                                streak
+                                totalActiveDays
+                                submissionCalendar
+                            }
+                        }
+                    }
+                `,
+                variables: {
+                    username,
+                    year: new Date().getFullYear(),
+                },
+            }),
+        }
+    )
+
+    const data = await response.json()
+
+    if (!response.ok) {
+        console.error(
+            "LeetCode calendar API response:",
+            data
+        )
+
+        throw new Error(
+            `LeetCode calendar API HTTP error: ${response.status}`
+        )
+    }
+
+    if (data.errors?.length) {
+        throw new Error(
+            data.errors[0].message ||
+            "LeetCode calendar API request failed."
+        )
+    }
+
+    const calendar =
+        data.data?.matchedUser?.userCalendar
+
+    if (!calendar) {
+        throw new Error(
+            "LeetCode calendar data not found."
+        )
+    }
+
+    const submissionCalendar =
+        calendar.submissionCalendar
+            ? JSON.parse(calendar.submissionCalendar)
+            : {}
+
+    const activities = Object.entries(
+        submissionCalendar
+    ).map(([timestamp, count]) => ({
+        date: new Date(
+            Number(timestamp) * 1000
+        ).toISOString().split("T")[0],
+
+        submissionCount: Number(count),
+
+        problemCount: 0,
+    }))
+
+    return {
+        activeYears:
+            calendar.activeYears || [],
+
+        streak:
+            calendar.streak || 0,
+
+        totalActiveDays:
+            calendar.totalActiveDays || 0,
+
+        submissionCalendar,
+
+        activities,
+    }
+}
+
 module.exports = {
     getLeetCodeUser,
     getLeetCodeStats,
     getLeetCodeContestStats,
+    getLeetCodeCalendar,
 }
