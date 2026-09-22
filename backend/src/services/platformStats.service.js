@@ -15,6 +15,7 @@ const {
 
 const {
     getGithubStats,
+    saveGithubDailyActivity,
 } = require("./platforms/github.service")
 
 const saveCodeforcesStats = async (userId) => {
@@ -357,6 +358,12 @@ const saveGithubStats = async (userId) => {
             `Failed to save GitHub stats: ${statsError.message}`
         )
     }
+
+    await saveGithubDailyActivity(
+        userId,
+        platformAccount.username
+    )
+
 
     return {
         ...data,

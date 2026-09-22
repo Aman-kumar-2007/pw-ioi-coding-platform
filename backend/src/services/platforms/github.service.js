@@ -1,3 +1,5 @@
+const supabase = require("../../config/supabase")
+
 const GITHUB_API =
     "https://api.github.com"
 
@@ -140,88 +142,128 @@ const getGithubStats = async (username) => {
 }
 
 const getGithubContributions = async (username) => {
-  const response = await fetch(
-    `https://github.com/users/${encodeURIComponent(username)}/contributions`,
-    {
-      headers: {
-        "User-Agent": "CodeSync/1.0",
-        Accept: "text/html",
-      },
-    }
-  )
-
-  if (!response.ok) {
-    throw new Error(`GitHub contributions HTTP error: ${response.status}`)
-  }
-
-  const html = await response.text()
-
-  const contributions = []
-
-  // GitHub contribution cells
-  const cellRegex =
-    /<td\b[^>]*data-date="([^"]+)"[^>]*id="([^"]+)"[^>]*>[\s\S]*?<\/td>/gi
-
-  let match
-
-  while ((match = cellRegex.exec(html)) !== null) {
-    const date = match[1]
-    const cellId = match[2]
-
-    // Find the tooltip connected to this cell
-    const escapedId = cellId.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
-
-    const tooltipRegex = new RegExp(
-      `<tool-tip[^>]*for="${escapedId}"[^>]*>([\\s\\S]*?)<\\/tool-tip>`,
-      "i"
+    const response = await fetch(
+        `https://github.com/users/${encodeURIComponent(username)}/contributions`,
+        {
+            headers: {
+                "User-Agent": "CodeSync/1.0",
+                Accept: "text/html",
+            },
+        }
     )
 
-    const tooltipMatch = html.match(tooltipRegex)
-
-    let count = 0
-
-    if (tooltipMatch) {
-      const tooltipText = tooltipMatch[1]
-        .replace(/<[^>]*>/g, "")
-        .trim()
-
-      const countMatch = tooltipText.match(
-        /(\d[\d,]*)\s+contributions?/i
-      )
-
-      if (countMatch) {
-        count = Number(countMatch[1].replace(/,/g, ""))
-      }
+    if (!response.ok) {
+        throw new Error(`GitHub contributions HTTP error: ${response.status}`)
     }
 
-    contributions.push({
-      date,
-      count,
-    })
-  }
+    const html = await response.text()
 
-  // Remove duplicate dates
-  const uniqueContributions = Array.from(
-    new Map(
-      contributions.map((item) => [item.date, item])
-    ).values()
-  )
+    const contributions = []
 
-  // Sort by date
-  uniqueContributions.sort((a, b) =>
-    a.date.localeCompare(b.date)
-  )
+    // GitHub contribution cells
+    const cellRegex =
+        /<td\b[^>]*data-date="([^"]+)"[^>]*id="([^"]+)"[^>]*>[\s\S]*?<\/td>/gi
 
-  const totalContributions = uniqueContributions.reduce(
-    (total, day) => total + day.count,
-    0
-  )
+    let match
 
-  return {
-    username,
-    contributions: uniqueContributions,
-    totalContributions,
-  }
+    while ((match = cellRegex.exec(html)) !== null) {
+        const date = match[1]
+        const cellId = match[2]
+
+        // Find the tooltip connected to this cell
+        const escapedId = cellId.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+
+        const tooltipRegex = new RegExp(
+            `<tool-tip[^>]*for="${escapedId}"[^>]*>([\\s\\S]*?)<\\/tool-tip>`,
+            "i"
+        )
+
+        const tooltipMatch = html.match(tooltipRegex)
+
+        let count = 0
+
+        if (tooltipMatch) {
+            const tooltipText = tooltipMatch[1]
+                .replace(/<[^>]*>/g, "")
+                .trim()
+
+            const countMatch = tooltipText.match(
+                /(\d[\d,]*)\s+contributions?/i
+            )
+
+            if (countMatch) {
+                count = Number(countMatch[1].replace(/,/g, ""))
+            }
+        }
+
+        contributions.push({
+            date,
+            count,
+        })
+    }
+
+    // Remove duplicate dates
+    const uniqueContributions = Array.from(
+        new Map(
+            contributions.map((item) => [item.date, item])
+        ).values()
+    )
+
+    // Sort by date
+    uniqueContributions.sort((a, b) =>
+        a.date.localeCompare(b.date)
+    )
+
+    const totalContributions = uniqueContributions.reduce(
+        (total, day) => total + day.count,
+        0
+    )
+
+    return {
+        username,
+        contributions: uniqueContributions,
+        totalContributions,
+    }
+}
+
+const saveGithubDailyActivity = async (userId, username) => {
+    const data = await getGithubContributions(username)
+
+    const rows = data.contributions.map((day) => ({
+        user_id: userId,
+        platform: "GITHUB",
+        activity_date: day.date,
+        problem_count: 0,
+        submission_count: 0,
+        contest_count: 0,
+        contribution_count: day.count,
+        updated_at: new Date().toISOString(),
+    }))
+
+    if (rows.length === 0) {
+        return {
+            inserted: 0,
+            totalContributions: 0,
+        }
+    }
+
+    const { data: savedRows, error } = await supabase
+        .from("daily_activity")
+        .upsert(rows, {
+            onConflict: "user_id,platform,activity_date",
+        })
+        .select()
+
+    if (error) {
+        throw new Error(
+            `Failed to save GitHub daily activity: ${error.message}`
+        )
+    }
+
+    return {
+        inserted: savedRows.length,
+        totalContributions: data.totalContributions,
+    }
 }
 module.exports = {
     getGithubUser,
@@ -229,4 +271,5 @@ module.exports = {
     getGithubPullRequests,
     getGithubStats,
     getGithubContributions,
+    saveGithubDailyActivity,
 }

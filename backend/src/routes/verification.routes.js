@@ -1026,9 +1026,7 @@ router.get(
 )
 
 
-router.get(
-    "/github/contributions/:username",
-    async (req, res) => {
+router.get("/github/contributions/:username", async (req, res) => {
         try {
             const { username } = req.params
 

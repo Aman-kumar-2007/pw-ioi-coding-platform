@@ -4,7 +4,9 @@ const {
     saveCodeforcesStats,
     saveLeetCodeStats,
     saveGfgStats,
+    saveGithubStats,
 } = require("./platformStats.service")
+
 
 const syncUserPlatforms = async (userId) => {
     // Get all verified platform accounts
@@ -55,6 +57,15 @@ const syncUserPlatforms = async (userId) => {
 
             if (account.platform === "GFG") {
                 await saveGfgStats(userId)
+
+                synced.push({
+                    platform: account.platform,
+                    username: account.username,
+                })
+            }
+
+            if (account.platform === "GITHUB") {
+                await saveGithubStats(userId)
 
                 synced.push({
                     platform: account.platform,
