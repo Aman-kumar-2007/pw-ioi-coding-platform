@@ -359,10 +359,24 @@ const saveGithubStats = async (userId) => {
         )
     }
 
-    await saveGithubDailyActivity(
+    const dailyActivity = await saveGithubDailyActivity(
         userId,
         platformAccount.username
     )
+
+    const { error: contributionUpdateError } = await supabase
+        .from("platform_stats")
+        .update({
+            contributions: dailyActivity.totalContributions,
+            updated_at: new Date().toISOString(),
+        })
+        .eq("platform_account_id", platformAccount.id)
+
+    if (contributionUpdateError) {
+        throw new Error(
+            `Failed to update GitHub contributions: ${contributionUpdateError.message}`
+        )
+    }
 
 
     return {
