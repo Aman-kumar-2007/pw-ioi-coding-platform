@@ -1,3 +1,6 @@
+
+const { saveDailyActivity } = require("../dailyActivity.service")
+
 const getCodeforcesUser = async (username) => {
     const response = await fetch(
         `https://codeforces.com/api/user.info?handles=${encodeURIComponent(
@@ -130,10 +133,51 @@ const getCodeforcesStats = async (username) => {
     }
 }
 
+const saveCodeforcesDailyActivity = async (userId, username) => {
+    const submissions = await getCodeforcesSubmissions(username)
+
+    const dailyMap = new Map()
+
+    for (const submission of submissions) {
+        if (submission.verdict !== "OK") {
+            continue
+        }
+
+        const date = new Date(
+            submission.creationTimeSeconds * 1000
+        )
+            .toISOString()
+            .split("T")[0]
+
+        if (!dailyMap.has(date)) {
+            dailyMap.set(date, {
+                date,
+                problemCount: 0,
+                submissionCount: 0,
+            })
+        }
+
+        const day = dailyMap.get(date)
+
+        day.submissionCount += 1
+    }
+
+    const activities = Array.from(
+        dailyMap.values()
+    )
+
+    return await saveDailyActivity(
+        userId,
+        "CODEFORCES",
+        activities
+    )
+}
+
 
 module.exports = {
     getCodeforcesUser,
     getCodeforcesRatingHistory,
     getCodeforcesSubmissions,
     getCodeforcesStats,
+    saveCodeforcesDailyActivity,
 }

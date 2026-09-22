@@ -2,6 +2,7 @@ const supabase = require("../config/supabase")
 
 const {
     getCodeforcesStats,
+    saveCodeforcesDailyActivity,
 } = require("./platforms/codeforces.service")
 
 const {
@@ -41,6 +42,11 @@ const saveCodeforcesStats = async (userId) => {
 
     // Fetch latest Codeforces data
     const stats = await getCodeforcesStats(
+        platformAccount.username
+    )
+
+    await saveCodeforcesDailyActivity(
+        userId,
         platformAccount.username
     )
 
