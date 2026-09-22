@@ -1173,7 +1173,7 @@ function Analytics() {
                 <StatCard
                     icon={Code2}
                     label="Problems Solved"
-                    value="430"
+                   value={analytics?.summary?.totalProblemsSolved ?? 0}
                     subtitle="+12% from last month"
                     iconClass="bg-emerald-500/10 text-emerald-400"
                 />
@@ -1181,7 +1181,7 @@ function Analytics() {
                 <StatCard
                     icon={Trophy}
                     label="Contests"
-                    value="28"
+                   value={analytics?.summary?.totalContests ?? 0}
                     subtitle="+4% from last month"
                     iconClass="bg-amber-500/10 text-amber-400"
                 />
@@ -1189,7 +1189,7 @@ function Analytics() {
                 <StatCard
                     icon={BarChart3}
                     label="Current Rating"
-                    value="1567"
+                   value={analytics?.summary?.currentRating ?? "—"}
                     subtitle="+132 since January"
                     iconClass="bg-blue-500/10 text-blue-400"
                 />
@@ -1205,7 +1205,7 @@ function Analytics() {
                 <StatCard
                     icon={Flame}
                     label="Streak"
-                    value="42 days"
+                    value={`${analytics?.summary?.streak ?? 0} days`}
                     subtitle="Keep the momentum"
                     iconClass="bg-orange-500/10 text-orange-400"
                 />
