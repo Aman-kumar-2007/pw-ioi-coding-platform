@@ -27,45 +27,6 @@ import {
 
 import TopicProgress from "./TopicProgress"
 
-/* =========================================================
-   MOCK DATA
-   ========================================================= */
-
-const activityData = {
-    Weekly: [
-        { label: "Mon", problems: 4 },
-        { label: "Tue", problems: 7 },
-        { label: "Wed", problems: 3 },
-        { label: "Thu", problems: 9 },
-        { label: "Fri", problems: 6 },
-        { label: "Sat", problems: 12 },
-        { label: "Sun", problems: 8 },
-    ],
-
-    Monthly: [
-        { label: "Jan", problems: 6 },
-        { label: "Feb", problems: 18 },
-        { label: "Mar", problems: 17 },
-        { label: "Apr", problems: 13 },
-        { label: "May", problems: 19 },
-        { label: "Jun", problems: 30 },
-        { label: "Jul", problems: 22 },
-        { label: "Aug", problems: 16 },
-        { label: "Sep", problems: 17 },
-        { label: "Oct", problems: 16 },
-        { label: "Nov", problems: 23 },
-        { label: "Dec", problems: 40 },
-    ],
-
-    Yearly: [
-        { label: "2022", problems: 84 },
-        { label: "2023", problems: 126 },
-        { label: "2024", problems: 185 },
-        { label: "2025", problems: 312 },
-        { label: "2026", problems: 430 },
-    ],
-}
-
 const ratingData = {
     Weekly: [
         { label: "W1", codeforces: 1490, leetcode: 1180 },
@@ -236,22 +197,21 @@ function ChartTooltip({ active, payload, label }) {
    ACTIVITY CHART
    ========================================================= */
 
-function ActivityChart() {
-    const [period, setPeriod] = useState("Monthly")
+function ActivityChart({ activity }) {
+    const [period, setPeriod] = useState("Weekly")
 
-    const data = useMemo(
-        () => activityData[period],
-        [period]
-    )
+    const data = useMemo(() => {
+        if (!activity) return []
 
-    const total = useMemo(
-        () =>
-            data.reduce(
-                (sum, item) => sum + item.problems,
-                0
-            ),
-        [data]
-    )
+        return activity[period.toLowerCase()] || []
+    }, [activity, period])
+
+    const total = useMemo(() => {
+        return data.reduce(
+            (sum, item) => sum + (item.submissions || 0),
+            0
+        )
+    }, [data])
 
     return (
         <AnalyticsCard>
@@ -261,12 +221,12 @@ function ActivityChart() {
                         <div className="h-5 w-1 rounded-full bg-emerald-400" />
 
                         <h2 className="text-sm font-bold">
-                            Problem Solving Activity
+                            Problem Submission Activity
                         </h2>
                     </div>
 
                     <p className="mt-1 text-[9px] text-muted-foreground">
-                        Problems solved over time
+                        Problems submitted over time
                     </p>
                 </div>
 
@@ -289,15 +249,12 @@ function ActivityChart() {
 
                 <div className="flex items-center gap-1.5 text-[9px] text-muted-foreground">
                     <span className="h-2 w-2 rounded-full bg-emerald-400" />
-                    Problems solved
+                    Submissions
                 </div>
             </div>
 
             <div className="h-[270px]">
-                <ResponsiveContainer
-                    width="100%"
-                    height="100%"
-                >
+                <ResponsiveContainer width="100%" height="100%">
                     <BarChart
                         data={data}
                         margin={{
@@ -342,15 +299,11 @@ function ActivityChart() {
                         />
 
                         <Bar
-                            dataKey="problems"
-                            name="Problems"
+                            dataKey="submissions"
+                            name="Submissions"
                             fill="#34d399"
                             radius={[5, 5, 0, 0]}
-                            maxBarSize={
-                                period === "Yearly"
-                                    ? 55
-                                    : 30
-                            }
+                            maxBarSize={30}
                         />
                     </BarChart>
                 </ResponsiveContainer>
@@ -358,7 +311,6 @@ function ActivityChart() {
         </AnalyticsCard>
     )
 }
-
 /* =========================================================
    RATING CHART
    ========================================================= */
@@ -641,7 +593,7 @@ function PlatformBreakdown({ platforms }) {
                                 {/* Codeforces */}
                                 {platform.key === "CODEFORCES" && (
                                     <div className="mt-auto">
-                                        <div className="grid grid-cols-2 gap-6">
+                                        <div className="grid grid-cols-2 gap-6 mt-5">
                                             <div>
                                                 <p className="font-mono text-5xl font-bold tracking-tight">
                                                     {data?.problemsSolved ?? 0}
@@ -1130,7 +1082,7 @@ function Analytics() {
                     difficultyData={difficultyData}
                 />
 
-                <ActivityChart />
+                <ActivityChart activity={analytics?.activity} />
 
                 <RatingChart />
 

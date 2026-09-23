@@ -1,55 +1,29 @@
 const supabase = require("../config/supabase")
 
+// =========================================================
+// ACTIVITY AGGREGATION
+// =========================================================
+
 const aggregateActivity = (rows = []) => {
-    // GitHub ko problem-solving activity se exclude karna hai
-    const codingRows = rows.filter(
-        (row) => row.platform !== "GITHUB"
-    )
-
-    const getCount = (row) =>
-        row.problem_count ||
-        row.submission_count ||
-        0
-
     const weekly = {}
     const monthly = {}
     const yearly = {}
 
-    for (const row of codingRows) {
-        const date = new Date(`${row.activity_date}T00:00:00`)
-        const count = getCount(row)
+    // Current date in India
+    const todayKey = new Intl.DateTimeFormat("en-CA", {
+        timeZone: "Asia/Kolkata",
+    }).format(new Date())
 
-        // Weekly
-        const day = date.toLocaleDateString("en-US", {
-            weekday: "short",
-        })
+    const today = new Date(`${todayKey}T00:00:00Z`)
 
-        if (!weekly[day]) {
-            weekly[day] = 0
-        }
+    // Sunday = 0, Monday = 1, ...
+    const dayOfWeek = today.getUTCDay()
 
-        weekly[day] += count
+    // Find Monday of current week
+    const daysFromMonday = (dayOfWeek + 6) % 7
 
-        // Monthly
-        const month = date.toLocaleDateString("en-US", {
-            month: "short",
-        })
-
-        if (!monthly[month]) {
-            monthly[month] = 0
-        }
-
-        monthly[month] += count
-
-        // Yearly
-        const year = date.getFullYear().toString()
-
-        if (!yearly[year]) {
-            yearly[year] = 0
-        }
-
-        yearly[year] += count
-    }
+    const monday = new Date(today)
+    monday.setUTCDate(today.getUTCDate() - daysFromMonday)
 
     const weekOrder = [
         "Mon",
@@ -60,6 +34,67 @@ const aggregateActivity = (rows = []) => {
         "Sat",
         "Sun",
     ]
+
+    // =====================================================
+    // CURRENT WEEK
+    // =====================================================
+
+    for (let i = 0; i < 7; i++) {
+        const date = new Date(monday)
+
+        date.setUTCDate(monday.getUTCDate() + i)
+
+        const dateKey = date.toISOString().split("T")[0]
+
+        weekly[dateKey] = {
+            label: weekOrder[i],
+            submissions: 0,
+        }
+    }
+
+    // =====================================================
+    // MONTHLY + YEARLY
+    // =====================================================
+
+    for (const row of rows) {
+        const dateKey = row.activity_date
+        const submissions = row.submission_count || 0
+
+        // -----------------------------
+        // Weekly
+        // -----------------------------
+
+        if (weekly[dateKey]) {
+            weekly[dateKey].submissions += submissions
+        }
+
+        // -----------------------------
+        // Yearly
+        // -----------------------------
+
+        const year = dateKey.slice(0, 4)
+
+        yearly[year] =
+            (yearly[year] || 0) + submissions
+
+        // -----------------------------
+        // Monthly
+        // Current year only
+        // -----------------------------
+
+        if (year === todayKey.slice(0, 4)) {
+            const month = Number(
+                dateKey.slice(5, 7)
+            )
+
+            monthly[month] =
+                (monthly[month] || 0) + submissions
+        }
+    }
+
+    // =====================================================
+    // MONTHLY DATA
+    // =====================================================
 
     const monthOrder = [
         "Jan",
@@ -76,28 +111,67 @@ const aggregateActivity = (rows = []) => {
         "Dec",
     ]
 
+    const monthlyData = monthOrder.map(
+        (label, index) => ({
+            label,
+            submissions:
+                monthly[index + 1] || 0,
+        })
+    )
+
+    // =====================================================
+    // YEARLY DATA
+    // =====================================================
+
+    const yearlyData = Object.keys(yearly)
+        .sort()
+        .map((label) => ({
+            label,
+            submissions: yearly[label],
+        }))
+
+    // =====================================================
+    // FINAL RESULT
+    // =====================================================
+
     return {
-        weekly: weekOrder.map((label) => ({
-            label,
-            problems: weekly[label] || 0,
-        })),
+        weekly: weekOrder.map(
+            (label, index) => {
+                const date = new Date(monday)
 
-        monthly: monthOrder.map((label) => ({
-            label,
-            problems: monthly[label] || 0,
-        })),
+                date.setUTCDate(
+                    monday.getUTCDate() + index
+                )
 
-        yearly: Object.keys(yearly)
-            .sort()
-            .map((label) => ({
-                label,
-                problems: yearly[label],
-            })),
+                const dateKey =
+                    date.toISOString().split("T")[0]
+
+                return {
+                    label,
+                    submissions:
+                        weekly[dateKey]
+                            ?.submissions || 0,
+                }
+            }
+        ),
+
+        monthly: monthlyData,
+
+        yearly: yearlyData,
     }
 }
 
+
+// =========================================================
+// ANALYTICS SUMMARY
+// =========================================================
+
 const getAnalyticsSummary = async (userId) => {
-    // Get current user's verified platform accounts
+
+    // =====================================================
+    // VERIFIED PLATFORM ACCOUNTS
+    // =====================================================
+
     const {
         data: accounts,
         error: accountsError,
@@ -117,10 +191,15 @@ const getAnalyticsSummary = async (userId) => {
         (account) => account.id
     )
 
-    // Get platform stats
+
+    // =====================================================
+    // PLATFORM STATS
+    // =====================================================
+
     let platformStats = []
 
     if (accountIds.length > 0) {
+
         const {
             data,
             error: statsError,
@@ -141,7 +220,10 @@ const getAnalyticsSummary = async (userId) => {
                 max_rating
                 `
             )
-            .in("platform_account_id", accountIds)
+            .in(
+                "platform_account_id",
+                accountIds
+            )
 
         if (statsError) {
             throw new Error(
@@ -152,12 +234,19 @@ const getAnalyticsSummary = async (userId) => {
         platformStats = data || []
     }
 
-    const statsByAccountId = new Map(
-        platformStats.map((stats) => [
-            stats.platform_account_id,
-            stats,
-        ])
-    )
+
+    const statsByAccountId =
+        new Map(
+            platformStats.map((stats) => [
+                stats.platform_account_id,
+                stats,
+            ])
+        )
+
+
+    // =====================================================
+    // SUMMARY VALUES
+    // =====================================================
 
     let totalProblemsSolved = 0
     let totalContests = 0
@@ -170,12 +259,22 @@ const getAnalyticsSummary = async (userId) => {
 
     const platforms = []
 
+
+    // =====================================================
+    // PLATFORM DATA
+    // =====================================================
+
     for (const account of accounts || []) {
-        const stats = statsByAccountId.get(account.id)
+
+        const stats =
+            statsByAccountId.get(account.id)
 
         if (!stats) continue
 
+
+        // GitHub is not a problem-solving platform
         if (account.platform !== "GITHUB") {
+
             totalProblemsSolved +=
                 stats.problems_solved || 0
 
@@ -195,17 +294,25 @@ const getAnalyticsSummary = async (userId) => {
                 stats.hard_solved || 0
         }
 
+
+        // Current rating
         if (
             account.platform === "CODEFORCES" ||
             account.platform === "LEETCODE"
         ) {
-            if (stats.current_rating != null) {
-                currentRating = stats.current_rating
+
+            if (
+                stats.current_rating != null
+            ) {
+                currentRating =
+                    stats.current_rating
             }
         }
 
+
         platforms.push({
             platform: account.platform,
+
             username: account.username,
 
             problemsSolved:
@@ -240,19 +347,30 @@ const getAnalyticsSummary = async (userId) => {
         })
     }
 
-    // Get user's activity
+
+    // =====================================================
+    // DAILY ACTIVITY
+    // =====================================================
+
     const {
         data: activity,
         error: activityError,
     } = await supabase
         .from("daily_activity")
         .select(
-            "activity_date, platform, problem_count, submission_count, contribution_count"
+            `
+            activity_date,
+            platform,
+            problem_count,
+            submission_count,
+            contribution_count
+            `
         )
         .eq("user_id", userId)
         .order("activity_date", {
             ascending: true,
         })
+
 
     if (activityError) {
         throw new Error(
@@ -260,7 +378,11 @@ const getAnalyticsSummary = async (userId) => {
         )
     }
 
-    // Calculate current streak
+
+    // =====================================================
+    // STREAK
+    // =====================================================
+
     const activeDates = new Set(
         (activity || [])
             .filter(
@@ -269,20 +391,25 @@ const getAnalyticsSummary = async (userId) => {
                     (day.submission_count || 0) > 0 ||
                     (day.contribution_count || 0) > 0
             )
-            .map((day) => day.activity_date)
+            .map(
+                (day) => day.activity_date
+            )
     )
+
 
     let streak = 0
 
     const currentDate = new Date()
 
     while (true) {
-        const dateKey = currentDate.toLocaleDateString(
-            "en-CA",
-            {
-                timeZone: "Asia/Kolkata",
-            }
-        )
+
+        const dateKey =
+            currentDate.toLocaleDateString(
+                "en-CA",
+                {
+                    timeZone: "Asia/Kolkata",
+                }
+            )
 
         if (!activeDates.has(dateKey)) {
             break
@@ -295,11 +422,21 @@ const getAnalyticsSummary = async (userId) => {
         )
     }
 
-    // Aggregate activity for charts
+
+    // =====================================================
+    // SUBMISSION ACTIVITY
+    // =====================================================
+
     const aggregatedActivity =
         aggregateActivity(activity || [])
 
+
+    // =====================================================
+    // FINAL RESPONSE
+    // =====================================================
+
     return {
+
         summary: {
             totalProblemsSolved,
             totalContests,
@@ -316,9 +453,11 @@ const getAnalyticsSummary = async (userId) => {
 
         platforms,
 
-        activity: aggregatedActivity,
+        activity:
+            aggregatedActivity,
     }
 }
+
 
 module.exports = {
     getAnalyticsSummary,

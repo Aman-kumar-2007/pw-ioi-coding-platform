@@ -123,6 +123,28 @@ const saveLeetCodeStats = async (userId) => {
         platformAccount.username
     )
 
+    const { data: previousStats, error: previousStatsError } =
+        await supabase
+            .from("platform_stats")
+            .select("problems_solved")
+            .eq("platform_account_id", platformAccount.id)
+            .maybeSingle()
+
+    if (previousStatsError) {
+        throw new Error(
+            `Failed to load previous LeetCode stats: ${previousStatsError.message}`
+        )
+    }
+
+    const previousSolved = previousStats?.problems_solved ?? stats.problemsSolved
+
+    const newProblemsSolved = previousStats
+        ? Math.max(
+            0,
+            stats.problemsSolved - previousSolved
+        )
+        : 0
+
     const calendar = await getLeetCodeCalendar(
         platformAccount.username
     )
@@ -130,7 +152,15 @@ const saveLeetCodeStats = async (userId) => {
     await saveDailyActivity(
         userId,
         "LEETCODE",
-        calendar.activities
+        [
+            {
+                date: new Date().toISOString().split("T")[0],
+                problemCount: newProblemsSolved,
+                submissionCount: 0,
+                contestCount: 0,
+                contributionCount: 0,
+            },
+        ]
     )
 
     const contestStats =
@@ -241,9 +271,41 @@ const saveGfgStats = async (userId) => {
         platformAccount.username
     )
 
-    await saveGfgDailyActivity(
+    const { data: previousStats, error: previousStatsError } =
+        await supabase
+            .from("platform_stats")
+            .select("problems_solved")
+            .eq("platform_account_id", platformAccount.id)
+            .maybeSingle()
+
+    if (previousStatsError) {
+        throw new Error(
+            `Failed to load previous GFG stats: ${previousStatsError.message}`
+        )
+    }
+
+    const previousSolved =
+        previousStats?.problems_solved ?? stats.problemsSolved
+
+    const newProblemsSolved = previousStats
+        ? Math.max(
+            0,
+            stats.problemsSolved - previousSolved
+        )
+        : 0
+
+    await saveDailyActivity(
         userId,
-        platformAccount.username
+        "GFG",
+        [
+            {
+                date: new Date().toISOString().split("T")[0],
+                problemCount: newProblemsSolved,
+                submissionCount: 0,
+                contestCount: 0,
+                contributionCount: 0,
+            },
+        ]
     )
 
     const {
