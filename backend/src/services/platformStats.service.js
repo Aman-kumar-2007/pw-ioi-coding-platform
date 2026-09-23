@@ -160,18 +160,51 @@ const saveLeetCodeStats = async (userId) => {
         platformAccount.username
     )
 
+    // -----------------------------------------
+    // Aggregate LeetCode submissions by date
+    // -----------------------------------------
+
+    const dailyActivityMap = new Map()
+
+    for (const activity of calendar.activities || []) {
+        const date = activity.date
+        const submissionCount =
+            Number(activity.submissionCount) || 0
+
+        if (!dailyActivityMap.has(date)) {
+            dailyActivityMap.set(date, {
+                date,
+                problemCount: 0,
+                submissionCount: 0,
+            })
+        }
+
+        dailyActivityMap.get(date).submissionCount +=
+            submissionCount
+    }
+
+    const dailyActivities = Array.from(
+        dailyActivityMap.values()
+    )
+
+    console.log(
+        "LeetCode daily activity:",
+        dailyActivities.find(
+            (day) =>
+                day.date ===
+                new Date().toLocaleDateString(
+                    "en-CA",
+                    {
+                        timeZone: "Asia/Kolkata",
+                    }
+                )
+        )
+    )
+
     await saveDailyActivity(
         userId,
         "LEETCODE",
-        [
-            {
-                date: new Date().toISOString().split("T")[0],
-                problemCount: newProblemsSolved,
-                submissionCount: 0,
-                contestCount: 0,
-                contributionCount: 0,
-            },
-        ]
+        dailyActivities
     )
 
     const contestStats =

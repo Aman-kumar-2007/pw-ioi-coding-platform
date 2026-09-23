@@ -251,6 +251,27 @@ const getLeetCodeCalendar = async (username) => {
             ? JSON.parse(calendar.submissionCalendar)
             : {}
 
+    const today = getIndiaDate(
+        Math.floor(Date.now() / 1000)
+    )
+
+    const todaySubmissions = Object.entries(
+        submissionCalendar
+    ).reduce((total, [timestamp, count]) => {
+        if (getIndiaDate(timestamp) === today) {
+            return total + Number(count)
+        }
+
+        return total
+    }, 0)
+
+    console.log(
+        "LeetCode TODAY:",
+        today,
+        "SUBMISSIONS:",
+        todaySubmissions
+    )
+
     const activities = Object.entries(
         submissionCalendar
     ).map(([timestamp, count]) => ({
