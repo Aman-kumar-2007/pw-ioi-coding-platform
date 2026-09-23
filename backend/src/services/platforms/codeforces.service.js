@@ -9,9 +9,9 @@ const {
 
 const getCodeforcesUser = async (username) => {
     const response = await fetch(
-        `https://codeforces.com/api/user.status?handle=${encodeURIComponent(
+        `https://codeforces.com/api/user.info?handles=${encodeURIComponent(
             username
-        )}&count=10000`
+        )}`
     )
 
     if (!response.ok) {
@@ -109,8 +109,17 @@ const getCodeforcesStats = async (username) => {
         }
     }
 
-    const maxRating = user.maxRating || user.rating || 0
-    const currentRating = user.rating || 0
+    const latestRating =
+        ratingHistory.length > 0
+            ? ratingHistory[ratingHistory.length - 1].newRating
+            : user.rating || 0
+
+    const maxRating = Math.max(
+        user.maxRating || 0,
+        ...ratingHistory.map((contest) => contest.newRating || 0)
+    )
+
+    const currentRating = latestRating
 
     return {
         username: user.handle,
