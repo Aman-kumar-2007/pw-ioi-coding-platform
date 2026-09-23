@@ -1062,7 +1062,9 @@ function Analytics() {
 
                 <RatingChart rating={analytics?.rating} />
 
-                <TopicProgress />
+                <TopicProgress
+                    data={analytics?.topicProgress || []}
+                />
             </div>
         </section>
     )

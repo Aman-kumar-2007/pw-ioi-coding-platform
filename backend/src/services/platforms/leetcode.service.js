@@ -68,6 +68,7 @@ const getLeetCodeUser = async (username) => {
 
     return data.data.matchedUser
 }
+
 const getLeetCodeStats = async (username) => {
     const user = await getLeetCodeUser(username)
 
@@ -103,6 +104,69 @@ const getLeetCodeStats = async (username) => {
         profileCalendar:
             user.profileCalendar || null,
     }
+}
+
+
+const getLeetCodeTopicStats = async (username) => {
+    const response = await fetch(
+        "https://leetcode.com/graphql/",
+        {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "User-Agent": "Mozilla/5.0",
+                "Referer": "https://leetcode.com/",
+            },
+            body: JSON.stringify({
+                query: `
+                    query skillStats($username: String!) {
+                        matchedUser(username: $username) {
+                            tagProblemCounts {
+                                advanced {
+                                    tagName
+                                    tagSlug
+                                    problemsSolved
+                                }
+                                intermediate {
+                                    tagName
+                                    tagSlug
+                                    problemsSolved
+                                }
+                                fundamental {
+                                    tagName
+                                    tagSlug
+                                    problemsSolved
+                                }
+                            }
+                        }
+                    }
+                `,
+                variables: { username },
+            }),
+        }
+    )
+
+    const data = await response.json()
+
+    if (!response.ok || data.errors?.length) {
+        throw new Error(
+            data.errors?.[0]?.message ||
+            `LeetCode topic API error: ${response.status}`
+        )
+    }
+
+    const counts =
+        data.data?.matchedUser?.tagProblemCounts
+
+    if (!counts) {
+        return []
+    }
+
+    return [
+        ...(counts.advanced || []),
+        ...(counts.intermediate || []),
+        ...(counts.fundamental || []),
+    ]
 }
 
 const getLeetCodeContestStats = async (username) => {
@@ -265,13 +329,6 @@ const getLeetCodeCalendar = async (username) => {
         return total
     }, 0)
 
-    console.log(
-        "LeetCode TODAY:",
-        today,
-        "SUBMISSIONS:",
-        todaySubmissions
-    )
-
     const activities = Object.entries(
         submissionCalendar
     ).map(([timestamp, count]) => ({
@@ -303,4 +360,5 @@ module.exports = {
     getLeetCodeStats,
     getLeetCodeContestStats,
     getLeetCodeCalendar,
+    getLeetCodeTopicStats,
 }

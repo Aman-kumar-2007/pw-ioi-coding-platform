@@ -90,6 +90,23 @@ const getGfgStats = async (username) => {
     }
 }
 
+const getGfgTopicStats = async (username) => {
+    const response = await fetch(
+        `${GFG_STATS_API}/${encodeURIComponent(username)}/topics`
+    )
+
+    const data = await response.json()
+
+    if (!response.ok || data.status !== "success") {
+        throw new Error(
+            data.message ||
+            "Unable to fetch GFG topic stats."
+        )
+    }
+
+    return data.data?.topicAnalysis || []
+}
+
 const containsVerificationCode = (
     html,
     verificationCodeHash
@@ -156,4 +173,5 @@ module.exports = {
     generateVerificationCode,
     hashVerificationCode,
     containsVerificationCode,
+    getGfgTopicStats,
 }

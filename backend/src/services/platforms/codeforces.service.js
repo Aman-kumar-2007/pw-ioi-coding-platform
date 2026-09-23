@@ -178,6 +178,7 @@ const getCodeforcesSolvedProblems = async (username) => {
                 externalProblemId,
                 title: submission.problem.name || null,
                 url: `https://codeforces.com/problemset/problem/${contestId}/${index}`,
+                tags: submission.problem.tags || [],
                 solvedAtTimestamp: submission.creationTimeSeconds,
             })
         }
@@ -187,6 +188,7 @@ const getCodeforcesSolvedProblems = async (username) => {
         externalProblemId: problem.externalProblemId,
         title: problem.title,
         url: problem.url,
+        tags: problem.tags,
         solvedAt: new Date(
             problem.solvedAtTimestamp * 1000
         ).toISOString(),

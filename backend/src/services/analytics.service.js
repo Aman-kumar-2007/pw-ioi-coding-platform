@@ -1,5 +1,21 @@
 const supabase = require("../config/supabase")
 
+const {
+    getLeetCodeTopicStats,
+} = require("./platforms/leetcode.service")
+
+const {
+    getGfgTopicStats,
+} = require("./platforms/gfg.service")
+
+const {
+    getCodeforcesSolvedProblems,
+} = require("./platforms/codeforces.service")
+
+const {
+    getTopicProgress,
+} = require("./topicProgress.service")
+
 // =========================================================
 // ACTIVITY AGGREGATION
 // =========================================================
@@ -9,17 +25,14 @@ const aggregateActivity = (rows = []) => {
     const monthly = {}
     const yearly = {}
 
-    // Current date in India
     const todayKey = new Intl.DateTimeFormat("en-CA", {
         timeZone: "Asia/Kolkata",
     }).format(new Date())
 
     const today = new Date(`${todayKey}T00:00:00Z`)
 
-    // Sunday = 0, Monday = 1, ...
     const dayOfWeek = today.getUTCDay()
 
-    // Find Monday of current week
     const daysFromMonday = (dayOfWeek + 6) % 7
 
     const monday = new Date(today)
@@ -218,7 +231,6 @@ const aggregateRatingHistory = (rows = []) => {
 
     const dayOfWeek = today.getDay()
 
-    // Monday = 0
     const daysFromMonday =
         (dayOfWeek + 6) % 7
 
@@ -412,7 +424,6 @@ const getAnalyticsSummary = async (userId) => {
         (account) => account.id
     )
 
-
     // =====================================================
     // PLATFORM STATS
     // =====================================================
@@ -455,7 +466,6 @@ const getAnalyticsSummary = async (userId) => {
         platformStats = data || []
     }
 
-
     const statsByAccountId =
         new Map(
             platformStats.map((stats) => [
@@ -463,7 +473,6 @@ const getAnalyticsSummary = async (userId) => {
                 stats,
             ])
         )
-
 
     // =====================================================
     // SUMMARY VALUES
@@ -480,7 +489,6 @@ const getAnalyticsSummary = async (userId) => {
 
     const platforms = []
 
-
     // =====================================================
     // PLATFORM DATA
     // =====================================================
@@ -491,7 +499,6 @@ const getAnalyticsSummary = async (userId) => {
             statsByAccountId.get(account.id)
 
         if (!stats) continue
-
 
         // GitHub is not a problem-solving platform
         if (account.platform !== "GITHUB") {
@@ -515,7 +522,6 @@ const getAnalyticsSummary = async (userId) => {
                 stats.hard_solved || 0
         }
 
-
         // Current rating
         if (
             account.platform === "CODEFORCES" ||
@@ -529,7 +535,6 @@ const getAnalyticsSummary = async (userId) => {
                     stats.current_rating
             }
         }
-
 
         platforms.push({
             platform: account.platform,
@@ -579,13 +584,13 @@ const getAnalyticsSummary = async (userId) => {
         .from("rating_history")
         .select(
             `
-        platform,
-        rating_before,
-        rating_after,
-        rating_change,
-        recorded_at,
-        contest_id
-        `
+            platform,
+            rating_before,
+            rating_after,
+            rating_change,
+            recorded_at,
+            contest_id
+            `
         )
         .eq("user_id", userId)
         .in("platform", ["CODEFORCES", "LEETCODE"])
@@ -598,7 +603,6 @@ const getAnalyticsSummary = async (userId) => {
             `Failed to load rating history: ${ratingHistoryError.message}`
         )
     }
-
 
     // =====================================================
     // DAILY ACTIVITY
@@ -623,13 +627,11 @@ const getAnalyticsSummary = async (userId) => {
             ascending: true,
         })
 
-
     if (activityError) {
         throw new Error(
             `Failed to load activity: ${activityError.message}`
         )
     }
-
 
     // =====================================================
     // STREAK
@@ -647,7 +649,6 @@ const getAnalyticsSummary = async (userId) => {
                 (day) => day.activity_date
             )
     )
-
 
     let streak = 0
 
@@ -674,7 +675,6 @@ const getAnalyticsSummary = async (userId) => {
         )
     }
 
-
     // =====================================================
     // SUBMISSION ACTIVITY
     // =====================================================
@@ -687,6 +687,45 @@ const getAnalyticsSummary = async (userId) => {
             ratingHistory || []
         )
 
+    // =====================================================
+    // TOPIC-WISE PROGRESS
+    // =====================================================
+
+    const topicPlatformData = {
+        leetcode: [],
+        codeforces: [],
+        gfg: [],
+    }
+
+    for (const account of accounts || []) {
+
+        if (account.platform === "LEETCODE") {
+            topicPlatformData.leetcode =
+                await getLeetCodeTopicStats(
+                    account.username
+                )
+        }
+
+        if (account.platform === "CODEFORCES") {
+            topicPlatformData.codeforces =
+                await getCodeforcesSolvedProblems(
+                    account.username
+                )
+        }
+
+        if (account.platform === "GFG") {
+            topicPlatformData.gfg =
+                await getGfgTopicStats(
+                    account.username
+                )
+        }
+    }
+
+    const topicProgress =
+        await getTopicProgress(
+            userId,
+            topicPlatformData
+        )
 
     // =====================================================
     // FINAL RESPONSE
@@ -712,9 +751,14 @@ const getAnalyticsSummary = async (userId) => {
         activity: aggregatedActivity,
 
         rating: aggregatedRating,
+
+        topicProgress,
     }
 }
 
+// =========================================================
+// EXPORTS
+// =========================================================
 
 module.exports = {
     getAnalyticsSummary,
