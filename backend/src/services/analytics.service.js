@@ -1,5 +1,101 @@
 const supabase = require("../config/supabase")
 
+const aggregateActivity = (rows = []) => {
+    // GitHub ko problem-solving activity se exclude karna hai
+    const codingRows = rows.filter(
+        (row) => row.platform !== "GITHUB"
+    )
+
+    const getCount = (row) =>
+        row.problem_count ||
+        row.submission_count ||
+        0
+
+    const weekly = {}
+    const monthly = {}
+    const yearly = {}
+
+    for (const row of codingRows) {
+        const date = new Date(`${row.activity_date}T00:00:00`)
+        const count = getCount(row)
+
+        // Weekly
+        const day = date.toLocaleDateString("en-US", {
+            weekday: "short",
+        })
+
+        if (!weekly[day]) {
+            weekly[day] = 0
+        }
+
+        weekly[day] += count
+
+        // Monthly
+        const month = date.toLocaleDateString("en-US", {
+            month: "short",
+        })
+
+        if (!monthly[month]) {
+            monthly[month] = 0
+        }
+
+        monthly[month] += count
+
+        // Yearly
+        const year = date.getFullYear().toString()
+
+        if (!yearly[year]) {
+            yearly[year] = 0
+        }
+
+        yearly[year] += count
+    }
+
+    const weekOrder = [
+        "Mon",
+        "Tue",
+        "Wed",
+        "Thu",
+        "Fri",
+        "Sat",
+        "Sun",
+    ]
+
+    const monthOrder = [
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "May",
+        "Jun",
+        "Jul",
+        "Aug",
+        "Sep",
+        "Oct",
+        "Nov",
+        "Dec",
+    ]
+
+    return {
+        weekly: weekOrder.map((label) => ({
+            label,
+            problems: weekly[label] || 0,
+        })),
+
+        monthly: monthOrder.map((label) => ({
+            label,
+            problems: monthly[label] || 0,
+        })),
+
+        yearly: Object.keys(yearly)
+            .sort()
+            .map((label) => ({
+                label,
+                problems: yearly[label],
+            })),
+    }
+}
+
 const getAnalyticsSummary = async (userId) => {
     // Get current user's verified platform accounts
     const {
@@ -17,7 +113,9 @@ const getAnalyticsSummary = async (userId) => {
         )
     }
 
-    const accountIds = (accounts || []).map((account) => account.id)
+    const accountIds = (accounts || []).map(
+        (account) => account.id
+    )
 
     // Get platform stats
     let platformStats = []
@@ -78,13 +176,23 @@ const getAnalyticsSummary = async (userId) => {
         if (!stats) continue
 
         if (account.platform !== "GITHUB") {
-            totalProblemsSolved += stats.problems_solved || 0
-            totalContests += stats.contest_count || 0
+            totalProblemsSolved +=
+                stats.problems_solved || 0
 
-            basicSolved += stats.basic_solved || 0
-            easySolved += stats.easy_solved || 0
-            mediumSolved += stats.medium_solved || 0
-            hardSolved += stats.hard_solved || 0
+            totalContests +=
+                stats.contest_count || 0
+
+            basicSolved +=
+                stats.basic_solved || 0
+
+            easySolved +=
+                stats.easy_solved || 0
+
+            mediumSolved +=
+                stats.medium_solved || 0
+
+            hardSolved +=
+                stats.hard_solved || 0
         }
 
         if (
@@ -99,16 +207,36 @@ const getAnalyticsSummary = async (userId) => {
         platforms.push({
             platform: account.platform,
             username: account.username,
-            problemsSolved: stats.problems_solved || 0,
-            basicSolved: stats.basic_solved || 0,
-            easySolved: stats.easy_solved || 0,
-            mediumSolved: stats.medium_solved || 0,
-            hardSolved: stats.hard_solved || 0,
-            contests: stats.contest_count || 0,
-            currentRating: stats.current_rating,
-            maxRating: stats.max_rating,
-            contributions: stats.contributions || 0,
-            repositories: stats.repository_count || 0,
+
+            problemsSolved:
+                stats.problems_solved || 0,
+
+            basicSolved:
+                stats.basic_solved || 0,
+
+            easySolved:
+                stats.easy_solved || 0,
+
+            mediumSolved:
+                stats.medium_solved || 0,
+
+            hardSolved:
+                stats.hard_solved || 0,
+
+            contests:
+                stats.contest_count || 0,
+
+            currentRating:
+                stats.current_rating,
+
+            maxRating:
+                stats.max_rating,
+
+            contributions:
+                stats.contributions || 0,
+
+            repositories:
+                stats.repository_count || 0,
         })
     }
 
@@ -118,7 +246,9 @@ const getAnalyticsSummary = async (userId) => {
         error: activityError,
     } = await supabase
         .from("daily_activity")
-        .select("activity_date, problem_count, submission_count, contribution_count")
+        .select(
+            "activity_date, platform, problem_count, submission_count, contribution_count"
+        )
         .eq("user_id", userId)
         .order("activity_date", {
             ascending: true,
@@ -147,10 +277,12 @@ const getAnalyticsSummary = async (userId) => {
     const currentDate = new Date()
 
     while (true) {
-        const dateKey = currentDate
-            .toLocaleDateString("en-CA", {
+        const dateKey = currentDate.toLocaleDateString(
+            "en-CA",
+            {
                 timeZone: "Asia/Kolkata",
-            })
+            }
+        )
 
         if (!activeDates.has(dateKey)) {
             break
@@ -162,6 +294,10 @@ const getAnalyticsSummary = async (userId) => {
             currentDate.getDate() - 1
         )
     }
+
+    // Aggregate activity for charts
+    const aggregatedActivity =
+        aggregateActivity(activity || [])
 
     return {
         summary: {
@@ -180,7 +316,7 @@ const getAnalyticsSummary = async (userId) => {
 
         platforms,
 
-        activity: activity || [],
+        activity: aggregatedActivity,
     }
 }
 

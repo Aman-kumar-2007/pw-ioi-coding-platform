@@ -3,11 +3,15 @@ const {
     getIndiaDate,
 } = require("../dailyActivity.service")
 
+const {
+    saveProblemActivity,
+} = require("../problemActivity.service")
+
 const getCodeforcesUser = async (username) => {
     const response = await fetch(
-        `https://codeforces.com/api/user.info?handles=${encodeURIComponent(
+        `https://codeforces.com/api/user.status?handle=${encodeURIComponent(
             username
-        )}`
+        )}&count=10000`
     )
 
     if (!response.ok) {
@@ -135,6 +139,51 @@ const getCodeforcesStats = async (username) => {
     }
 }
 
+const getCodeforcesSolvedProblems = async (username) => {
+    const submissions = await getCodeforcesSubmissions(username)
+
+    const solvedProblems = new Map()
+
+    for (const submission of submissions) {
+        if (
+            submission.verdict !== "OK" ||
+            !submission.problem?.contestId ||
+            !submission.problem?.index
+        ) {
+            continue
+        }
+
+        const contestId = submission.problem.contestId
+        const index = submission.problem.index
+
+        const externalProblemId = `${contestId}-${index}`
+
+        const existing = solvedProblems.get(externalProblemId)
+
+        // Keep the first time the problem was solved
+        if (
+            !existing ||
+            submission.creationTimeSeconds < existing.solvedAtTimestamp
+        ) {
+            solvedProblems.set(externalProblemId, {
+                externalProblemId,
+                title: submission.problem.name || null,
+                url: `https://codeforces.com/problemset/problem/${contestId}/${index}`,
+                solvedAtTimestamp: submission.creationTimeSeconds,
+            })
+        }
+    }
+
+    return Array.from(solvedProblems.values()).map((problem) => ({
+        externalProblemId: problem.externalProblemId,
+        title: problem.title,
+        url: problem.url,
+        solvedAt: new Date(
+            problem.solvedAtTimestamp * 1000
+        ).toISOString(),
+    }))
+}
+
 const saveCodeforcesDailyActivity = async (userId, username) => {
     const submissions = await getCodeforcesSubmissions(username)
 
@@ -173,6 +222,16 @@ const saveCodeforcesDailyActivity = async (userId, username) => {
     )
 }
 
+const saveCodeforcesProblemActivity = async (userId, username) => {
+    const problems = await getCodeforcesSolvedProblems(username)
+
+    return await saveProblemActivity(
+        userId,
+        "CODEFORCES",
+        problems
+    )
+}
+
 
 module.exports = {
     getCodeforcesUser,
@@ -180,4 +239,6 @@ module.exports = {
     getCodeforcesSubmissions,
     getCodeforcesStats,
     saveCodeforcesDailyActivity,
+    getCodeforcesSolvedProblems,
+    saveCodeforcesProblemActivity,
 }

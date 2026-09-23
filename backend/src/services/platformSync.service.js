@@ -7,6 +7,9 @@ const {
     saveGithubStats,
 } = require("./platformStats.service")
 
+const {
+    saveCodeforcesProblemActivity,
+} = require("./platforms/codeforces.service")
 
 const syncUserPlatforms = async (userId) => {
     // Get all verified platform accounts
@@ -39,6 +42,11 @@ const syncUserPlatforms = async (userId) => {
         try {
             if (account.platform === "CODEFORCES") {
                 await saveCodeforcesStats(userId)
+
+                await saveCodeforcesProblemActivity(
+                    userId,
+                    account.username
+                )
 
                 synced.push({
                     platform: account.platform,

@@ -66,6 +66,32 @@ const startPlatformSyncJob = () => {
     )
 }
 
+// const startPlatformSyncJob = () => {
+//     // Run once immediately when the server starts
+//     runPlatformSync().catch((error) => {
+//         console.error(
+//             "Initial platform sync failed:",
+//             error
+//         )
+//     })
+
+//     // Then run every 6 hours
+//     cron.schedule("0 */6 * * *", async () => {
+//         try {
+//             await runPlatformSync()
+//         } catch (error) {
+//             console.error(
+//                 "Scheduled platform sync failed:",
+//                 error
+//             )
+//         }
+//     })
+
+//     console.log(
+//         "Platform sync scheduler started. Runs every 6 hours."
+//     )
+// }
+
 module.exports = {
     startPlatformSyncJob,
 }
