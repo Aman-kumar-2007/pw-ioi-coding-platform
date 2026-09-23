@@ -161,6 +161,227 @@ const aggregateActivity = (rows = []) => {
     }
 }
 
+// =========================================================
+// RATING CHART AGGREGATION
+// =========================================================
+
+const aggregateRatingHistory = (rows = []) => {
+    const sortedRows = [...rows].sort(
+        (a, b) =>
+            new Date(a.recorded_at) -
+            new Date(b.recorded_at)
+    )
+
+    const getRatingAtOrBefore = (
+        platformRows,
+        endDate
+    ) => {
+        let rating = null
+
+        for (const row of platformRows) {
+            const date = new Date(row.recorded_at)
+
+            if (date <= endDate) {
+                rating = row.rating_after
+            } else {
+                break
+            }
+        }
+
+        return rating
+    }
+
+    const codeforcesRows = sortedRows.filter(
+        (row) =>
+            row.platform === "CODEFORCES"
+    )
+
+    const leetcodeRows = sortedRows.filter(
+        (row) =>
+            row.platform === "LEETCODE"
+    )
+
+    const now = new Date()
+
+    // =====================================================
+    // WEEKLY — CURRENT WEEK ONLY, UP TO TODAY
+    // =====================================================
+
+    const today = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate(),
+        23,
+        59,
+        59
+    )
+
+    const dayOfWeek = today.getDay()
+
+    // Monday = 0
+    const daysFromMonday =
+        (dayOfWeek + 6) % 7
+
+    const monday = new Date(today)
+
+    monday.setDate(
+        today.getDate() - daysFromMonday
+    )
+
+    const weekNames = [
+        "Mon",
+        "Tue",
+        "Wed",
+        "Thu",
+        "Fri",
+        "Sat",
+        "Sun",
+    ]
+
+    const weekly = []
+
+    for (
+        let i = 0;
+        i <= daysFromMonday;
+        i++
+    ) {
+        const endDate = new Date(monday)
+
+        endDate.setDate(
+            monday.getDate() + i
+        )
+
+        endDate.setHours(
+            23,
+            59,
+            59,
+            999
+        )
+
+        weekly.push({
+            label: weekNames[i],
+
+            codeforces:
+                getRatingAtOrBefore(
+                    codeforcesRows,
+                    endDate
+                ),
+
+            leetcode:
+                getRatingAtOrBefore(
+                    leetcodeRows,
+                    endDate
+                ),
+        })
+    }
+
+    // =====================================================
+    // MONTHLY — CURRENT YEAR, UP TO CURRENT MONTH
+    // =====================================================
+
+    const currentYear =
+        now.getFullYear()
+
+    const currentMonth =
+        now.getMonth()
+
+    const monthNames = [
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "May",
+        "Jun",
+        "Jul",
+        "Aug",
+        "Sep",
+        "Oct",
+        "Nov",
+        "Dec",
+    ]
+
+    const monthly = []
+
+    for (
+        let month = 0;
+        month <= currentMonth;
+        month++
+    ) {
+        const endDate = new Date(
+            currentYear,
+            month + 1,
+            0,
+            23,
+            59,
+            59
+        )
+
+        monthly.push({
+            label: monthNames[month],
+
+            codeforces:
+                getRatingAtOrBefore(
+                    codeforcesRows,
+                    endDate
+                ),
+
+            leetcode:
+                getRatingAtOrBefore(
+                    leetcodeRows,
+                    endDate
+                ),
+        })
+    }
+
+    // =====================================================
+    // YEARLY — ONLY YEARS WITH ACTUAL DATA
+    // =====================================================
+
+    const years = new Set()
+
+    for (const row of sortedRows) {
+        years.add(
+            new Date(
+                row.recorded_at
+            ).getFullYear()
+        )
+    }
+
+    const yearly = Array.from(years)
+        .sort((a, b) => a - b)
+        .map((year) => {
+            const endDate = new Date(
+                year,
+                11,
+                31,
+                23,
+                59,
+                59
+            )
+
+            return {
+                label: String(year),
+
+                codeforces:
+                    getRatingAtOrBefore(
+                        codeforcesRows,
+                        endDate
+                    ),
+
+                leetcode:
+                    getRatingAtOrBefore(
+                        leetcodeRows,
+                        endDate
+                    ),
+            }
+        })
+
+    return {
+        weekly,
+        monthly,
+        yearly,
+    }
+}
 
 // =========================================================
 // ANALYTICS SUMMARY
@@ -347,6 +568,37 @@ const getAnalyticsSummary = async (userId) => {
         })
     }
 
+    // =====================================================
+    // RATING HISTORY
+    // =====================================================
+
+    const {
+        data: ratingHistory,
+        error: ratingHistoryError,
+    } = await supabase
+        .from("rating_history")
+        .select(
+            `
+        platform,
+        rating_before,
+        rating_after,
+        rating_change,
+        recorded_at,
+        contest_id
+        `
+        )
+        .eq("user_id", userId)
+        .in("platform", ["CODEFORCES", "LEETCODE"])
+        .order("recorded_at", {
+            ascending: true,
+        })
+
+    if (ratingHistoryError) {
+        throw new Error(
+            `Failed to load rating history: ${ratingHistoryError.message}`
+        )
+    }
+
 
     // =====================================================
     // DAILY ACTIVITY
@@ -430,13 +682,17 @@ const getAnalyticsSummary = async (userId) => {
     const aggregatedActivity =
         aggregateActivity(activity || [])
 
+    const aggregatedRating =
+        aggregateRatingHistory(
+            ratingHistory || []
+        )
+
 
     // =====================================================
     // FINAL RESPONSE
     // =====================================================
 
     return {
-
         summary: {
             totalProblemsSolved,
             totalContests,
@@ -453,8 +709,9 @@ const getAnalyticsSummary = async (userId) => {
 
         platforms,
 
-        activity:
-            aggregatedActivity,
+        activity: aggregatedActivity,
+
+        rating: aggregatedRating,
     }
 }
 

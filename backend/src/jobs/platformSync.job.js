@@ -50,6 +50,15 @@ const runPlatformSync = async () => {
 }
 
 const startPlatformSyncJob = () => {
+    // Run once immediately when server starts
+    runPlatformSync().catch((error) => {
+        console.error(
+            "Initial platform sync failed:",
+            error
+        )
+    })
+
+    // Then run every 6 hours
     cron.schedule("0 */6 * * *", async () => {
         try {
             await runPlatformSync()

@@ -193,13 +193,17 @@ const getCodeforcesSolvedProblems = async (username) => {
     }))
 }
 
-const saveCodeforcesDailyActivity = async (userId, username) => {
-    const submissions = await getCodeforcesSubmissions(username)
+const saveCodeforcesDailyActivity = async (
+    userId,
+    username
+) => {
+    const submissions =
+        await getCodeforcesSubmissions(username)
 
     const dailyMap = new Map()
 
     for (const submission of submissions) {
-        if (submission.verdict !== "OK") {
+        if (!submission.creationTimeSeconds) {
             continue
         }
 
@@ -217,6 +221,7 @@ const saveCodeforcesDailyActivity = async (userId, username) => {
 
         const day = dailyMap.get(date)
 
+        // Count EVERY submission attempt
         day.submissionCount += 1
     }
 

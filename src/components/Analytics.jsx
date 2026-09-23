@@ -27,46 +27,6 @@ import {
 
 import TopicProgress from "./TopicProgress"
 
-const ratingData = {
-    Weekly: [
-        { label: "W1", codeforces: 1490, leetcode: 1180 },
-        { label: "W2", codeforces: 1510, leetcode: 1200 },
-        { label: "W3", codeforces: 1535, leetcode: 1215 },
-        { label: "W4", codeforces: 1542, leetcode: 1230 },
-        { label: "W5", codeforces: 1555, leetcode: 1250 },
-        { label: "W6", codeforces: 1570, leetcode: 1270 },
-        { label: "W7", codeforces: 1560, leetcode: 1280 },
-        { label: "W8", codeforces: 1585, leetcode: 1295 },
-        { label: "W9", codeforces: 1600, leetcode: 1310 },
-        { label: "W10", codeforces: 1625, leetcode: 1330 },
-        { label: "W11", codeforces: 1650, leetcode: 1360 },
-        { label: "W12", codeforces: 1670, leetcode: 1380 },
-    ],
-
-    Monthly: [
-        { label: "Jan", codeforces: 1080, leetcode: 890 },
-        { label: "Feb", codeforces: 1140, leetcode: 930 },
-        { label: "Mar", codeforces: 1180, leetcode: 970 },
-        { label: "Apr", codeforces: 1320, leetcode: 1030 },
-        { label: "May", codeforces: 1360, leetcode: 1080 },
-        { label: "Jun", codeforces: 1480, leetcode: 1130 },
-        { label: "Jul", codeforces: 1500, leetcode: 1180 },
-        { label: "Aug", codeforces: 1520, leetcode: 1210 },
-        { label: "Sep", codeforces: 1600, leetcode: 1240 },
-        { label: "Oct", codeforces: 1660, leetcode: 1300 },
-        { label: "Nov", codeforces: 1680, leetcode: 1340 },
-        { label: "Dec", codeforces: 1810, leetcode: 1400 },
-    ],
-
-    Yearly: [
-        { label: "2022", codeforces: 920, leetcode: 760 },
-        { label: "2023", codeforces: 1080, leetcode: 880 },
-        { label: "2024", codeforces: 1260, leetcode: 1010 },
-        { label: "2025", codeforces: 1450, leetcode: 1190 },
-        { label: "2026", codeforces: 1567, leetcode: 1400 },
-    ],
-}
-
 const PERIODS = ["Weekly", "Monthly", "Yearly"]
 
 /* =========================================================
@@ -315,13 +275,17 @@ function ActivityChart({ activity }) {
    RATING CHART
    ========================================================= */
 
-function RatingChart() {
+function RatingChart({ rating }) {
     const [period, setPeriod] = useState("Monthly")
 
-    const data = useMemo(
-        () => ratingData[period],
-        [period]
-    )
+    const data = useMemo(() => {
+        if (!rating) return []
+
+        const selectedData =
+            rating[period.toLowerCase()] || []
+
+        return selectedData
+    }, [rating, period])
 
     return (
         <AnalyticsCard>
@@ -365,87 +329,99 @@ function RatingChart() {
             </div>
 
             <div className="h-[270px]">
-                <ResponsiveContainer
-                    width="100%"
-                    height="100%"
-                >
-                    <LineChart
-                        data={data}
-                        margin={{
-                            top: 5,
-                            right: 5,
-                            left: -20,
-                            bottom: 0,
-                        }}
+                {data.length === 0 ? (
+                    <div className="flex h-full items-center justify-center">
+                        <p className="text-sm text-muted-foreground">
+                            No rating data available
+                        </p>
+                    </div>
+                ) : (
+                    <ResponsiveContainer
+                        width="100%"
+                        height="100%"
                     >
-                        <CartesianGrid
-                            stroke="#20283a"
-                            strokeDasharray="3 3"
-                            vertical={false}
-                        />
+                        <LineChart
+                            data={data}
+                            margin={{
+                                top: 5,
+                                right: 5,
+                                left: -20,
+                                bottom: 0,
+                            }}
+                        >
+                            <CartesianGrid
+                                stroke="#20283a"
+                                strokeDasharray="3 3"
+                                vertical={false}
+                            />
 
-                        <XAxis
-                            dataKey="label"
-                            tick={{
-                                fill: "#7d8495",
-                                fontSize: 9,
-                            }}
-                            axisLine={false}
-                            tickLine={false}
-                        />
+                            <XAxis
+                                dataKey="label"
+                                tick={{
+                                    fill: "#7d8495",
+                                    fontSize: 9,
+                                }}
+                                axisLine={false}
+                                tickLine={false}
+                            />
 
-                        <YAxis
-                            domain={["dataMin - 100", "dataMax + 100"]}
-                            tick={{
-                                fill: "#7d8495",
-                                fontSize: 9,
-                            }}
-                            axisLine={false}
-                            tickLine={false}
-                        />
+                            <YAxis
+                                domain={[
+                                    "dataMin - 100",
+                                    "dataMax + 100",
+                                ]}
+                                tick={{
+                                    fill: "#7d8495",
+                                    fontSize: 9,
+                                }}
+                                axisLine={false}
+                                tickLine={false}
+                            />
 
-                        <Tooltip
-                            content={<ChartTooltip />}
-                        />
+                            <Tooltip
+                                content={<ChartTooltip />}
+                            />
 
-                        <Line
-                            type="monotone"
-                            dataKey="codeforces"
-                            name="Codeforces"
-                            stroke="#38bdf8"
-                            strokeWidth={2.5}
-                            dot={{
-                                r: 3,
-                                fill: "#38bdf8",
-                                strokeWidth: 0,
-                            }}
-                            activeDot={{
-                                r: 5,
-                            }}
-                        />
+                            <Line
+                                type="monotone"
+                                dataKey="codeforces"
+                                name="Codeforces"
+                                stroke="#38bdf8"
+                                strokeWidth={2.5}
+                                dot={{
+                                    r: 3,
+                                    fill: "#38bdf8",
+                                    strokeWidth: 0,
+                                }}
+                                activeDot={{
+                                    r: 5,
+                                }}
+                                connectNulls
+                            />
 
-                        <Line
-                            type="monotone"
-                            dataKey="leetcode"
-                            name="LeetCode"
-                            stroke="#fb923c"
-                            strokeWidth={2.5}
-                            dot={{
-                                r: 3,
-                                fill: "#fb923c",
-                                strokeWidth: 0,
-                            }}
-                            activeDot={{
-                                r: 5,
-                            }}
-                        />
-                    </LineChart>
-                </ResponsiveContainer>
+                            <Line
+                                type="monotone"
+                                dataKey="leetcode"
+                                name="LeetCode"
+                                stroke="#fb923c"
+                                strokeWidth={2.5}
+                                dot={{
+                                    r: 3,
+                                    fill: "#fb923c",
+                                    strokeWidth: 0,
+                                }}
+                                activeDot={{
+                                    r: 5,
+                                }}
+                                connectNulls
+                            />
+                        </LineChart>
+                    </ResponsiveContainer>
+                )}
             </div>
         </AnalyticsCard>
     )
 }
-
 /* =========================================================
    PLATFORM BREAKDOWN
    ========================================================= */
@@ -1084,7 +1060,7 @@ function Analytics() {
 
                 <ActivityChart activity={analytics?.activity} />
 
-                <RatingChart />
+                <RatingChart rating={analytics?.rating} />
 
                 <TopicProgress />
             </div>

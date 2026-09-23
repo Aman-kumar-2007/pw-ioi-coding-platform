@@ -23,6 +23,12 @@ const {
 
 const { saveDailyActivity } = require("./dailyActivity.service")
 
+const {
+    saveCodeforcesRatingHistory,
+    saveLeetCodeRatingHistory,
+} = require("./ratingHistory.service")
+
+
 const saveCodeforcesStats = async (userId) => {
     const {
         data: platformAccount,
@@ -44,6 +50,11 @@ const saveCodeforcesStats = async (userId) => {
     // Fetch latest Codeforces data
     const stats = await getCodeforcesStats(
         platformAccount.username
+    )
+
+    await saveCodeforcesRatingHistory(
+        userId,
+        stats.ratingHistory
     )
 
     await saveCodeforcesDailyActivity(
@@ -167,6 +178,11 @@ const saveLeetCodeStats = async (userId) => {
         await getLeetCodeContestStats(
             platformAccount.username
         )
+
+    await saveLeetCodeRatingHistory(
+        userId,
+        contestStats.history
+    )
 
     const rating =
         contestStats.ranking?.rating != null
