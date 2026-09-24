@@ -755,6 +755,75 @@ const getAnalyticsSummary = async (userId) => {
             streakStart.getDate() - 1
         )
     }
+
+    // =====================================================
+    // PERSIST STUDENT ANALYTICS
+    // =====================================================
+
+    // Calculate maximum historical streak
+    const sortedActiveDates = Array.from(activeDates).sort()
+
+    let maxStreak = 0
+    let runningStreak = 0
+    let previousDate = null
+
+    for (const dateKey of sortedActiveDates) {
+        const currentDate = new Date(`${dateKey}T00:00:00Z`)
+
+        if (!previousDate) {
+            runningStreak = 1
+        } else {
+            const differenceInDays = Math.round(
+                (currentDate - previousDate) /
+                (1000 * 60 * 60 * 24)
+            )
+
+            if (differenceInDays === 1) {
+                runningStreak++
+            } else {
+                runningStreak = 1
+            }
+        }
+
+        maxStreak = Math.max(maxStreak, runningStreak)
+
+        previousDate = currentDate
+    }
+
+    const activeDays = activeDates.size
+
+    const lastActiveDate =
+        sortedActiveDates.length > 0
+            ? sortedActiveDates[sortedActiveDates.length - 1]
+            : null
+
+    const { error: analyticsSaveError } = await supabase
+        .from("student_analytics")
+        .upsert(
+            {
+                user_id: userId,
+                current_streak: streak,
+                max_streak: maxStreak,
+                active_days: activeDays,
+                problems_solved: totalProblemsSolved,
+                contests_participated: totalContests,
+                last_active_at: lastActiveDate
+                    ? `${lastActiveDate}T23:59:59+05:30`
+                    : null,
+                calculated_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
+            },
+            {
+                onConflict: "user_id",
+            }
+        )
+
+    if (analyticsSaveError) {
+        throw new Error(
+            `Failed to save student analytics: ${analyticsSaveError.message}`
+        )
+    }
+
     // =====================================================
     // SUBMISSION ACTIVITY
     // =====================================================
