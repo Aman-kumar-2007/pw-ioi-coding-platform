@@ -1,21 +1,34 @@
 const supabase = require("../config/supabase")
+
 const {
     getLeaderboard,
 } = require("./leaderboard.service")
+
 const {
-    getAnalytics,
+    getAnalyticsSummary,
 } = require("./analytics.service")
 
+const {
+    getCombinedDailyActivity,
+} = require("./dailyActivity.service")
+
+
 const getStudentProfile = async (username) => {
+
     if (!username?.trim()) {
-        const error = new Error("Username is required.")
+        const error = new Error(
+            "Username is required."
+        )
+
         error.statusCode = 400
+
         throw error
     }
 
-    // =========================================================
+
+    // =====================================================
     // USER
-    // =========================================================
+    // =====================================================
 
     const {
         data: user,
@@ -23,7 +36,10 @@ const getStudentProfile = async (username) => {
     } = await supabase
         .from("users")
         .select("id, username")
-        .ilike("username", username.trim())
+        .ilike(
+            "username",
+            username.trim()
+        )
         .maybeSingle()
 
     if (userError) {
@@ -38,14 +54,16 @@ const getStudentProfile = async (username) => {
         )
 
         error.statusCode = 404
+
         throw error
     }
 
     const userId = user.id
 
-    // =========================================================
+
+    // =====================================================
     // STUDENT PROFILE
-    // =========================================================
+    // =====================================================
 
     const {
         data: profile,
@@ -53,9 +71,18 @@ const getStudentProfile = async (username) => {
     } = await supabase
         .from("student_profiles")
         .select(
-            "user_id, full_name, profile_image, branch, batch"
+            `
+            user_id,
+            full_name,
+            profile_image,
+            branch,
+            batch
+            `
         )
-        .eq("user_id", userId)
+        .eq(
+            "user_id",
+            userId
+        )
         .maybeSingle()
 
     if (profileError) {
@@ -64,9 +91,10 @@ const getStudentProfile = async (username) => {
         )
     }
 
-    // =========================================================
-    // PLATFORM ACCOUNTS
-    // =========================================================
+
+    // =====================================================
+    // VERIFIED PLATFORM ACCOUNTS
+    // =====================================================
 
     const {
         data: accounts,
@@ -82,7 +110,10 @@ const getStudentProfile = async (username) => {
             verification_status
             `
         )
-        .eq("user_id", userId)
+        .eq(
+            "user_id",
+            userId
+        )
         .eq(
             "verification_status",
             "VERIFIED"
@@ -94,18 +125,22 @@ const getStudentProfile = async (username) => {
         )
     }
 
+
+    // =====================================================
+    // PLATFORM STATS
+    // =====================================================
+
     const accountIds =
         (accounts || []).map(
-            (account) => account.id
+            (account) =>
+                account.id
         )
-
-    // =========================================================
-    // PLATFORM STATS
-    // =========================================================
 
     let platformStats = []
 
+
     if (accountIds.length > 0) {
+
         const {
             data,
             error: statsError,
@@ -133,23 +168,40 @@ const getStudentProfile = async (username) => {
             )
         }
 
-        platformStats = data || []
+        platformStats =
+            data || []
     }
 
-    const statsMap = new Map(
-        platformStats.map((stats) => [
-            stats.platform_account_id,
-            stats,
-        ])
-    )
+
+    const statsMap =
+        new Map(
+            platformStats.map(
+                (stats) => [
+                    stats.platform_account_id,
+                    stats,
+                ]
+            )
+        )
+
+
+    // =====================================================
+    // PLATFORM DATA
+    // =====================================================
 
     const platforms = {}
 
-    for (const account of accounts || []) {
-        const stats =
-            statsMap.get(account.id) || {}
 
-        platforms[account.platform] = {
+    for (const account of accounts || []) {
+
+        const stats =
+            statsMap.get(
+                account.id
+            ) || {}
+
+        platforms[
+            account.platform
+        ] = {
+
             username:
                 account.username,
 
@@ -157,28 +209,37 @@ const getStudentProfile = async (username) => {
                 account.profile_url,
 
             solved:
-                stats.problems_solved || 0,
+                stats.problems_solved ||
+                0,
 
             rating:
-                stats.current_rating ?? null,
+                stats.current_rating ??
+                null,
 
             maxRating:
-                stats.max_rating ?? null,
+                stats.max_rating ??
+                null,
 
             contests:
-                stats.contest_count || 0,
+                stats.contest_count ||
+                0,
 
             contributions:
-                stats.contributions || 0,
+                stats.contributions ||
+                0,
 
             repositories:
-                stats.repository_count || 0,
+                stats.repository_count ||
+                0,
         }
     }
 
-    // =========================================================
+
+    // =====================================================
     // SOCIAL ACCOUNTS
-    // =========================================================
+    // =====================================================
+
+    let social = {}
 
     const {
         data: socialAccounts,
@@ -186,58 +247,110 @@ const getStudentProfile = async (username) => {
     } = await supabase
         .from("social_accounts")
         .select(
-            "platform, username, profile_url"
+            `
+            platform,
+            username,
+            profile_url
+            `
         )
-        .eq("user_id", userId)
-
-    if (socialError) {
-        throw new Error(
-            `Failed to load social accounts: ${socialError.message}`
+        .eq(
+            "user_id",
+            userId
         )
-    }
 
-    const social = {}
+    /*
+        Social media is optional.
 
-    for (const account of socialAccounts || []) {
-        social[account.platform] = {
-            username:
-                account.username,
+        If the table is empty:
+        → social = {}
 
-            profileUrl:
-                account.profile_url,
+        If SELECT permission is missing:
+        → also keep social empty
+
+        Profile should never fail just because
+        social media is not connected.
+    */
+
+    if (!socialError) {
+
+        for (
+            const account
+            of socialAccounts || []
+        ) {
+
+            social[
+                account.platform
+            ] = {
+
+                username:
+                    account.username,
+
+                profileUrl:
+                    account.profile_url,
+            }
         }
     }
 
-    // =========================================================
-    // LEADERBOARD DATA
-    // =========================================================
+
+    // =====================================================
+    // LEADERBOARD
+    // =====================================================
 
     const leaderboardData =
-        await getLeaderboard(userId)
+        await getLeaderboard(
+            userId
+        )
+
 
     const leaderboardStudent =
         leaderboardData.leaderboard.find(
             (student) =>
-                student.userId === userId
+                student.userId ===
+                userId
         )
 
-    // =========================================================
-    // EXISTING ANALYTICS DATA
-    //
-    // IMPORTANT:
-    // Topic progress already exists inside Analytics.
-    // We reuse it instead of calculating it again.
-    // =========================================================
+
+    // =====================================================
+    // ANALYTICS
+    // =====================================================
 
     const analytics =
-        await getAnalytics(userId)
+        await getAnalyticsSummary(
+            userId
+        )
 
-    // =========================================================
+
+    // =====================================================
+    // EXISTING CODING HEATMAP DATA
+    // =====================================================
+
+    /*
+        IMPORTANT:
+
+        We are NOT creating another heatmap system.
+
+        This is the exact same service already used by
+        /api/verification/activity.
+
+        Only difference:
+        instead of req.userId,
+        we pass the username's userId.
+    */
+
+    const activity =
+        await getCombinedDailyActivity(
+            userId
+        )
+
+
+    // =====================================================
     // FINAL RESPONSE
-    // =========================================================
+    // =====================================================
 
     return {
+
         profile: {
+
             userId,
 
             username:
@@ -263,7 +376,9 @@ const getStudentProfile = async (username) => {
                 null,
         },
 
+
         ranking: {
+
             rank:
                 leaderboardStudent?.rank ||
                 null,
@@ -277,37 +392,26 @@ const getStudentProfile = async (username) => {
                 0,
         },
 
+
         streak: {
+
             current:
-                analytics?.summary?.streak
-                    ?.current ||
                 analytics?.summary?.streak ||
                 0,
 
             max:
-                analytics?.summary?.maxStreak ||
                 0,
         },
+
 
         platforms,
 
         social,
 
-        topics:
-            analytics?.topicProgress ||
-            [],
-
-        contests:
-            analytics?.summary
-                ?.totalContests ||
-            0,
-
-        lastActiveAt:
-            analytics?.summary
-                ?.lastActiveAt ||
-            null,
+        activity,
     }
 }
+
 
 module.exports = {
     getStudentProfile,

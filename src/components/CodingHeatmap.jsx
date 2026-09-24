@@ -27,18 +27,40 @@ function getIntensity(submissions) {
     return 4
 }
 
-function CodingHeatmap() {
+function CodingHeatmap({
+    activityData: externalActivityData = null,
+}) {
     const [selectedPlatform, setSelectedPlatform] =
         useState("All Platforms")
 
     const [isOpen, setIsOpen] = useState(false)
     const [hoveredDay, setHoveredDay] = useState(null)
 
-    const [activityData, setActivityData] = useState([])
-    const [loading, setLoading] = useState(true)
+    const [activityData, setActivityData] = useState(
+        externalActivityData || []
+    )
+
+    const [loading, setLoading] = useState(
+        externalActivityData === null
+    )
 
 
     useEffect(() => {
+        // Public profile se activity data mila hai
+        // to existing heatmap ko wahi data use karna hai.
+        if (externalActivityData !== null) {
+            setActivityData(
+                externalActivityData || []
+            )
+
+            setLoading(false)
+
+            return
+        }
+
+
+        // Dashboard / normal heatmap:
+        // logged-in user's activity backend se fetch karo.
         const fetchActivity = async () => {
             try {
                 const {
@@ -54,21 +76,28 @@ function CodingHeatmap() {
                     "http://localhost:5001/api/verification/activity",
                     {
                         headers: {
-                            Authorization: `Bearer ${session.access_token}`,
+                            Authorization:
+                                `Bearer ${session.access_token}`,
                         },
                     }
                 )
 
-                const result = await response.json()
+                const result =
+                    await response.json()
 
-                if (!response.ok || !result.success) {
+                if (
+                    !response.ok ||
+                    !result.success
+                ) {
                     throw new Error(
                         result.message ||
                         "Failed to fetch activity"
                     )
                 }
 
-                setActivityData(result.data || [])
+                setActivityData(
+                    result.data || []
+                )
             } catch (error) {
                 console.error(
                     "Heatmap activity error:",
@@ -82,8 +111,8 @@ function CodingHeatmap() {
         }
 
         fetchActivity()
-    }, [])
 
+    }, [externalActivityData])
     const months = useMemo(() => {
         const today = new Date()
 
