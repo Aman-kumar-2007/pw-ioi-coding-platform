@@ -113,6 +113,7 @@ function CodingHeatmap({
         fetchActivity()
 
     }, [externalActivityData])
+    
     const months = useMemo(() => {
         const today = new Date()
 

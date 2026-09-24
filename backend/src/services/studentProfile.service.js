@@ -14,7 +14,6 @@ const {
 
 
 const getStudentProfile = async (username) => {
-
     if (!username?.trim()) {
         const error = new Error(
             "Username is required."
@@ -58,6 +57,7 @@ const getStudentProfile = async (username) => {
         throw error
     }
 
+
     const userId = user.id
 
 
@@ -79,10 +79,7 @@ const getStudentProfile = async (username) => {
             batch
             `
         )
-        .eq(
-            "user_id",
-            userId
-        )
+        .eq("user_id", userId)
         .maybeSingle()
 
     if (profileError) {
@@ -110,10 +107,7 @@ const getStudentProfile = async (username) => {
             verification_status
             `
         )
-        .eq(
-            "user_id",
-            userId
-        )
+        .eq("user_id", userId)
         .eq(
             "verification_status",
             "VERIFIED"
@@ -132,15 +126,12 @@ const getStudentProfile = async (username) => {
 
     const accountIds =
         (accounts || []).map(
-            (account) =>
-                account.id
+            (account) => account.id
         )
 
     let platformStats = []
 
-
     if (accountIds.length > 0) {
-
         const {
             data,
             error: statsError,
@@ -168,40 +159,26 @@ const getStudentProfile = async (username) => {
             )
         }
 
-        platformStats =
-            data || []
+        platformStats = data || []
     }
 
 
-    const statsMap =
-        new Map(
-            platformStats.map(
-                (stats) => [
-                    stats.platform_account_id,
-                    stats,
-                ]
-            )
-        )
+    const statsMap = new Map(
+        platformStats.map((stats) => [
+            stats.platform_account_id,
+            stats,
+        ])
+    )
 
-
-    // =====================================================
-    // PLATFORM DATA
-    // =====================================================
 
     const platforms = {}
 
 
     for (const account of accounts || []) {
-
         const stats =
-            statsMap.get(
-                account.id
-            ) || {}
+            statsMap.get(account.id) || {}
 
-        platforms[
-            account.platform
-        ] = {
-
+        platforms[account.platform] = {
             username:
                 account.username,
 
@@ -209,28 +186,22 @@ const getStudentProfile = async (username) => {
                 account.profile_url,
 
             solved:
-                stats.problems_solved ||
-                0,
+                stats.problems_solved || 0,
 
             rating:
-                stats.current_rating ??
-                null,
+                stats.current_rating ?? null,
 
             maxRating:
-                stats.max_rating ??
-                null,
+                stats.max_rating ?? null,
 
             contests:
-                stats.contest_count ||
-                0,
+                stats.contest_count || 0,
 
             contributions:
-                stats.contributions ||
-                0,
+                stats.contributions || 0,
 
             repositories:
-                stats.repository_count ||
-                0,
+                stats.repository_count || 0,
         }
     }
 
@@ -239,49 +210,31 @@ const getStudentProfile = async (username) => {
     // SOCIAL ACCOUNTS
     // =====================================================
 
-    let social = {}
-
     const {
         data: socialAccounts,
         error: socialError,
     } = await supabase
         .from("social_accounts")
         .select(
-            `
-            platform,
-            username,
-            profile_url
-            `
+            "platform, username, profile_url"
         )
-        .eq(
-            "user_id",
-            userId
+        .eq("user_id", userId)
+
+    let social = {}
+
+    if (socialError) {
+        // Social accounts are optional.
+        // If none are connected or the table is unavailable,
+        // keep social data empty instead of failing the profile.
+        console.warn(
+            "Social accounts could not be loaded:",
+            socialError.message
         )
 
-    /*
-        Social media is optional.
-
-        If the table is empty:
-        → social = {}
-
-        If SELECT permission is missing:
-        → also keep social empty
-
-        Profile should never fail just because
-        social media is not connected.
-    */
-
-    if (!socialError) {
-
-        for (
-            const account
-            of socialAccounts || []
-        ) {
-
-            social[
-                account.platform
-            ] = {
-
+        social = {}
+    } else {
+        for (const account of socialAccounts || []) {
+            social[account.platform] = {
                 username:
                     account.username,
 
@@ -297,16 +250,13 @@ const getStudentProfile = async (username) => {
     // =====================================================
 
     const leaderboardData =
-        await getLeaderboard(
-            userId
-        )
+        await getLeaderboard(userId)
 
 
     const leaderboardStudent =
         leaderboardData.leaderboard.find(
             (student) =>
-                student.userId ===
-                userId
+                student.userId === userId
         )
 
 
@@ -315,27 +265,12 @@ const getStudentProfile = async (username) => {
     // =====================================================
 
     const analytics =
-        await getAnalyticsSummary(
-            userId
-        )
+        await getAnalyticsSummary(userId)
 
 
     // =====================================================
-    // EXISTING CODING HEATMAP DATA
+    // CODING ACTIVITY / HEATMAP
     // =====================================================
-
-    /*
-        IMPORTANT:
-
-        We are NOT creating another heatmap system.
-
-        This is the exact same service already used by
-        /api/verification/activity.
-
-        Only difference:
-        instead of req.userId,
-        we pass the username's userId.
-    */
 
     const activity =
         await getCombinedDailyActivity(
@@ -348,9 +283,7 @@ const getStudentProfile = async (username) => {
     // =====================================================
 
     return {
-
         profile: {
-
             userId,
 
             username:
@@ -378,7 +311,6 @@ const getStudentProfile = async (username) => {
 
 
         ranking: {
-
             rank:
                 leaderboardStudent?.rank ||
                 null,
@@ -394,20 +326,40 @@ const getStudentProfile = async (username) => {
 
 
         streak: {
-
             current:
                 analytics?.summary?.streak ||
                 0,
 
             max:
+                analytics?.summary?.maxStreak ||
                 0,
         },
 
 
         platforms,
 
+
         social,
 
+
+        topics:
+            analytics?.topicProgress ||
+            [],
+
+
+        contests:
+            analytics?.summary
+                ?.totalContests ||
+            0,
+
+
+        lastActiveAt:
+            analytics?.summary
+                ?.lastActiveAt ||
+            null,
+
+
+        // Existing real heatmap data
         activity,
     }
 }

@@ -848,10 +848,7 @@ const PublicStudentProfile = () => {
                 <section className="mt-8">
 
                     <CodingHeatmap
-                        activityData={
-                            student.activity ||
-                            []
-                        }
+                        activityData={student.activity || []}
                     />
 
                 </section>
