@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react"
+import { Link } from "react-router"
 import { supabase } from "../lib/supabase"
 
 import {
@@ -9,6 +10,10 @@ import {
     Flame,
     Crown,
 } from "lucide-react"
+
+// =====================================================
+// PODIUM CARD
+// =====================================================
 
 function PodiumCard({ student, position }) {
     const isFirst = position === 1
@@ -23,51 +28,69 @@ function PodiumCard({ student, position }) {
             score:
                 "border-amber-400/20 bg-amber-400/[0.06]",
             scoreText: "text-amber-300",
-            glow: "shadow-[0_12px_50px_rgba(245,158,11,0.10)]",
+            glow:
+                "shadow-[0_12px_50px_rgba(245,158,11,0.10)]",
             accent: "bg-amber-400",
         },
 
         2: {
             border: "border-slate-400/35",
-            icon: "border-slate-400/30 bg-slate-400/10 text-slate-300",
+            icon:
+                "border-slate-400/30 bg-slate-400/10 text-slate-300",
             avatar:
                 "border-slate-400/50 bg-slate-400/[0.08] text-slate-200",
             badge: "bg-slate-300 text-[#11151c]",
             score:
                 "border-slate-400/15 bg-slate-400/[0.04]",
             scoreText: "text-slate-200",
-            glow: "shadow-[0_12px_40px_rgba(148,163,184,0.06)]",
+            glow:
+                "shadow-[0_12px_40px_rgba(148,163,184,0.06)]",
             accent: "bg-slate-400",
         },
 
         3: {
             border: "border-orange-500/35",
-            icon: "border-orange-500/30 bg-orange-500/10 text-orange-400",
+            icon:
+                "border-orange-500/30 bg-orange-500/10 text-orange-400",
             avatar:
                 "border-orange-500/50 bg-orange-500/[0.08] text-orange-300",
             badge: "bg-orange-500 text-[#170d08]",
             score:
                 "border-orange-500/15 bg-orange-500/[0.04]",
             scoreText: "text-orange-300",
-            glow: "shadow-[0_12px_40px_rgba(249,115,22,0.06)]",
+            glow:
+                "shadow-[0_12px_40px_rgba(249,115,22,0.06)]",
             accent: "bg-orange-500",
         },
     }
 
     const style = rankStyles[position]
 
+    const initials =
+        student.name
+            ?.split(" ")
+            .map((word) => word[0])
+            .join("")
+            .slice(0, 2)
+            .toUpperCase() || "ST"
+
     return (
         <div
-            className={`group relative flex flex-col items-center rounded-2xl border bg-card px-5 text-center transition-all duration-300 hover:-translate-y-2 ${style.border
-                } ${style.glow} ${isFirst
-                    ? "min-h-[350px] py-6"
-                    : "min-h-[320px] py-5"
-                }`}
+            className={`group relative flex flex-col items-center rounded-2xl border bg-card px-5 text-center transition-all duration-300 hover:-translate-y-2 ${
+                style.border
+            } ${
+                style.glow
+            } ${
+                isFirst
+                    ? "min-h-[390px] py-6"
+                    : "min-h-[360px] py-5"
+            }`}
         >
             {/* Top Accent */}
             <div
-                className={`absolute left-1/2 top-0 h-[2px] -translate-x-1/2 rounded-full transition-all duration-300 group-hover:w-28 ${isFirst ? "w-20" : "w-14"
-                    } ${style.accent}`}
+                className={`absolute left-1/2 top-0 h-[2px] -translate-x-1/2 rounded-full transition-all duration-300 group-hover:w-28 ${
+                    isFirst ? "w-20" : "w-14"
+                } ${style.accent}`}
             />
 
             {/* Rank Icon */}
@@ -84,17 +107,13 @@ function PodiumCard({ student, position }) {
             {/* Avatar */}
             <div className="relative mt-9">
                 <div
-                    className={`flex items-center justify-center rounded-full border-2 font-bold transition-all duration-300 group-hover:scale-105 group-hover:shadow-lg ${isFirst
+                    className={`flex items-center justify-center rounded-full border-2 font-bold transition-all duration-300 group-hover:scale-105 group-hover:shadow-lg ${
+                        isFirst
                             ? "h-28 w-28 text-3xl"
                             : "h-24 w-24 text-2xl"
-                        } ${style.avatar}`}
+                    } ${style.avatar}`}
                 >
-                    {student.name
-                        ?.split(" ")
-                        .map((word) => word[0])
-                        .join("")
-                        .slice(0, 2)
-                        .toUpperCase()}
+                    {initials}
                 </div>
 
                 {/* Rank Badge */}
@@ -106,31 +125,73 @@ function PodiumCard({ student, position }) {
             </div>
 
             {/* Name */}
-            <h3 className="mt-5 truncate px-3 text-base font-bold">
+            <h3 className="mt-5 max-w-full truncate px-3 text-base font-bold">
                 {student.name}
             </h3>
 
-            {/* Solved */}
+            {/* Username */}
+            {student.username && (
+                <Link
+                    to={`/student/${student.username}`}
+                    className="mt-1 max-w-full truncate text-[10px] text-muted-foreground transition-colors hover:text-primary"
+                >
+                    @{student.username}
+                </Link>
+            )}
+
+            {/* Score */}
             <div
-                className={`mx-auto mt-auto w-full max-w-[250px] rounded-xl border px-4 py-3 transition-all duration-300 group-hover:-translate-y-1 ${style.score}`}
+                className={`mx-auto mt-5 w-full max-w-[250px] rounded-xl border px-4 py-3 transition-all duration-300 group-hover:-translate-y-1 ${style.score}`}
             >
                 <p className="text-[9px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                    Problems Solved
+                    CodeSync Score
                 </p>
 
                 <p
                     className={`mt-1 font-mono text-xl font-bold transition-transform duration-300 group-hover:scale-[1.03] ${style.scoreText}`}
                 >
-                    {student.solved}
+                    {Number(
+                        student.score || 0
+                    ).toFixed(1)}
                 </p>
 
                 <p className="mt-1 text-[9px] text-muted-foreground">
-                    Total problems solved
+                    Based on coding performance
                 </p>
+            </div>
+
+            {/* Stats */}
+            <div className="mt-3 flex w-full max-w-[250px] items-center justify-center gap-2">
+                {/* Solved */}
+                <div className="flex flex-1 flex-col items-center rounded-lg border border-border bg-secondary/50 px-2 py-2">
+                    <span className="text-[8px] font-semibold uppercase tracking-wider text-muted-foreground">
+                        Solved
+                    </span>
+
+                    <span className="mt-0.5 font-mono text-xs font-semibold">
+                        {student.solved || 0}
+                    </span>
+                </div>
+
+                {/* Max Streak */}
+                <div className="flex flex-1 flex-col items-center rounded-lg border border-border bg-secondary/50 px-2 py-2">
+                    <span className="text-[8px] font-semibold uppercase tracking-wider text-muted-foreground">
+                        Max Streak
+                    </span>
+
+                    <span className="mt-0.5 flex items-center gap-1 font-mono text-xs font-semibold">
+                        <Flame size={10} />
+                        {student.maxStreak || 0}d
+                    </span>
+                </div>
             </div>
         </div>
     )
 }
+
+// =====================================================
+// LEADERBOARD
+// =====================================================
 
 function Leaderboard() {
     const [students, setStudents] = useState([])
@@ -139,65 +200,182 @@ function Leaderboard() {
     const [error, setError] = useState("")
     const [currentUserId, setCurrentUserId] = useState(null)
 
-useEffect(() => {
-    const fetchLeaderboard = async () => {
-        try {
-            setLoading(true)
-            setError("")
+    const [currentPage, setCurrentPage] = useState(1)
 
-            const {
-                data: { session },
-            } = await supabase.auth.getSession()
+    const STUDENTS_PER_PAGE = 10
 
-            if (!session?.access_token) {
-                throw new Error("Authentication session not found")
-            }
+    // =====================================================
+    // FETCH LEADERBOARD
+    // =====================================================
 
-            const response = await fetch(
-                "http://localhost:5001/api/leaderboard",
-                {
-                    headers: {
-                        Authorization: `Bearer ${session.access_token}`,
-                    },
+    useEffect(() => {
+        const fetchLeaderboard = async () => {
+            try {
+                setLoading(true)
+                setError("")
+
+                const {
+                    data: { session },
+                } = await supabase.auth.getSession()
+
+                if (!session?.access_token) {
+                    throw new Error(
+                        "Authentication session not found"
+                    )
                 }
-            )
 
-            const result = await response.json()
+                setCurrentUserId(session.user.id)
 
-            if (!response.ok || !result.success) {
-                throw new Error(
-                    result.message || "Failed to fetch leaderboard"
+                const response = await fetch(
+                    "http://localhost:5001/api/leaderboard",
+                    {
+                        headers: {
+                            Authorization: `Bearer ${session.access_token}`,
+                        },
+                    }
                 )
-            }
 
-            setStudents(result.data.leaderboard || [])
-        } catch (error) {
-            console.error("Leaderboard fetch error:", error)
-            setError(error.message)
-        } finally {
-            setLoading(false)
+                const result = await response.json()
+
+                if (!response.ok || !result.success) {
+                    throw new Error(
+                        result.message ||
+                            "Failed to fetch leaderboard"
+                    )
+                }
+
+                setStudents(
+                    result.data?.leaderboard || []
+                )
+            } catch (error) {
+                console.error(
+                    "Leaderboard fetch error:",
+                    error
+                )
+
+                setError(error.message)
+            } finally {
+                setLoading(false)
+            }
         }
+
+        fetchLeaderboard()
+    }, [])
+
+    // =====================================================
+    // SEARCH
+    // =====================================================
+
+    const filteredStudents = students.filter(
+        (student) => {
+            const query =
+                searchQuery.trim().toLowerCase()
+
+            return (
+                !query ||
+                student.name
+                    ?.toLowerCase()
+                    .includes(query) ||
+                student.username
+                    ?.toLowerCase()
+                    .includes(query)
+            )
+        }
+    )
+
+    // =====================================================
+    // PAGINATION
+    // =====================================================
+
+    const totalPages = Math.ceil(
+        filteredStudents.length /
+            STUDENTS_PER_PAGE
+    )
+
+    const startIndex =
+        (currentPage - 1) *
+        STUDENTS_PER_PAGE
+
+    const endIndex =
+        startIndex + STUDENTS_PER_PAGE
+
+    const paginatedStudents =
+        filteredStudents.slice(
+            startIndex,
+            endIndex
+        )
+
+    // Reset page when search changes
+    useEffect(() => {
+        setCurrentPage(1)
+    }, [searchQuery])
+
+    // Keep page valid
+    useEffect(() => {
+        if (
+            totalPages > 0 &&
+            currentPage > totalPages
+        ) {
+            setCurrentPage(totalPages)
+        }
+
+        if (
+            totalPages === 0 &&
+            currentPage !== 1
+        ) {
+            setCurrentPage(1)
+        }
+    }, [currentPage, totalPages])
+
+    // =====================================================
+    // PODIUM
+    // =====================================================
+
+    const topStudents =
+        filteredStudents.slice(0, 3)
+
+    // =====================================================
+    // PAGE NUMBERS
+    // =====================================================
+
+    const getPageNumbers = () => {
+        if (totalPages <= 5) {
+            return Array.from(
+                { length: totalPages },
+                (_, index) => index + 1
+            )
+        }
+
+        const pages = new Set()
+
+        pages.add(1)
+        pages.add(totalPages)
+        pages.add(currentPage)
+        pages.add(currentPage - 1)
+        pages.add(currentPage + 1)
+
+        return Array.from(pages)
+            .filter(
+                (page) =>
+                    page >= 1 &&
+                    page <= totalPages
+            )
+            .sort((a, b) => a - b)
     }
 
-    fetchLeaderboard()
-}, [])
+    const pageNumbers = getPageNumbers()
 
-    const filteredStudents = students.filter((student) => {
-        const query = searchQuery.trim().toLowerCase()
-
-        return (
-            !query ||
-            student.name?.toLowerCase().includes(query)
-        )
-    })
-
-    const topStudents = filteredStudents.slice(0, 3)
+    // =====================================================
+    // RENDER
+    // =====================================================
 
     return (
         <section className="px-8 pb-10 pt-7">
-            {/* Header */}
+            {/* ================================================= */}
+            {/* HEADER */}
+            {/* ================================================= */}
+
             <div className="relative mb-7 overflow-visible rounded-2xl border border-border bg-card px-6 py-5">
-                {/* Accent */}
                 <div className="absolute left-0 top-0 h-full w-[2px] rounded-full bg-primary" />
 
                 <div className="flex items-start justify-between gap-6">
@@ -216,8 +394,8 @@ useEffect(() => {
                         </div>
 
                         <p className="mt-2 text-xs text-muted-foreground">
-                            Compare coding performance across the PW IOI
-                            community.
+                            Compare coding performance
+                            across the PW IOI community.
                         </p>
                     </div>
                 </div>
@@ -233,15 +411,20 @@ useEffect(() => {
                         type="text"
                         value={searchQuery}
                         onChange={(e) =>
-                            setSearchQuery(e.target.value)
+                            setSearchQuery(
+                                e.target.value
+                            )
                         }
-                        placeholder="Search by name..."
+                        placeholder="Search by name or username..."
                         className="w-full bg-transparent text-xs text-foreground outline-none placeholder:text-muted-foreground"
                     />
                 </div>
             </div>
 
-            {/* Loading */}
+            {/* ================================================= */}
+            {/* LOADING */}
+            {/* ================================================= */}
+
             {loading ? (
                 <div className="mb-7 flex min-h-[220px] items-center justify-center rounded-2xl border border-border bg-card">
                     <div className="flex flex-col items-center">
@@ -253,7 +436,10 @@ useEffect(() => {
                     </div>
                 </div>
             ) : error ? (
-                /* Error */
+                /* ================================================= */
+                /* ERROR */
+                /* ================================================= */
+
                 <div className="mb-7 flex min-h-[220px] flex-col items-center justify-center rounded-2xl border border-border bg-card">
                     <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-muted text-muted-foreground">
                         <Search size={20} />
@@ -269,29 +455,38 @@ useEffect(() => {
                 </div>
             ) : (
                 <>
-                    {/* Podium */}
+                    {/* ================================================= */}
+                    {/* PODIUM */}
+                    {/* ================================================= */}
+
                     {topStudents.length > 0 ? (
                         <div className="mb-7 grid grid-cols-1 items-end gap-5 md:grid-cols-3">
-                            {/* 2nd Place */}
+                            {/* 2nd */}
                             {topStudents[1] && (
                                 <PodiumCard
-                                    student={topStudents[1]}
+                                    student={
+                                        topStudents[1]
+                                    }
                                     position={2}
                                 />
                             )}
 
-                            {/* 1st Place */}
+                            {/* 1st */}
                             {topStudents[0] && (
                                 <PodiumCard
-                                    student={topStudents[0]}
+                                    student={
+                                        topStudents[0]
+                                    }
                                     position={1}
                                 />
                             )}
 
-                            {/* 3rd Place */}
+                            {/* 3rd */}
                             {topStudents[2] && (
                                 <PodiumCard
-                                    student={topStudents[2]}
+                                    student={
+                                        topStudents[2]
+                                    }
                                     position={3}
                                 />
                             )}
@@ -312,16 +507,23 @@ useEffect(() => {
                         </div>
                     )}
 
-                    {/* Table */}
+                    {/* ================================================= */}
+                    {/* TABLE */}
+                    {/* ================================================= */}
+
                     <div className="overflow-hidden rounded-2xl border border-border bg-card">
                         {/* Table Header */}
-                        <div className="grid grid-cols-[55px_1fr_140px_120px] items-center border-b border-border bg-secondary/30 px-5 py-3">
+                        <div className="grid grid-cols-[55px_1fr_120px_120px_120px] items-center border-b border-border bg-secondary/30 px-5 py-3">
                             <span className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">
                                 #
                             </span>
 
                             <span className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">
                                 Student
+                            </span>
+
+                            <span className="text-right text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">
+                                Score
                             </span>
 
                             <span className="text-right text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">
@@ -334,87 +536,149 @@ useEffect(() => {
                         </div>
 
                         {/* Rows */}
-                        {filteredStudents.length > 0 ? (
-                            filteredStudents.map((student) => {
-                                const isCurrentUser =
-                                    student.userId === currentUserId
+                        {paginatedStudents.length > 0 ? (
+                            paginatedStudents.map(
+                                (student) => {
+                                    const isCurrentUser =
+                                        student.userId ===
+                                        currentUserId
 
-                                return (
-                                    <div
-                                        key={student.userId}
-                                        className={`group grid grid-cols-[55px_1fr_140px_120px] items-center border-b border-border px-5 py-3.5 transition-all duration-200 last:border-b-0 ${isCurrentUser
-                                                ? "bg-primary/[0.06] hover:bg-primary/[0.10]"
-                                                : "hover:bg-secondary/40"
+                                    const initials =
+                                        student.name
+                                            ?.split(" ")
+                                            .map(
+                                                (
+                                                    word
+                                                ) =>
+                                                    word[0]
+                                            )
+                                            .join("")
+                                            .slice(
+                                                0,
+                                                2
+                                            )
+                                            .toUpperCase() ||
+                                        "ST"
+
+                                    return (
+                                        <div
+                                            key={
+                                                student.userId
+                                            }
+                                            className={`group grid grid-cols-[55px_1fr_120px_120px_120px] items-center border-b border-border px-5 py-3.5 transition-all duration-200 last:border-b-0 ${
+                                                isCurrentUser
+                                                    ? "bg-primary/[0.06] hover:bg-primary/[0.10]"
+                                                    : "hover:bg-secondary/40"
                                             }`}
-                                    >
-                                        {/* Rank */}
-                                        <div>
-                                            <span
-                                                className={`font-mono text-xs font-semibold transition-transform duration-200 group-hover:translate-x-1 ${student.rank === 1
-                                                        ? "text-amber-400"
-                                                        : student.rank === 2
-                                                            ? "text-slate-300"
-                                                            : student.rank === 3
-                                                                ? "text-orange-400"
-                                                                : "text-muted-foreground"
-                                                    }`}
-                                            >
-                                                {student.rank}
-                                            </span>
-                                        </div>
-
-                                        {/* Student */}
-                                        <div className="flex items-center gap-3">
-                                            <div
-                                                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[10px] font-bold transition-all duration-200 group-hover:scale-110 ${isCurrentUser
-                                                        ? "bg-primary/15 text-primary"
-                                                        : "bg-muted text-foreground"
-                                                    }`}
-                                            >
-                                                {student.name
-                                                    ?.split(" ")
-                                                    .map(
-                                                        (word) =>
-                                                            word[0]
-                                                    )
-                                                    .join("")
-                                                    .slice(0, 2)
-                                                    .toUpperCase()}
-                                            </div>
-
-                                            <div className="min-w-0">
-                                                <p className="truncate text-xs font-semibold">
-                                                    {student.name}
-                                                </p>
-
-                                                {isCurrentUser && (
-                                                    <p className="mt-0.5 text-[9px] text-primary">
-                                                        You
-                                                    </p>
-                                                )}
-                                            </div>
-                                        </div>
-
-                                        {/* Solved */}
-                                        <p
-                                            className={`text-right font-mono text-xs font-semibold ${student.rank === 1
-                                                    ? "text-amber-400"
-                                                    : "text-foreground"
-                                                }`}
                                         >
-                                            {student.solved}
-                                        </p>
+                                            {/* Rank */}
+                                            <div>
+                                                <span
+                                                    className={`font-mono text-xs font-semibold transition-transform duration-200 group-hover:translate-x-1 ${
+                                                        student.rank ===
+                                                        1
+                                                            ? "text-amber-400"
+                                                            : student.rank ===
+                                                              2
+                                                            ? "text-slate-300"
+                                                            : student.rank ===
+                                                              3
+                                                            ? "text-orange-400"
+                                                            : "text-muted-foreground"
+                                                    }`}
+                                                >
+                                                    {
+                                                        student.rank
+                                                    }
+                                                </span>
+                                            </div>
 
-                                        {/* Max Streak */}
-                                        <div className="flex justify-end">
-                                            <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-secondary px-2.5 py-1 text-[9px] font-medium text-muted-foreground">
-                                                <Flame size={10} />
-                                                —
-                                            </span>
+                                            {/* Student */}
+                                            <div className="flex items-center gap-3">
+                                                {/* Avatar */}
+                                                <div
+                                                    className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[10px] font-bold transition-all duration-200 group-hover:scale-110 ${
+                                                        isCurrentUser
+                                                            ? "bg-primary/15 text-primary"
+                                                            : "bg-muted text-foreground"
+                                                    }`}
+                                                >
+                                                    {
+                                                        initials
+                                                    }
+                                                </div>
+
+                                                {/* Name + Username */}
+                                                <div className="min-w-0">
+                                                    <p className="truncate text-xs font-semibold">
+                                                        {
+                                                            student.name
+                                                        }
+                                                    </p>
+
+                                                    {student.username && (
+                                                        <Link
+                                                            to={`/student/${student.username}`}
+                                                            className="mt-0.5 block truncate text-[9px] text-muted-foreground transition-colors hover:text-primary"
+                                                        >
+                                                            @
+                                                            {
+                                                                student.username
+                                                            }
+                                                        </Link>
+                                                    )}
+
+                                                    {isCurrentUser && (
+                                                        <p className="mt-0.5 text-[9px] text-primary">
+                                                            You
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                            {/* Score */}
+                                            <p
+                                                className={`text-right font-mono text-xs font-semibold ${
+                                                    student.rank ===
+                                                    1
+                                                        ? "text-amber-400"
+                                                        : "text-foreground"
+                                                }`}
+                                            >
+                                                {Number(
+                                                    student.score ||
+                                                        0
+                                                ).toFixed(
+                                                    1
+                                                )}
+                                            </p>
+
+                                            {/* Solved */}
+                                            <p className="text-right font-mono text-xs font-semibold text-foreground">
+                                                {
+                                                    student.solved
+                                                }
+                                            </p>
+
+                                            {/* Max Streak */}
+                                            <div className="flex justify-end">
+                                                <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-secondary px-2.5 py-1 text-[9px] font-medium text-muted-foreground">
+                                                    <Flame
+                                                        size={
+                                                            10
+                                                        }
+                                                    />
+
+                                                    {
+                                                        student.maxStreak
+                                                    }{" "}
+                                                    days
+                                                </span>
+                                            </div>
                                         </div>
-                                    </div>
-                                )
-                            })
+                                    )
+                                }
+                            )
                         ) : (
                             <div className="flex min-h-[150px] items-center justify-center">
                                 <p className="text-xs text-muted-foreground">
@@ -423,61 +687,153 @@ useEffect(() => {
                             </div>
                         )}
 
-                        {/* Footer */}
-                        <div className="flex items-center justify-between px-5 py-4">
+                        {/* ================================================= */}
+                        {/* FOOTER */}
+                        {/* ================================================= */}
+
+                        <div className="flex items-center justify-between gap-4 px-5 py-4">
+                            {/* Showing */}
                             <p className="text-[10px] text-muted-foreground">
                                 Showing{" "}
                                 <span className="font-medium text-foreground">
-                                    {filteredStudents.length}
+                                    {filteredStudents.length ===
+                                    0
+                                        ? 0
+                                        : startIndex + 1}
+                                    {filteredStudents.length >
+                                        0 &&
+                                        `-${Math.min(
+                                            endIndex,
+                                            filteredStudents.length
+                                        )}`}
                                 </span>{" "}
-                                of {students.length} students
+                                of{" "}
+                                {
+                                    filteredStudents.length
+                                }{" "}
+                                students
                             </p>
 
-                            {/* Pagination - will make dynamic later */}
-                            <div className="flex items-center gap-1">
-                                <button
-                                    disabled
-                                    className="flex h-8 w-8 cursor-not-allowed items-center justify-center rounded-lg border border-border text-muted-foreground opacity-50"
-                                >
-                                    <ChevronLeft size={14} />
-                                </button>
+                            {/* Pagination */}
+                            {totalPages > 1 && (
+                                <div className="flex items-center gap-1">
+                                    {/* Previous */}
+                                    <button
+                                        type="button"
+                                        onClick={() =>
+                                            setCurrentPage(
+                                                (
+                                                    page
+                                                ) =>
+                                                    Math.max(
+                                                        1,
+                                                        page -
+                                                            1
+                                                    )
+                                            )
+                                        }
+                                        disabled={
+                                            currentPage ===
+                                            1
+                                        }
+                                        className={`flex h-8 w-8 items-center justify-center rounded-lg border transition-all ${
+                                            currentPage ===
+                                            1
+                                                ? "cursor-not-allowed border-border text-muted-foreground opacity-40"
+                                                : "border-border text-muted-foreground hover:border-primary/50 hover:bg-primary/5 hover:text-primary"
+                                        }`}
+                                    >
+                                        <ChevronLeft
+                                            size={14}
+                                        />
+                                    </button>
 
-                                <button className="flex h-8 w-8 items-center justify-center rounded-lg border border-primary bg-primary/10 text-xs font-semibold text-primary">
-                                    1
-                                </button>
+                                    {/* Page Numbers */}
+                                    {pageNumbers.map(
+                                        (
+                                            page,
+                                            index
+                                        ) => {
+                                            const previousPage =
+                                                pageNumbers[
+                                                    index -
+                                                        1
+                                                ]
 
-                                <button
-                                    disabled
-                                    className="flex h-8 w-8 cursor-not-allowed items-center justify-center rounded-lg border border-border text-xs text-muted-foreground opacity-50"
-                                >
-                                    2
-                                </button>
+                                            const showEllipsis =
+                                                previousPage &&
+                                                page -
+                                                    previousPage >
+                                                    1
 
-                                <button
-                                    disabled
-                                    className="flex h-8 w-8 cursor-not-allowed items-center justify-center rounded-lg border border-border text-xs text-muted-foreground opacity-50"
-                                >
-                                    3
-                                </button>
+                                            return (
+                                                <div
+                                                    key={
+                                                        page
+                                                    }
+                                                    className="flex items-center gap-1"
+                                                >
+                                                    {showEllipsis && (
+                                                        <span className="px-1 text-xs text-muted-foreground">
+                                                            ...
+                                                        </span>
+                                                    )}
 
-                                <span className="px-1 text-xs text-muted-foreground">
-                                    ...
-                                </span>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() =>
+                                                            setCurrentPage(
+                                                                page
+                                                            )
+                                                        }
+                                                        className={`flex h-8 w-8 items-center justify-center rounded-lg border text-xs font-semibold transition-all ${
+                                                            currentPage ===
+                                                            page
+                                                                ? "border-primary bg-primary/10 text-primary"
+                                                                : "border-border text-muted-foreground hover:border-primary/50 hover:bg-primary/5 hover:text-primary"
+                                                        }`}
+                                                    >
+                                                        {
+                                                            page
+                                                        }
+                                                    </button>
+                                                </div>
+                                            )
+                                        }
+                                    )}
 
-                                <button
-                                    disabled
-                                    className="flex h-8 w-8 cursor-not-allowed items-center justify-center rounded-lg border border-border text-xs text-muted-foreground opacity-50"
-                                >
-                                    20
-                                </button>
-
-                                <button
-                                    disabled
-                                    className="flex h-8 w-8 cursor-not-allowed items-center justify-center rounded-lg border border-border text-muted-foreground opacity-50"
-                                >
-                                    <ChevronRight size={14} />
-                                </button>
-                            </div>
+                                    {/* Next */}
+                                    <button
+                                        type="button"
+                                        onClick={() =>
+                                            setCurrentPage(
+                                                (
+                                                    page
+                                                ) =>
+                                                    Math.min(
+                                                        totalPages,
+                                                        page +
+                                                            1
+                                                    )
+                                            )
+                                        }
+                                        disabled={
+                                            currentPage ===
+                                            totalPages
+                                        }
+                                        className={`flex h-8 w-8 items-center justify-center rounded-lg border transition-all ${
+                                            currentPage ===
+                                            totalPages
+                                                ? "cursor-not-allowed border-border text-muted-foreground opacity-40"
+                                                : "border-border text-muted-foreground hover:border-primary/50 hover:bg-primary/5 hover:text-primary"
+                                        }`}
+                                    >
+                                        <ChevronRight
+                                            size={14}
+                                        />
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </>

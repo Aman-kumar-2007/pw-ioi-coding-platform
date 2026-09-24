@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react"
+import { Routes, Route } from "react-router"
 
 import AuthPage from "./components/AuthPage"
 import ProfileSetup from "./components/ProfileSetup"
@@ -16,6 +17,7 @@ import Contests from "./components/Contests"
 import Analytics from "./components/Analytics"
 import Settings from "./components/Settings"
 import Notifications from "./components/Notifications"
+import PublicStudentProfile from "./components/PublicStudentProfile"
 
 import { supabase } from "./lib/supabase"
 
@@ -62,16 +64,18 @@ function App() {
 
         const {
             data: { subscription },
-        } = supabase.auth.onAuthStateChange((event, session) => {
-            if (session) {
-                setTimeout(() => {
-                    handleAuthenticatedUser(session)
-                }, 0)
-            } else if (event === "SIGNED_OUT") {
-                setCurrentPage("login")
-                setActivePage("Dashboard")
-            }
-        })
+        } = supabase.auth.onAuthStateChange(
+            (event, session) => {
+                if (session) {
+                    setTimeout(() => {
+                        handleAuthenticatedUser(session)
+                    }, 0)
+                } else if (event === "SIGNED_OUT") {
+                    setCurrentPage("login")
+                    setActivePage("Dashboard")
+                }
+            },
+        )
 
         return () => {
             subscription.unsubscribe()
@@ -99,45 +103,80 @@ function App() {
     }
 
     return (
-        <Layout
-            activePage={activePage}
-            setActivePage={setActivePage}
-            onLogout={async () => {
-                await supabase.auth.signOut()
-                setCurrentPage("login")
-                setActivePage("Dashboard")
-            }}
-        >
-            {activePage === "Dashboard" && (
-                <>
-                    <DashboardHeader />
-                    <QuickStats />
-                    <PlatformCards />
-                    <RatingProgress />
-                    <CodingHeatmap />
-                </>
-            )}
+        <Routes>
+            {/* ================================================= */}
+            {/* PUBLIC STUDENT PROFILE                           */}
+            {/* ================================================= */}
 
-            {activePage === "Leaderboard" && <Leaderboard />}
-            {activePage === "Student Profile" && <StudentProfile />}
-            {activePage === "Contests" && <Contests />}
-            {activePage === "Analytics" && <Analytics />}
+            <Route
+                path="/student/:username"
+                element={<PublicStudentProfile />}
+            />
 
-            {activePage === "Settings" && (
-                <Settings
-                    onViewProfile={() =>
-                        setActivePage("Student Profile")
-                    }
-                    onLogout={async () => {
-                        await supabase.auth.signOut()
-                        setCurrentPage("login")
-                        setActivePage("Dashboard")
-                    }}
-                />
-            )}
+            {/* ================================================= */}
+            {/* MAIN CODESYNC APP                                */}
+            {/* ================================================= */}
 
-            {activePage === "Notifications" && <Notifications />}
-        </Layout>
+            <Route
+                path="*"
+                element={
+                    <Layout
+                        activePage={activePage}
+                        setActivePage={setActivePage}
+                        onLogout={async () => {
+                            await supabase.auth.signOut()
+                            setCurrentPage("login")
+                            setActivePage("Dashboard")
+                        }}
+                    >
+                        {activePage === "Dashboard" && (
+                            <>
+                                <DashboardHeader />
+                                <QuickStats />
+                                <PlatformCards />
+                                <RatingProgress />
+                                <CodingHeatmap />
+                            </>
+                        )}
+
+                        {activePage === "Leaderboard" && (
+                            <Leaderboard />
+                        )}
+
+                        {activePage === "Student Profile" && (
+                            <StudentProfile />
+                        )}
+
+                        {activePage === "Contests" && (
+                            <Contests />
+                        )}
+
+                        {activePage === "Analytics" && (
+                            <Analytics />
+                        )}
+
+                        {activePage === "Settings" && (
+                            <Settings
+                                onViewProfile={() =>
+                                    setActivePage(
+                                        "Student Profile",
+                                    )
+                                }
+                                onLogout={async () => {
+                                    await supabase.auth.signOut()
+                                    setCurrentPage("login")
+                                    setActivePage("Dashboard")
+                                }}
+                            />
+                        )}
+
+                        {activePage === "Notifications" && (
+                            <Notifications />
+                        )}
+                    </Layout>
+                }
+            />
+        </Routes>
     )
 }
 
