@@ -895,9 +895,11 @@ function Analytics() {
                     )
                 }
 
-                setGlobalRank(
-                    leaderboardResult.data.currentUserRank
-                )
+                setGlobalRank({
+                    rank: leaderboardResult.data.currentUserRank,
+                    total:
+                        leaderboardResult.data.leaderboard?.length || 0,
+                })
             } catch (error) {
                 console.error(
                     "Analytics fetch error:",
@@ -1060,13 +1062,13 @@ function Analytics() {
                     icon={Award}
                     label="Global Rank"
                     value={
-                        globalRank
-                            ? `#${globalRank}`
+                        globalRank?.rank
+                            ? `#${globalRank.rank}`
                             : "—"
                     }
                     subtitle={
-                        globalRank
-                            ? "CodeSync leaderboard rank"
+                        globalRank?.rank
+                            ? `#${globalRank.rank} out of ${globalRank.total} students`
                             : "Not ranked yet"
                     }
                     iconClass="bg-purple-500/10 text-purple-400"
