@@ -982,11 +982,17 @@ function Analytics() {
 
                         <div className="text-right">
                             <p className="text-[9px] uppercase tracking-wider text-muted-foreground">
-                                Overall Growth
+                                Problem Growth
                             </p>
 
                             <p className="font-mono text-lg font-bold text-emerald-400">
-                                +18%
+                                {analytics?.growth?.problemsSolved?.percentage != null
+                                    ? `${analytics.growth.problemsSolved.percentage >= 0
+                                        ? "+"
+                                        : ""
+                                    }${analytics.growth.problemsSolved.percentage
+                                    }%`
+                                    : "—"}
                             </p>
                         </div>
                     </div>
@@ -995,14 +1001,22 @@ function Analytics() {
 
             {/* Stats */}
             <div className="mb-5 grid grid-cols-2 gap-3 xl:grid-cols-5">
+
                 <StatCard
                     icon={Code2}
                     label="Problems Solved"
                     value={
-                        analytics?.summary?.totalProblemsSolved ??
-                        0
+                        analytics?.summary?.totalProblemsSolved ?? 0
                     }
-                    subtitle="+12% from last month"
+                    subtitle={
+                        analytics?.growth?.problemsSolved
+                            ? `${analytics.growth.problemsSolved.percentage >= 0
+                                ? "+"
+                                : ""
+                            }${analytics.growth.problemsSolved.percentage
+                            }% from last month`
+                            : "No previous month data"
+                    }
                     iconClass="bg-emerald-500/10 text-emerald-400"
                 />
 
@@ -1012,7 +1026,15 @@ function Analytics() {
                     value={
                         analytics?.summary?.totalContests ?? 0
                     }
-                    subtitle="+4% from last month"
+                    subtitle={
+                        analytics?.growth?.contests
+                            ? `${analytics.growth.contests.percentage >= 0
+                                ? "+"
+                                : ""
+                            }${analytics.growth.contests.percentage
+                            }% from last month`
+                            : "No previous month data"
+                    }
                     iconClass="bg-amber-500/10 text-amber-400"
                 />
 
@@ -1022,7 +1044,15 @@ function Analytics() {
                     value={
                         analytics?.summary?.currentRating ?? "—"
                     }
-                    subtitle="+132 since January"
+                    subtitle={
+                        analytics?.growth?.codeforcesRating?.change != null
+                            ? `${analytics.growth.codeforcesRating.change >= 0
+                                ? "+"
+                                : ""
+                            }${analytics.growth.codeforcesRating.change
+                            } from last month`
+                            : "No previous month data"
+                    }
                     iconClass="bg-blue-500/10 text-blue-400"
                 />
 
@@ -1034,7 +1064,11 @@ function Analytics() {
                             ? `#${globalRank}`
                             : "—"
                     }
-                    subtitle="+18,320 positions"
+                    subtitle={
+                        globalRank
+                            ? "CodeSync leaderboard rank"
+                            : "Not ranked yet"
+                    }
                     iconClass="bg-purple-500/10 text-purple-400"
                 />
 
@@ -1045,6 +1079,7 @@ function Analytics() {
                     subtitle="Keep the momentum"
                     iconClass="bg-orange-500/10 text-orange-400"
                 />
+
             </div>
 
             <div className="mb-5">

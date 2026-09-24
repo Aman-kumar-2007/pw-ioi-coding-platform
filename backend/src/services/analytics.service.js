@@ -185,25 +185,6 @@ const aggregateRatingHistory = (rows = []) => {
             new Date(b.recorded_at)
     )
 
-    const getRatingAtOrBefore = (
-        platformRows,
-        endDate
-    ) => {
-        let rating = null
-
-        for (const row of platformRows) {
-            const date = new Date(row.recorded_at)
-
-            if (date <= endDate) {
-                rating = row.rating_after
-            } else {
-                break
-            }
-        }
-
-        return rating
-    }
-
     const codeforcesRows = sortedRows.filter(
         (row) =>
             row.platform === "CODEFORCES"
@@ -395,6 +376,64 @@ const aggregateRatingHistory = (rows = []) => {
     }
 }
 
+const getMonthRange = (offset = 0) => {
+    const now = new Date()
+
+    const start = new Date(
+        now.getFullYear(),
+        now.getMonth() + offset,
+        1
+    )
+
+    const end = new Date(
+        now.getFullYear(),
+        now.getMonth() + offset + 1,
+        0,
+        23,
+        59,
+        59,
+        999
+    )
+
+    return { start, end }
+}
+
+const isBetween = (date, start, end) => {
+    const value = new Date(date)
+    return value >= start && value <= end
+}
+
+const calculateGrowth = (current, previous) => {
+    if (previous === 0) {
+        return current > 0 ? 100 : 0
+    }
+
+    return ((current - previous) / previous) * 100
+}
+
+// =========================================================
+// GET RATING AT OR BEFORE A DATE
+// =========================================================
+
+const getRatingAtOrBefore = (
+    rows = [],
+    endDate
+) => {
+    let rating = null
+
+    for (const row of rows) {
+        const date = new Date(row.recorded_at)
+
+        if (date <= endDate) {
+            rating = row.rating_after
+        } else {
+            break
+        }
+    }
+
+    return rating
+}
+
 // =========================================================
 // ANALYTICS SUMMARY
 // =========================================================
@@ -524,16 +563,10 @@ const getAnalyticsSummary = async (userId) => {
 
         // Current rating
         if (
-            account.platform === "CODEFORCES" ||
-            account.platform === "LEETCODE"
+            account.platform === "CODEFORCES" &&
+            stats.current_rating != null
         ) {
-
-            if (
-                stats.current_rating != null
-            ) {
-                currentRating =
-                    stats.current_rating
-            }
+            currentRating = stats.current_rating
         }
 
         platforms.push({
@@ -633,6 +666,34 @@ const getAnalyticsSummary = async (userId) => {
         )
     }
 
+
+    // =====================================================
+    // PROBLEM ACTIVITY
+    // =====================================================
+
+    const {
+        data: problemActivity,
+        error: problemActivityError,
+    } = await supabase
+        .from("problem_activity")
+        .select(`
+        solved_at,
+        problem_id,
+        problems (
+            platform
+        )
+    `)
+        .eq("user_id", userId)
+        .order("solved_at", {
+            ascending: true,
+        })
+
+    if (problemActivityError) {
+        throw new Error(
+            `Failed to load problem activity: ${problemActivityError.message}`
+        )
+    }
+
     // =====================================================
     // STREAK
     // =====================================================
@@ -645,24 +706,44 @@ const getAnalyticsSummary = async (userId) => {
                     (day.submission_count || 0) > 0 ||
                     (day.contribution_count || 0) > 0
             )
-            .map(
-                (day) => day.activity_date
+            .map((day) =>
+                String(day.activity_date).slice(0, 10)
             )
     )
 
+    // Get today's date in India
+    const indiaToday = new Intl.DateTimeFormat(
+        "en-CA",
+        {
+            timeZone: "Asia/Kolkata",
+        }
+    ).format(new Date())
+
     let streak = 0
 
-    const currentDate = new Date()
+    const todayIsActive =
+        activeDates.has(indiaToday)
+
+    // If today is not active yet,
+    // start counting from yesterday.
+    const streakStart = new Date(
+        `${indiaToday}T00:00:00+05:30`
+    )
+
+    if (!todayIsActive) {
+        streakStart.setDate(
+            streakStart.getDate() - 1
+        )
+    }
 
     while (true) {
-
         const dateKey =
-            currentDate.toLocaleDateString(
+            new Intl.DateTimeFormat(
                 "en-CA",
                 {
                     timeZone: "Asia/Kolkata",
                 }
-            )
+            ).format(streakStart)
 
         if (!activeDates.has(dateKey)) {
             break
@@ -670,11 +751,10 @@ const getAnalyticsSummary = async (userId) => {
 
         streak++
 
-        currentDate.setDate(
-            currentDate.getDate() - 1
+        streakStart.setDate(
+            streakStart.getDate() - 1
         )
     }
-
     // =====================================================
     // SUBMISSION ACTIVITY
     // =====================================================
@@ -687,6 +767,154 @@ const getAnalyticsSummary = async (userId) => {
             ratingHistory || []
         )
 
+
+    // =====================================================
+    // REAL GROWTH METRICS
+    // =====================================================
+
+    const currentMonth = getMonthRange(0)
+    const previousMonth = getMonthRange(-1)
+
+
+    // =====================================================
+    // PROBLEM SOLVING GROWTH
+    // =====================================================
+
+    let currentMonthProblems = 0
+    let previousMonthProblems = 0
+
+    // LeetCode + GFG daily solved activity
+    for (const row of activity || []) {
+        if (
+            row.platform !== "LEETCODE" &&
+            row.platform !== "GFG"
+        ) {
+            continue
+        }
+
+        if (
+            isBetween(
+                row.activity_date,
+                currentMonth.start,
+                currentMonth.end
+            )
+        ) {
+            currentMonthProblems +=
+                row.problem_count || 0
+        }
+
+        if (
+            isBetween(
+                row.activity_date,
+                previousMonth.start,
+                previousMonth.end
+            )
+        ) {
+            previousMonthProblems +=
+                row.problem_count || 0
+        }
+    }
+
+
+    // Codeforces solved problems
+    for (const row of problemActivity || []) {
+        if (
+            row.problems?.platform !== "CODEFORCES" ||
+            !row.solved_at
+        ) {
+            continue
+        }
+
+        if (
+            isBetween(
+                row.solved_at,
+                currentMonth.start,
+                currentMonth.end
+            )
+        ) {
+            currentMonthProblems++
+        }
+
+        if (
+            isBetween(
+                row.solved_at,
+                previousMonth.start,
+                previousMonth.end
+            )
+        ) {
+            previousMonthProblems++
+        }
+    }
+
+    const problemGrowth = calculateGrowth(
+        currentMonthProblems,
+        previousMonthProblems
+    )
+
+
+    // =====================================================
+    // CONTEST GROWTH
+    // =====================================================
+
+    const currentMonthContests =
+        (ratingHistory || []).filter((row) =>
+            isBetween(
+                row.recorded_at,
+                currentMonth.start,
+                currentMonth.end
+            )
+        ).length
+
+    const previousMonthContests =
+        (ratingHistory || []).filter((row) =>
+            isBetween(
+                row.recorded_at,
+                previousMonth.start,
+                previousMonth.end
+            )
+        ).length
+
+    const contestGrowth = calculateGrowth(
+        currentMonthContests,
+        previousMonthContests
+    )
+
+
+    // =====================================================
+    // CODEFORCES RATING GROWTH
+    // CURRENT MONTH VS PREVIOUS MONTH
+    // =====================================================
+
+    const codeforcesRatingRows =
+        (ratingHistory || [])
+            .filter(
+                (row) =>
+                    row.platform === "CODEFORCES"
+            )
+            .sort(
+                (a, b) =>
+                    new Date(a.recorded_at) -
+                    new Date(b.recorded_at)
+            )
+
+    const currentMonthCodeforcesRating =
+        getRatingAtOrBefore(
+            codeforcesRatingRows,
+            currentMonth.end
+        )
+
+    const previousMonthCodeforcesRating =
+        getRatingAtOrBefore(
+            codeforcesRatingRows,
+            previousMonth.end
+        )
+
+    const ratingChange =
+        currentMonthCodeforcesRating != null &&
+            previousMonthCodeforcesRating != null
+            ? currentMonthCodeforcesRating -
+            previousMonthCodeforcesRating
+            : null
     // =====================================================
     // TOPIC-WISE PROGRESS
     // =====================================================
@@ -753,6 +981,30 @@ const getAnalyticsSummary = async (userId) => {
         rating: aggregatedRating,
 
         topicProgress,
+
+        growth: {
+            problemsSolved: {
+                current: currentMonthProblems,
+                previous: previousMonthProblems,
+                percentage: Number(
+                    problemGrowth.toFixed(1)
+                ),
+            },
+
+            contests: {
+                current: currentMonthContests,
+                previous: previousMonthContests,
+                percentage: Number(
+                    contestGrowth.toFixed(1)
+                ),
+            },
+
+            codeforcesRating: {
+                current: currentMonthCodeforcesRating,
+                previous: previousMonthCodeforcesRating,
+                change: ratingChange,
+            },
+        },
     }
 }
 
