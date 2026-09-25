@@ -10,6 +10,8 @@ const studentProfileRoutes = require("./routes/studentProfile.routes")
 const profileRoutes = require("./routes/profile.routes")
 const contestRoutes = require("./routes/contest.routes")
 const preferencesRoutes = require("./routes/preferences.routes")
+const notificationRoutes =
+    require("./routes/notification.routes")
 
 const {
     startPlatformSyncJob,
@@ -64,4 +66,9 @@ app.use("/api/contests", contestRoutes)
 app.use(
     "/api/preferences",
     preferencesRoutes
+)
+
+app.use(
+    "/api/notifications",
+    notificationRoutes
 )

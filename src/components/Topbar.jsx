@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from "react"
+import { supabase } from "../lib/supabase"
+
 import {
   Search,
   Bell,
@@ -60,6 +62,12 @@ function Topbar({
     useState(false)
 
   const [notificationOpen, setNotificationOpen] =
+    useState(false)
+
+  const [notifications, setNotifications] =
+    useState([])
+
+  const [notificationsLoading, setNotificationsLoading] =
     useState(false)
 
   const [searchQuery, setSearchQuery] =
@@ -197,6 +205,196 @@ function Topbar({
 
 
   /* ========================================================= */
+  /* NOTIFICATIONS                                              */
+  /* ========================================================= */
+
+  const fetchNotifications = async () => {
+    try {
+      setNotificationsLoading(true)
+
+      const {
+        data: { session },
+      } = await supabase.auth.getSession()
+
+      if (!session?.access_token) {
+        return
+      }
+
+      const response = await fetch(
+        "http://localhost:5001/api/notifications",
+        {
+          headers: {
+            Authorization:
+              `Bearer ${session.access_token}`,
+          },
+        }
+      )
+
+      const result = await response.json()
+
+      if (!response.ok || !result.success) {
+        throw new Error(
+          result.message ||
+          "Failed to load notifications."
+        )
+      }
+
+      setNotifications(
+        result.data?.notifications || []
+      )
+    } catch (error) {
+      console.error(
+        "Topbar notifications error:",
+        error
+      )
+    } finally {
+      setNotificationsLoading(false)
+    }
+  }
+
+
+  useEffect(() => {
+    fetchNotifications()
+  }, [])
+
+
+  const unreadNotificationCount =
+    notifications.filter(
+      (notification) =>
+        !notification.isRead
+    ).length
+
+
+  const markNotificationAsRead = async (
+    recipientId
+  ) => {
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession()
+
+      if (!session?.access_token) {
+        return
+      }
+
+      const response = await fetch(
+        `http://localhost:5001/api/notifications/${recipientId}/read`,
+        {
+          method: "PUT",
+          headers: {
+            Authorization:
+              `Bearer ${session.access_token}`,
+          },
+        }
+      )
+
+      const result = await response.json()
+
+      if (!response.ok || !result.success) {
+        throw new Error(
+          result.message ||
+          "Failed to mark notification as read."
+        )
+      }
+
+      setNotifications((prev) =>
+        prev.map((notification) =>
+          notification.id === recipientId
+            ? {
+              ...notification,
+              isRead: true,
+              readAt:
+                result.data?.read_at ||
+                new Date().toISOString(),
+            }
+            : notification
+        )
+      )
+    } catch (error) {
+      console.error(
+        "Topbar mark notification error:",
+        error
+      )
+    }
+  }
+
+
+  const getNotificationIcon = (type) => {
+    switch (type) {
+      case "CONTEST":
+        return {
+          icon: Trophy,
+          iconClass: "text-amber-400",
+          bgClass: "bg-amber-400/10",
+        }
+
+      case "LEADERBOARD":
+        return {
+          icon: Medal,
+          iconClass: "text-blue-400",
+          bgClass: "bg-blue-400/10",
+        }
+
+      case "STREAK":
+        return {
+          icon: Zap,
+          iconClass: "text-violet-400",
+          bgClass: "bg-violet-400/10",
+        }
+
+      default:
+        return {
+          icon: Bell,
+          iconClass: "text-primary",
+          bgClass: "bg-primary/10",
+        }
+    }
+  }
+
+
+  const formatNotificationTime = (date) => {
+    if (!date) return ""
+
+    const createdAt = new Date(date)
+    const diffMinutes = Math.floor(
+      Math.max(
+        0,
+        Date.now() - createdAt.getTime()
+      ) / (1000 * 60)
+    )
+
+    if (diffMinutes < 1) return "Just now"
+    if (diffMinutes < 60) {
+      return `${diffMinutes}m`
+    }
+
+    const diffHours = Math.floor(
+      diffMinutes / 60
+    )
+
+    if (diffHours < 24) {
+      return `${diffHours}h`
+    }
+
+    const diffDays = Math.floor(
+      diffHours / 24
+    )
+
+    if (diffDays < 7) {
+      return `${diffDays}d`
+    }
+
+    return createdAt.toLocaleDateString(
+      "en-IN",
+      {
+        day: "numeric",
+        month: "short",
+      }
+    )
+  }
+
+
+  /* ========================================================= */
   /* NAVIGATE                                                   */
   /* ========================================================= */
 
@@ -219,8 +417,8 @@ function Topbar({
       {/* ================================================= */}
 
       <header className={`fixed right-0 top-0 z-50 h-[72px] border-b border-border bg-background/95 backdrop-blur-xl ${sidebarCollapsed
-          ? "left-[76px]"
-          : "left-[240px]"
+        ? "left-[76px]"
+        : "left-[240px]"
         }`} >
 
         <div className="flex h-full items-center justify-between px-5 sm:px-7">
@@ -310,8 +508,8 @@ function Topbar({
                   setSearchOpen(false)
                 }}
                 className={`relative flex h-10 w-10 items-center justify-center rounded-xl border transition-all ${notificationOpen
-                    ? "border-primary/30 bg-primary/10 text-primary"
-                    : "border-border bg-secondary/70 text-muted-foreground hover:border-primary/30 hover:bg-primary/[0.04] hover:text-foreground"
+                  ? "border-primary/30 bg-primary/10 text-primary"
+                  : "border-border bg-secondary/70 text-muted-foreground hover:border-primary/30 hover:bg-primary/[0.04] hover:text-foreground"
                   }`}
               >
 
@@ -320,7 +518,9 @@ function Topbar({
                   strokeWidth={1.8}
                 />
 
-                <span className="absolute right-2.5 top-2 h-1.5 w-1.5 rounded-full bg-primary shadow-[0_0_8px_rgba(99,102,241,0.8)]" />
+                {unreadNotificationCount > 0 && (
+                  <span className="absolute right-2.5 top-2 h-1.5 w-1.5 rounded-full bg-primary shadow-[0_0_8px_rgba(99,102,241,0.8)]" />
+                )}
 
               </button>
 
@@ -343,43 +543,72 @@ function Topbar({
                     </div>
 
                     <span className="rounded-full bg-primary/10 px-2 py-1 text-[9px] font-bold text-primary">
-                      2 New
+                      {unreadNotificationCount} New
                     </span>
 
                   </div>
 
 
-                  <div className="divide-y divide-border">
+                  <div className="divide-y divide-border max-h-[310px] overflow-y-auto">
+                    {notificationsLoading ? (
+                      <div className="px-4 py-8 text-center">
+                        <div className="mx-auto h-6 w-6 animate-spin rounded-full border-2 border-transparent border-t-primary border-r-primary/40" />
+                        <p className="mt-3 text-xs text-muted-foreground">
+                          Loading notifications...
+                        </p>
+                      </div>
+                    ) : notifications.length === 0 ? (
+                      <div className="px-4 py-8 text-center">
+                        <Bell
+                          size={22}
+                          className="mx-auto text-muted-foreground/50"
+                        />
+                        <p className="mt-3 text-xs font-semibold">
+                          No notifications
+                        </p>
+                        <p className="mt-1 text-[10px] text-muted-foreground">
+                          You&apos;re all caught up.
+                        </p>
+                      </div>
+                    ) : (
+                      notifications
+                        .slice(0, 5)
+                        .map((notification) => {
+                          const {
+                            icon: Icon,
+                            iconClass,
+                            bgClass,
+                          } = getNotificationIcon(
+                            notification.type
+                          )
 
-                    <NotificationItem
-                      icon={Trophy}
-                      iconClass="text-amber-400"
-                      bgClass="bg-amber-400/10"
-                      title="Contest starting soon"
-                      description="LeetCode Weekly Contest starts in 2 hours."
-                      time="2h"
-                    />
-
-
-                    <NotificationItem
-                      icon={Medal}
-                      iconClass="text-blue-400"
-                      bgClass="bg-blue-400/10"
-                      title="Leaderboard update"
-                      description="You moved up 8 positions this week."
-                      time="5h"
-                    />
-
-
-                    <NotificationItem
-                      icon={Zap}
-                      iconClass="text-violet-400"
-                      bgClass="bg-violet-400/10"
-                      title="Keep your streak alive"
-                      description="Solve one problem today to continue."
-                      time="Today"
-                    />
-
+                          return (
+                            <NotificationItem
+                              key={notification.id}
+                              icon={Icon}
+                              iconClass={iconClass}
+                              bgClass={bgClass}
+                              title={notification.title}
+                              description={notification.description}
+                              time={formatNotificationTime(
+                                notification.createdAt
+                              )}
+                              unread={
+                                !notification.isRead
+                              }
+                              onClick={() => {
+                                if (
+                                  !notification.isRead
+                                ) {
+                                  markNotificationAsRead(
+                                    notification.id
+                                  )
+                                }
+                              }}
+                            />
+                          )
+                        })
+                    )}
                   </div>
 
 
@@ -585,8 +814,8 @@ function SearchResult({
       type="button"
       onClick={onClick}
       className={`group flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left transition-all ${active
-          ? "bg-primary/10"
-          : "hover:bg-secondary"
+        ? "bg-primary/10"
+        : "hover:bg-secondary"
         }`}
     >
 
@@ -636,13 +865,16 @@ function NotificationItem({
   title,
   description,
   time,
+  unread,
+  onClick,
 }) {
   return (
     <button
       type="button"
-      className="flex w-full gap-3 px-4 py-3.5 text-left transition-colors hover:bg-secondary/40"
+      onClick={onClick}
+      className={`flex w-full gap-3 px-4 py-3.5 text-left transition-colors hover:bg-secondary/40 ${unread ? "bg-primary/[0.025]" : ""
+        }`}
     >
-
       <div
         className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${bgClass}`}
       >
@@ -652,28 +884,27 @@ function NotificationItem({
         />
       </div>
 
-
       <div className="min-w-0 flex-1">
-
         <div className="flex items-start justify-between gap-2">
+          <div className="flex min-w-0 items-center gap-2">
+            <p className="truncate text-xs font-semibold">
+              {title}
+            </p>
 
-          <p className="text-xs font-semibold">
-            {title}
-          </p>
+            {unread && (
+              <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
+            )}
+          </div>
 
           <span className="shrink-0 text-[9px] text-muted-foreground">
             {time}
           </span>
-
         </div>
-
 
         <p className="mt-1 text-[10px] leading-4 text-muted-foreground">
           {description}
         </p>
-
       </div>
-
     </button>
   )
 }
