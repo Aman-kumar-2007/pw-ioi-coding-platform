@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { supabase } from "../lib/supabase"
 import {
     LayoutDashboard,
     Code2,
@@ -21,9 +22,35 @@ function Sidebar({
     onLogout,
     collapsed,
     setCollapsed,
+    profile,
 }) {
 
     const [logoutOpen, setLogoutOpen] = useState(false)
+
+    const displayName =
+        profile?.name ||
+        profile?.full_name ||
+        "Student"
+
+    const username =
+        profile?.username ||
+        profile?.userName ||
+        "student"
+
+    const profileImage =
+        profile?.avatar ||
+        profile?.profile_image ||
+        profile?.profileImage ||
+        null
+
+    const initials = displayName
+        .trim()
+        .split(/\\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0])
+        .join("")
+        .toUpperCase() || "S"
 
 
     const menuItems = [
@@ -50,12 +77,15 @@ function Sidebar({
     ]
 
 
-    const handleLogout = () => {
+    const handleLogout = async () => {
         setLogoutOpen(false)
 
         if (onLogout) {
-            onLogout()
+            await onLogout()
+            return
         }
+
+        await supabase.auth.signOut()
     }
 
 
@@ -66,11 +96,10 @@ function Sidebar({
             {/* ================================================= */}
 
             <aside
-                className={`fixed left-0 top-0 z-[60] flex h-screen flex-col border-r border-border bg-background transition-all duration-300 ${
-                    collapsed
+                className={`fixed left-0 top-0 z-[60] flex h-screen flex-col border-r border-border bg-background transition-all duration-300 ${collapsed
                         ? "w-[76px]"
                         : "w-[240px]"
-                }`}
+                    }`}
             >
 
                 {/* ============================================= */}
@@ -78,11 +107,10 @@ function Sidebar({
                 {/* ============================================= */}
 
                 <div
-                    className={`flex h-[72px] shrink-0 items-center border-b border-border transition-all duration-300 ${
-                        collapsed
+                    className={`flex h-[72px] shrink-0 items-center border-b border-border transition-all duration-300 ${collapsed
                             ? "justify-center px-2"
                             : "px-5"
-                    }`}
+                        }`}
                 >
 
                     <button
@@ -90,11 +118,10 @@ function Sidebar({
                         onClick={() =>
                             setActivePage("Dashboard")
                         }
-                        className={`group flex items-center ${
-                            collapsed
+                        className={`group flex items-center ${collapsed
                                 ? "justify-center"
                                 : "gap-3"
-                        }`}
+                            }`}
                     >
 
                         {/* Logo */}
@@ -175,15 +202,13 @@ function Sidebar({
                                                 ? item.label
                                                 : undefined
                                         }
-                                        className={`relative flex w-full items-center rounded-xl text-sm font-medium transition-all duration-200 ${
-                                            collapsed
+                                        className={`relative flex w-full items-center rounded-xl text-sm font-medium transition-all duration-200 ${collapsed
                                                 ? "justify-center px-2 py-3"
                                                 : "gap-3 px-3 py-2.5"
-                                        } ${
-                                            isActive
+                                            } ${isActive
                                                 ? "bg-primary/10 text-primary"
                                                 : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-                                        }`}
+                                            }`}
                                     >
 
                                         {/* Active line */}
@@ -196,11 +221,10 @@ function Sidebar({
                                         {/* Icon container */}
 
                                         <span
-                                            className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg transition-all ${
-                                                isActive
+                                            className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg transition-all ${isActive
                                                     ? "bg-primary/10"
                                                     : "bg-transparent group-hover:bg-muted"
-                                            }`}
+                                                }`}
                                         >
 
                                             <Icon
@@ -275,37 +299,34 @@ function Sidebar({
                                 ? "Settings"
                                 : undefined
                         }
-                        className={`relative flex w-full items-center rounded-xl text-sm font-medium transition-all duration-200 ${
-                            collapsed
+                        className={`relative flex w-full items-center rounded-xl text-sm font-medium transition-all duration-200 ${collapsed
                                 ? "justify-center px-2 py-3"
                                 : "gap-3 px-3 py-2.5"
-                        } ${
-                            activePage === "Settings"
+                            } ${activePage === "Settings"
                                 ? "bg-primary/10 text-primary"
                                 : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-                        }`}
+                            }`}
                     >
 
                         {activePage ===
                             "Settings" && (
-                            <span className="absolute left-0 top-1/2 h-5 w-0.5 -translate-y-1/2 rounded-full bg-primary" />
-                        )}
+                                <span className="absolute left-0 top-1/2 h-5 w-0.5 -translate-y-1/2 rounded-full bg-primary" />
+                            )}
 
 
                         <span
-                            className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg ${
-                                activePage ===
-                                "Settings"
+                            className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg ${activePage ===
+                                    "Settings"
                                     ? "bg-primary/10"
                                     : "bg-transparent"
-                            }`}
+                                }`}
                         >
 
                             <Settings
                                 size={17}
                                 strokeWidth={
                                     activePage ===
-                                    "Settings"
+                                        "Settings"
                                         ? 2
                                         : 1.8
                                 }
@@ -339,19 +360,17 @@ function Sidebar({
                 <div className="shrink-0 border-t border-border p-3">
 
                     <div
-                        className={`rounded-xl border border-transparent bg-secondary/40 p-2.5 transition-all hover:border-border hover:bg-secondary ${
-                            collapsed
+                        className={`rounded-xl border border-transparent bg-secondary/40 p-2.5 transition-all hover:border-border hover:bg-secondary ${collapsed
                                 ? "flex justify-center"
                                 : ""
-                        }`}
+                            }`}
                     >
 
                         <div
-                            className={`flex items-center ${
-                                collapsed
+                            className={`flex items-center ${collapsed
                                     ? "justify-center"
                                     : "gap-3"
-                            }`}
+                                }`}
                         >
 
                             {/* Avatar */}
@@ -371,8 +390,16 @@ function Sidebar({
                                 className="relative shrink-0"
                             >
 
-                                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 text-xs font-extrabold text-white shadow-[0_0_18px_rgba(99,102,241,0.18)]">
-                                    AK
+                                <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 text-xs font-extrabold text-white shadow-[0_0_18px_rgba(99,102,241,0.18)]">
+                                    {profileImage ? (
+                                        <img
+                                            src={profileImage}
+                                            alt={displayName}
+                                            className="h-full w-full object-cover"
+                                        />
+                                    ) : (
+                                        initials
+                                    )}
                                 </div>
 
 
@@ -399,7 +426,7 @@ function Sidebar({
                                     >
 
                                         <p className="truncate text-xs font-bold text-foreground">
-                                            Aman Kumar
+                                            {displayName}
                                         </p>
 
                                         <div className="mt-0.5 flex items-center gap-1.5">
@@ -471,11 +498,10 @@ function Sidebar({
                             ? "Expand sidebar"
                             : "Collapse sidebar"
                     }
-                    className={`absolute -right-3 top-[58px] z-[100] flex h-7 w-7 items-center justify-center rounded-full border border-border bg-card text-muted-foreground shadow-lg transition-all duration-300 hover:border-primary/40 hover:bg-primary/10 hover:text-primary ${
-                        collapsed
+                    className={`absolute -right-3 top-[58px] z-[100] flex h-7 w-7 items-center justify-center rounded-full border border-border bg-card text-muted-foreground shadow-lg transition-all duration-300 hover:border-primary/40 hover:bg-primary/10 hover:text-primary ${collapsed
                             ? "rotate-180"
                             : ""
-                    }`}
+                        }`}
                 >
 
                     <ChevronLeft
@@ -563,8 +589,16 @@ function Sidebar({
 
                                 <div className="flex items-center gap-3">
 
-                                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 text-xs font-bold text-white">
-                                        AK
+                                    <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 text-xs font-bold text-white">
+                                        {profileImage ? (
+                                            <img
+                                                src={profileImage}
+                                                alt={displayName}
+                                                className="h-full w-full object-cover"
+                                            />
+                                        ) : (
+                                            initials
+                                        )}
                                     </div>
 
 
@@ -573,7 +607,7 @@ function Sidebar({
                                         <div className="flex items-center gap-2">
 
                                             <p className="text-sm font-bold">
-                                                Aman Kumar
+                                                {displayName}
                                             </p>
 
                                             <ShieldCheck
@@ -584,7 +618,7 @@ function Sidebar({
                                         </div>
 
                                         <p className="mt-0.5 font-mono text-[10px] text-muted-foreground">
-                                            @amankumar_1305
+                                            @{username}
                                         </p>
 
                                     </div>

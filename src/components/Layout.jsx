@@ -7,6 +7,7 @@ function Layout({
     activePage,
     setActivePage,
     onLogout,
+    profile,
 }) {
     const [sidebarCollapsed, setSidebarCollapsed] =
         useState(false)
@@ -22,6 +23,7 @@ function Layout({
                 onLogout={onLogout}
                 collapsed={sidebarCollapsed}
                 setCollapsed={setSidebarCollapsed}
+                profile={profile}
             />
 
 

@@ -388,20 +388,13 @@ function App() {
                 element={
                     <Layout
                         activePage={activePage}
-                        setActivePage={
-                            setActivePage
-                        }
+                        setActivePage={setActivePage}
+                        profile={profile}
                         onLogout={async () => {
                             await supabase.auth.signOut()
 
-                            setCurrentPage(
-                                "login"
-                            )
-
-                            setActivePage(
-                                "Dashboard"
-                            )
-
+                            setCurrentPage("login")
+                            setActivePage("Dashboard")
                             setProfile(null)
                         }}
                     >
