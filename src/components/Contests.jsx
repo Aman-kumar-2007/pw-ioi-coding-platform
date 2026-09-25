@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
+import { supabase } from "../lib/supabase"
 
 import {
     Trophy,
@@ -10,181 +11,61 @@ import {
     ChevronRight,
     Bell,
     ExternalLink,
-    Users,
     Timer,
     CircleDot,
     CheckCircle2,
     Search,
-    ChevronDown,
     ArrowUp,
     ArrowDown,
-    Award,
 } from "lucide-react"
 
 
-const contests = [
-    {
-        id: 1,
-        name: "LeetCode Weekly Contest 468",
-        platform: "LeetCode",
-        date: "2026-09-13",
-        time: "20:00",
-        duration: "1h 30m",
-        type: "Rated",
-        participants: "18K+",
-        accent: "orange",
-        url: "#",
-    },
-    {
-        id: 2,
-        name: "Codeforces Round #1048 (Div. 2)",
-        platform: "Codeforces",
-        date: "2026-09-15",
-        time: "19:35",
-        duration: "2h 15m",
-        type: "Rated",
-        participants: "14K+",
-        accent: "blue",
-        url: "#",
-    },
-    {
-        id: 3,
-        name: "LeetCode Biweekly Contest 171",
-        platform: "LeetCode",
-        date: "2026-09-19",
-        time: "20:00",
-        duration: "1h 30m",
-        type: "Rated",
-        participants: "12K+",
-        accent: "orange",
-        url: "#",
-    },
-    {
-        id: 4,
-        name: "Codeforces Round #1049 (Div. 3)",
-        platform: "Codeforces",
-        date: "2026-09-24",
-        time: "19:35",
-        duration: "2h 15m",
-        type: "Rated",
-        participants: "20K+",
-        accent: "blue",
-        url: "#",
-    },
-    {
-        id: 5,
-        name: "LeetCode Weekly Contest 469",
-        platform: "LeetCode",
-        date: "2026-09-20",
-        time: "20:00",
-        duration: "1h 30m",
-        type: "Rated",
-        participants: "17K+",
-        accent: "orange",
-        url: "#",
-    },
-    {
-        id: 6,
-        name: "Codeforces Round #1050 (Div. 2)",
-        platform: "Codeforces",
-        date: "2026-09-28",
-        time: "19:35",
-        duration: "2h 15m",
-        type: "Rated",
-        participants: "15K+",
-        accent: "blue",
-        url: "#",
-    },
-]
+const API_BASE_URL = "http://localhost:5001"
 
+function normalizeContest(contest) {
+    const start = new Date(contest.startTime)
 
-const pastContests = [
-    {
-        id: 101,
-        name: "Weekly Contest 467",
-        platform: "LeetCode",
-        date: "2026-09-06",
-        rank: 842,
-        participants: 18432,
-        ratingChange: 18,
-        rating: 1865,
-        type: "Rated",
-        url: "#",
-    },
-    {
-        id: 102,
-        name: "Codeforces Round #1047",
-        platform: "Codeforces",
-        date: "2026-09-04",
-        rank: 421,
-        participants: 16890,
-        ratingChange: 32,
-        rating: 1879,
-        type: "Rated",
-        url: "#",
-    },
-    {
-        id: 103,
-        name: "Biweekly Contest 170",
-        platform: "LeetCode",
-        date: "2026-08-30",
-        rank: 1254,
-        participants: 15421,
-        ratingChange: -8,
-        rating: 1852,
-        type: "Rated",
-        url: "#",
-    },
-    {
-        id: 104,
-        name: "Codeforces Round #1046 (Div. 2)",
-        platform: "Codeforces",
-        date: "2026-08-28",
-        rank: 734,
-        participants: 19230,
-        ratingChange: 21,
-        rating: 1847,
-        type: "Rated",
-        url: "#",
-    },
-    {
-        id: 105,
-        name: "Weekly Contest 466",
-        platform: "LeetCode",
-        date: "2026-08-23",
-        rank: 2103,
-        participants: 20142,
-        ratingChange: -15,
-        rating: 1847,
-        url: "#",
-        type: "Rated",
-    },
-    {
-        id: 106,
-        name: "Codeforces Round #1045 (Div. 3)",
-        platform: "Codeforces",
-        date: "2026-08-20",
-        rank: 512,
-        participants: 22410,
-        ratingChange: 27,
-        rating: 1826,
-        type: "Rated",
-        url: "#",
-    },
-    {
-        id: 107,
-        name: "Weekly Contest 465",
-        platform: "LeetCode",
-        date: "2026-08-16",
-        rank: 934,
-        participants: 17680,
-        ratingChange: 11,
-        rating: 1862,
-        type: "Rated",
-        url: "#",
-    },
-]
+    const date = `${start.getFullYear()}-${String(
+        start.getMonth() + 1
+    ).padStart(2, "0")}-${String(start.getDate()).padStart(2, "0")}`
 
+    const time = `${String(start.getHours()).padStart(2, "0")}:${String(
+        start.getMinutes()
+    ).padStart(2, "0")}`
+
+    const totalMinutes = Math.floor(
+        (contest.duration || 0) / 60
+    )
+
+    const hours = Math.floor(totalMinutes / 60)
+    const minutes = totalMinutes % 60
+
+    const duration = `${hours}h ${minutes}m`
+
+    return {
+        id: contest.id || contest.externalContestId,
+        name: contest.name,
+        platform:
+            contest.platform === "CODEFORCES"
+                ? "Codeforces"
+                : "LeetCode",
+        date,
+        time,
+        duration,
+        type: contest.isRated ? "Rated" : "Unrated",
+        participants: contest.participantCount
+            ? contest.participantCount.toLocaleString()
+            : "—",
+        accent:
+            contest.platform === "CODEFORCES"
+                ? "blue"
+                : "orange",
+        url: contest.url || "#",
+        rank: contest.rank ?? null,
+        ratingChange: contest.ratingChange ?? 0,
+        rating: contest.ratingAfter ?? null,
+    }
+}
 
 const platformOptions = [
     {
@@ -254,6 +135,32 @@ function getCountdown(date, time) {
     }
 
     return `${hours}h ${minutes}m`
+}
+
+/* =========================================================
+   CONTEST LOADING
+   ========================================================= */
+
+function ContestLoading() {
+    return (
+        <div className="flex min-h-[calc(100vh-64px)] items-center justify-center bg-[#0b0f19]">
+            <div className="flex flex-col items-center text-center">
+                <div className="relative flex h-20 w-20 items-center justify-center">
+                    <div className="h-14 w-14 animate-spin rounded-full border-2 border-transparent border-t-primary border-r-primary/40" />
+
+                    <div className="absolute h-2.5 w-2.5 rounded-full bg-primary shadow-[0_0_15px_rgba(99,102,241,0.8)]" />
+                </div>
+
+                <p className="mt-5 text-sm font-semibold text-foreground">
+                    Loading contests
+                </p>
+
+                <p className="mt-1 text-xs text-muted-foreground">
+                    Fetching upcoming and past contests...
+                </p>
+            </div>
+        </div>
+    )
 }
 
 function createGoogleCalendarUrl(contest) {
@@ -341,15 +248,6 @@ function ContestCard({ contest }) {
                             {contest.platform}
                         </span>
 
-                        <span className="flex items-center gap-1 rounded-md bg-secondary px-2 py-1 text-[9px] text-muted-foreground">
-                            <CheckCircle2 size={9} />
-                            {contest.type}
-                        </span>
-
-                        <span className="flex items-center gap-1 text-[9px] text-muted-foreground">
-                            <Users size={10} />
-                            {contest.participants}
-                        </span>
                     </div>
                 </div>
 
@@ -461,9 +359,10 @@ function ContestCalendar({
     selectedDate,
     setSelectedDate,
 }) {
-    const [currentMonth, setCurrentMonth] = useState(
-        new Date(2026, 8, 1)
-    )
+    const [currentMonth, setCurrentMonth] = useState(() => {
+        const today = new Date()
+        return new Date(today.getFullYear(), today.getMonth(), 1)
+    })
 
     const year = currentMonth.getFullYear()
     const month = currentMonth.getMonth()
@@ -482,7 +381,7 @@ function ContestCalendar({
                 selectedPlatform === "All Platforms" ||
                 contest.platform === selectedPlatform
         )
-    }, [selectedPlatform])
+    }, [contests, selectedPlatform])
 
     const contestDates = new Map()
 
@@ -850,13 +749,101 @@ function Contests() {
     const [selectedDate, setSelectedDate] =
         useState(null)
 
+    const [upcomingContests, setUpcomingContests] =
+        useState([])
+
+    const [pastContests, setPastContests] =
+        useState([])
+
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState("")
+
+    useEffect(() => {
+        const fetchContests = async () => {
+            try {
+                setLoading(true)
+                setError("")
+
+                const {
+                    data: { session },
+                } = await supabase.auth.getSession()
+
+                if (!session?.access_token) {
+                    throw new Error(
+                        "Authentication session not found."
+                    )
+                }
+
+                const headers = {
+                    Authorization: `Bearer ${session.access_token}`,
+                }
+
+                const [upcomingResponse, pastResponse] =
+                    await Promise.all([
+                        fetch(
+                            `${API_BASE_URL}/api/contests/upcoming`,
+                            { headers }
+                        ),
+                        fetch(
+                            `${API_BASE_URL}/api/contests/past`,
+                            { headers }
+                        ),
+                    ])
+
+                const upcomingResult =
+                    await upcomingResponse.json()
+                const pastResult =
+                    await pastResponse.json()
+
+                if (!upcomingResponse.ok || !upcomingResult.success) {
+                    throw new Error(
+                        upcomingResult.message ||
+                        "Failed to load upcoming contests."
+                    )
+                }
+
+                if (!pastResponse.ok || !pastResult.success) {
+                    throw new Error(
+                        pastResult.message ||
+                        "Failed to load past contests."
+                    )
+                }
+
+                setUpcomingContests(
+                    (upcomingResult.data || []).map(normalizeContest)
+                )
+
+                setPastContests(
+                    (pastResult.data || []).map(normalizeContest)
+                )
+            } catch (fetchError) {
+                console.error(
+                    "Contest fetch error:",
+                    fetchError
+                )
+
+                setError(
+                    fetchError.message ||
+                    "Failed to load contests."
+                )
+
+                setUpcomingContests([])
+                setPastContests([])
+            } finally {
+                setLoading(false)
+            }
+        }
+
+        fetchContests()
+    }, [])
+
     const filteredContests = useMemo(() => {
-        return contests.filter(
+        return upcomingContests.filter(
             (contest) =>
                 selectedPlatform === "All Platforms" ||
                 contest.platform === selectedPlatform
         )
-    }, [selectedPlatform])
+    }, [upcomingContests, selectedPlatform])
 
     const filteredPastContests = useMemo(() => {
         return pastContests.filter((contest) => {
@@ -865,37 +852,53 @@ function Contests() {
                 contest.platform === selectedPlatform
 
             const matchesSearch =
-                contest.name.toLowerCase().includes(searchQuery.toLowerCase())
+                contest.name
+                    .toLowerCase()
+                    .includes(searchQuery.toLowerCase())
 
             return matchesPlatform && matchesSearch
         })
-    }, [selectedPlatform, searchQuery])
+    }, [pastContests, selectedPlatform, searchQuery])
 
     const pastStats = useMemo(() => {
         if (filteredPastContests.length === 0) {
             return {
                 total: 0,
-                bestRank: "-",
-                averageRank: "-",
-                ratingChange: 0,
+                currentRating: null,
             }
         }
 
-        const ranks = filteredPastContests.map((contest) => contest.rank)
-
         return {
             total: filteredPastContests.length,
-            bestRank: Math.min(...ranks),
-            averageRank: Math.round(
-                ranks.reduce((sum, rank) => sum + rank, 0) / ranks.length
-            ),
-            ratingChange: filteredPastContests.reduce(
-                (sum, contest) => sum + contest.ratingChange,
-                0
-            ),
+            currentRating:
+                filteredPastContests[0]?.rating ?? null,
         }
     }, [filteredPastContests])
 
+
+    if (loading) {
+        return <ContestLoading />
+    }
+
+    if (error) {
+        return (
+            <section className="px-8 pb-10 pt-7">
+                <div className="flex min-h-[400px] items-center justify-center">
+                    <div className="max-w-md text-center">
+                        <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-red-500/10 text-red-400">
+                            <Trophy size={18} />
+                        </div>
+                        <p className="mt-4 text-sm font-semibold">
+                            Failed to load contests
+                        </p>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                            {error}
+                        </p>
+                    </div>
+                </div>
+            </section>
+        )
+    }
 
     return (
         <section className="px-8 pb-10 pt-7">
@@ -1070,7 +1073,7 @@ function Contests() {
 
                         {selectedDate && (
                             <SelectedDateContests
-                                contests={contests}
+                                contests={upcomingContests}
                                 selectedDate={selectedDate}
                                 selectedPlatform={
                                     selectedPlatform
@@ -1082,7 +1085,7 @@ function Contests() {
                     {/* RIGHT */}
                     <div className="space-y-5">
                         <ContestCalendar
-                            contests={contests}
+                            contests={upcomingContests}
                             selectedPlatform={
                                 selectedPlatform
                             }
@@ -1156,7 +1159,8 @@ function Contests() {
                     </div>
 
                     {/* Performance Stats */}
-                    <div className="mb-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
+                    <div className="mb-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                        {/* Contests */}
                         <div className="rounded-xl border border-border bg-card p-4 transition-all hover:border-primary/30">
                             <div className="flex items-center justify-between">
                                 <span className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">
@@ -1178,27 +1182,7 @@ function Contests() {
                             </p>
                         </div>
 
-                        <div className="rounded-xl border border-border bg-card p-4 transition-all hover:border-amber-400/30">
-                            <div className="flex items-center justify-between">
-                                <span className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">
-                                    Best Rank
-                                </span>
-
-                                <Award
-                                    size={14}
-                                    className="text-amber-400"
-                                />
-                            </div>
-
-                            <p className="mt-2 font-mono text-xl font-bold">
-                                #{pastStats.bestRank}
-                            </p>
-
-                            <p className="mt-1 text-[9px] text-muted-foreground">
-                                Across all contests
-                            </p>
-                        </div>
-
+                        {/* Current Rating */}
                         <div className="rounded-xl border border-border bg-card p-4 transition-all hover:border-blue-400/30">
                             <div className="flex items-center justify-between">
                                 <span className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">
@@ -1212,35 +1196,11 @@ function Contests() {
                             </div>
 
                             <p className="mt-2 font-mono text-xl font-bold">
-                                <p>
-                                    {pastStats.ratingChange > 0 ? "+" : ""}
-                                    {pastStats.ratingChange}
-                                </p>
+                                {pastStats.currentRating ?? "—"}
                             </p>
 
                             <p className="mt-1 text-[9px] text-muted-foreground">
                                 Current contest rating
-                            </p>
-                        </div>
-
-                        <div className="rounded-xl border border-border bg-card p-4 transition-all hover:border-emerald-400/30">
-                            <div className="flex items-center justify-between">
-                                <span className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">
-                                    Avg. Rank
-                                </span>
-
-                                <Users
-                                    size={14}
-                                    className="text-emerald-400"
-                                />
-                            </div>
-
-                            <p className="mt-2 font-mono text-xl font-bold">
-                                {pastStats.averageRank}
-                            </p>
-
-                            <p className="mt-1 text-[9px] text-muted-foreground">
-                                Last 10 contests
                             </p>
                         </div>
                     </div>
@@ -1248,7 +1208,7 @@ function Contests() {
                     {/* Past Contest Table */}
                     <div className="overflow-hidden rounded-2xl border border-border bg-card">
                         {/* Table Header */}
-                        <div className="hidden grid-cols-[minmax(0,1.7fr)_120px_120px_110px_130px_90px] items-center border-b border-border bg-secondary/30 px-5 py-3 lg:grid">
+                        <div className="hidden grid-cols-[minmax(0,1.7fr)_120px_120px_130px_90px] items-center border-b border-border bg-secondary/30 px-5 py-3 lg:grid">
                             <span className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">
                                 Contest
                             </span>
@@ -1259,10 +1219,6 @@ function Contests() {
 
                             <span className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">
                                 Date
-                            </span>
-
-                            <span className="text-right text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">
-                                Rank
                             </span>
 
                             <span className="text-right text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">
@@ -1286,7 +1242,7 @@ function Contests() {
                                     key={contest.id}
                                     className="group border-b border-border px-5 py-4 transition-all duration-200 last:border-b-0 hover:bg-secondary/30"
                                 >
-                                    <div className="hidden grid-cols-[minmax(0,1.7fr)_120px_120px_110px_130px_90px] items-center lg:grid">
+                                    <div className="hidden grid-cols-[minmax(0,1.7fr)_120px_120px_130px_90px] items-center lg:grid">
                                         {/* Contest */}
                                         <div className="flex min-w-0 items-center gap-3">
                                             <div
@@ -1307,20 +1263,7 @@ function Contests() {
                                                     {contest.name}
                                                 </p>
 
-                                                <div className="mt-1 flex items-center gap-2">
-                                                    <span className="text-[9px] text-muted-foreground">
-                                                        {contest.type}
-                                                    </span>
 
-                                                    <span className="text-border">
-                                                        •
-                                                    </span>
-
-                                                    <span className="flex items-center gap-1 text-[9px] text-muted-foreground">
-                                                        <Users size={9} />
-                                                        {contest.participants.toLocaleString()}
-                                                    </span>
-                                                </div>
                                             </div>
                                         </div>
 
@@ -1343,18 +1286,6 @@ function Contests() {
                                             {formatDate(
                                                 contest.date
                                             )}
-                                        </div>
-
-                                        {/* Rank */}
-                                        <div className="text-right">
-                                            <p className="font-mono text-xs font-semibold">
-                                                #{contest.rank.toLocaleString()}
-                                            </p>
-
-                                            <p className="mt-0.5 text-[8px] text-muted-foreground">
-                                                of{" "}
-                                                {contest.participants.toLocaleString()}
-                                            </p>
                                         </div>
 
                                         {/* Rating */}
@@ -1434,13 +1365,6 @@ function Contests() {
                                                     {contest.platform}
                                                 </span>
 
-                                                <span className="text-border">
-                                                    •
-                                                </span>
-
-                                                <span className="text-[9px] text-muted-foreground">
-                                                    #{contest.rank}
-                                                </span>
                                             </div>
                                         </div>
 
@@ -1463,7 +1387,7 @@ function Contests() {
                             <p className="text-[10px] text-muted-foreground">
                                 Showing{" "}
                                 <span className="font-medium text-foreground">
-                                    {pastContests.length}
+                                    {filteredPastContests.length}
                                 </span>{" "}
                                 recent contests
                             </p>
