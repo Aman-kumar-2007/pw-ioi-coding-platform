@@ -37,11 +37,6 @@ function AuthPage({ onLogin }) {
 
         const email = formData.email.trim().toLowerCase()
 
-        if (!email.endsWith("@pwioi.com")) {
-            alert("Only @pwioi.com email addresses are allowed.")
-            return
-        }
-
         const { error } = await supabase.auth.signInWithPassword({
             email,
             password: formData.password,
@@ -56,7 +51,7 @@ function AuthPage({ onLogin }) {
             onLogin()
         }
     }
-
+    
     const handleGoogleLogin = async () => {
         const { error } = await supabase.auth.signInWithOAuth({
             provider: "google",
@@ -409,8 +404,8 @@ function AuthPage({ onLogin }) {
                                         >
                                             <span
                                                 className={`flex h-[18px] w-[18px] items-center justify-center rounded-[4px] border transition-all ${rememberMe
-                                                        ? "border-violet-400 bg-violet-500 text-white"
-                                                        : "border-border bg-secondary"
+                                                    ? "border-violet-400 bg-violet-500 text-white"
+                                                    : "border-border bg-secondary"
                                                     }`}
                                             >
                                                 {rememberMe && (
