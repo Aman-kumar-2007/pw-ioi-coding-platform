@@ -27,7 +27,7 @@ function App() {
     const [currentPage, setCurrentPage] = useState("login")
     const [activePage, setActivePage] = useState("Dashboard")
     const [profile, setProfile] = useState(null)
-
+    const [profileLoading, setProfileLoading] = useState(true)
     const handleAuthenticatedUser = async (session) => {
         if (!session?.user) {
             setCurrentPage("login")
@@ -62,6 +62,7 @@ function App() {
         }
 
         const fetchProfile = async () => {
+            setProfileLoading(true)
             try {
                 const {
                     data: {
@@ -144,6 +145,8 @@ function App() {
                     "Dashboard profile error:",
                     error
                 )
+            } finally {
+                setProfileLoading(false)
             }
         }
 
@@ -243,6 +246,120 @@ function App() {
             />
         )
     }
+    function DashboardLoading() {
+        return (
+            <div className="min-h-screen bg-background animate-pulse">
+                
+                <div className="space-y-8 p-8">
+
+                    {/* Profile Header */}
+                    <div className="h-[185px] rounded-2xl border border-border bg-card p-8">
+
+                        <div className="h-8 w-72 rounded bg-muted" />
+
+                        <div className="mt-3 h-5 w-48 rounded bg-muted" />
+
+                        <div className="mt-10 flex gap-4">
+                            <div className="h-4 w-16 rounded bg-muted" />
+                            <div className="h-4 w-24 rounded bg-muted" />
+                            <div className="h-4 w-20 rounded bg-muted" />
+                        </div>
+
+                    </div>
+
+                    {/* Quick Stats */}
+                    <div className="flex flex-wrap gap-3">
+
+                        {[1, 2, 3, 4].map((item) => (
+                            <div
+                                key={item}
+                                className="h-[44px] w-[220px] rounded-full border border-border bg-card"
+                            />
+                        ))}
+
+                    </div>
+
+                    {/* Platform Cards */}
+                    <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+
+                        {[1, 2, 3].map((item) => (
+                            <div
+                                key={item}
+                                className="h-[230px] rounded-2xl border border-border bg-card p-6"
+                            >
+                                <div className="flex items-center justify-between">
+
+                                    <div className="flex items-center gap-3">
+                                        <div className="h-11 w-11 rounded-xl bg-muted" />
+
+                                        <div className="h-5 w-28 rounded bg-muted" />
+                                    </div>
+
+                                    <div className="h-4 w-24 rounded bg-muted" />
+
+                                </div>
+
+                                <div className="mt-8 flex justify-between">
+
+                                    <div>
+                                        <div className="h-10 w-20 rounded bg-muted" />
+                                        <div className="mt-3 h-3 w-28 rounded bg-muted" />
+                                    </div>
+
+                                    <div className="w-[140px] space-y-3">
+                                        <div className="h-2 rounded bg-muted" />
+                                        <div className="h-2 rounded bg-muted" />
+                                        <div className="h-2 rounded bg-muted" />
+                                    </div>
+
+                                </div>
+                            </div>
+                        ))}
+
+                    </div>
+
+                    {/* Rating Progress */}
+                    <div>
+
+                        <div className="h-6 w-48 rounded bg-muted" />
+
+                        <div className="mt-3 h-4 w-72 rounded bg-muted" />
+
+                        <div className="mt-5 grid grid-cols-1 gap-5 lg:grid-cols-2">
+
+                            {[1, 2].map((item) => (
+                                <div
+                                    key={item}
+                                    className="h-[330px] rounded-2xl border border-border bg-card p-6"
+                                >
+                                    <div className="flex items-center justify-between">
+
+                                        <div className="flex items-center gap-3">
+                                            <div className="h-11 w-11 rounded-xl bg-muted" />
+
+                                            <div>
+                                                <div className="h-5 w-24 rounded bg-muted" />
+                                                <div className="mt-2 h-3 w-20 rounded bg-muted" />
+                                            </div>
+                                        </div>
+
+                                        <div className="h-8 w-20 rounded bg-muted" />
+
+                                    </div>
+
+                                    <div className="mt-8 h-[210px] rounded-xl bg-muted/40" />
+                                </div>
+                            ))}
+
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+        )
+    }
+
 
     /* ========================================================= */
     /* APP                                                        */
@@ -292,14 +409,22 @@ function App() {
                         {activePage ===
                             "Dashboard" && (
                                 <>
-                                    <DashboardHeader />
+                                    {profileLoading ? (
+                                        <DashboardLoading />
+                                    ) : (
+                                        <>
+                                            <DashboardHeader />
+                                            <QuickStats profile={profile} />
 
-                                    <QuickStats profile={profile}/>
-                                    <PlatformCards profile={profile} />
+                                            <PlatformCards
+                                                profile={profile}
+                                            />
 
-                                    <RatingProgress />
+                                            <RatingProgress />
 
-                                    <CodingHeatmap />
+                                            <CodingHeatmap />
+                                        </>
+                                    )}
                                 </>
                             )}
 
