@@ -151,3 +151,10 @@ html[data-theme="dark"] {
   --muted-foreground: #7d8495;
   --border: #20283a;
 }
+
+
+@keyframes shimmer {
+    100% {
+        transform: translateX(100%);
+    }
+}

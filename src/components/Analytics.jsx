@@ -29,6 +29,32 @@ import TopicProgress from "./TopicProgress"
 
 const PERIODS = ["Weekly", "Monthly", "Yearly"]
 
+function AnalyticsLoading() {
+    return (
+        <div className="flex min-h-[calc(100vh-72px)] items-center justify-center bg-background">
+            <div className="flex flex-col items-center">
+
+                <div className="relative flex h-14 w-14 items-center justify-center">
+                    <div className="absolute inset-0 rounded-full border-2 border-primary/10" />
+
+                    <div className="h-14 w-14 animate-spin rounded-full border-2 border-transparent border-t-primary border-r-primary/40" />
+
+                    <div className="absolute h-2.5 w-2.5 rounded-full bg-primary shadow-[0_0_18px_rgba(99,102,241,0.9)]" />
+                </div>
+
+                <p className="mt-5 text-sm font-semibold text-foreground">
+                    Loading analytics
+                </p>
+
+                <p className="mt-1 text-xs text-muted-foreground">
+                    Fetching your CodeSync data...
+                </p>
+
+            </div>
+        </div>
+    )
+}
+
 /* =========================================================
    STAT CARD
    ========================================================= */
@@ -916,13 +942,7 @@ function Analytics() {
     }, [])
 
     if (loading) {
-        return (
-            <section className="px-8 pb-10 pt-7">
-                <div className="flex min-h-[400px] items-center justify-center text-sm text-muted-foreground">
-                    Loading analytics...
-                </div>
-            </section>
-        )
+        return <AnalyticsLoading />
     }
 
     if (error) {

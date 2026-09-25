@@ -68,217 +68,38 @@ const normalizeSocial = (platform) => {
 
 
 /* ============================================================= */
-/* SKELETON                                                       */
+/* PROFILE LOADING                                               */
 /* ============================================================= */
 
-function Skeleton({
-    className = "",
-}) {
+function ProfileLoading() {
     return (
-        <div
-            className={`animate-pulse rounded-lg bg-secondary/80 ${className}`}
-        />
-    )
-}
+        <div className="flex min-h-[calc(100vh-72px)] items-center justify-center bg-background">
+            <div className="flex flex-col items-center">
 
+                {/* Spinner */}
+                <div className="relative flex h-14 w-14 items-center justify-center">
 
-function ProfileSkeleton() {
-    return (
-        <div className="min-h-[calc(100vh-72px)] bg-background px-4 py-5 text-foreground sm:px-6 lg:px-7">
+                    <div className="absolute inset-0 rounded-full border-2 border-primary/10" />
 
-            <div className="mx-auto max-w-[1400px]">
+                    <div className="h-14 w-14 animate-spin rounded-full border-2 border-transparent border-t-primary border-r-primary/40" />
 
-                {/* PROFILE HEADER */}
-                <section className="mb-5 overflow-hidden rounded-2xl border border-border bg-card p-6 sm:p-8">
+                    <div className="absolute h-2.5 w-2.5 rounded-full bg-primary shadow-[0_0_18px_rgba(99,102,241,0.9)]" />
 
-                    <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+                </div>
 
-                        <div className="flex items-center gap-5 sm:gap-7">
+                {/* Text */}
+                <p className="mt-5 text-sm font-semibold text-foreground">
+                    Loading profile
+                </p>
 
-                            <Skeleton className="h-24 w-24 shrink-0 rounded-full sm:h-28 sm:w-28" />
-
-                            <div className="space-y-3">
-
-                                <Skeleton className="h-8 w-48" />
-
-                                <Skeleton className="h-4 w-32" />
-
-                                <Skeleton className="h-9 w-36 rounded-lg" />
-
-                            </div>
-
-                        </div>
-
-
-                        <Skeleton className="h-11 w-32 rounded-xl" />
-
-                    </div>
-
-                </section>
-
-
-                {/* OVERVIEW */}
-                <section className="mb-5 rounded-2xl border border-border bg-card p-5 sm:p-6">
-
-                    <div className="mb-6 space-y-2">
-
-                        <Skeleton className="h-6 w-32" />
-
-                        <Skeleton className="h-4 w-56" />
-
-                    </div>
-
-
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-
-                        {Array.from({
-                            length: 4,
-                        }).map((_, index) => (
-                            <div
-                                key={index}
-                                className="rounded-xl border border-border bg-[#0d131f] p-5"
-                            >
-
-                                <div className="flex items-start justify-between">
-
-                                    <div className="space-y-3">
-
-                                        <Skeleton className="h-4 w-24" />
-
-                                        <Skeleton className="h-8 w-20" />
-
-                                    </div>
-
-
-                                    <Skeleton className="h-11 w-11 rounded-xl" />
-
-                                </div>
-
-
-                                <Skeleton className="mt-4 h-3 w-24" />
-
-                            </div>
-                        ))}
-
-                    </div>
-
-                </section>
-
-
-                {/* PLATFORMS */}
-                <section className="mb-5 rounded-2xl border border-border bg-card p-5 sm:p-6">
-
-                    <div className="flex items-center gap-3">
-
-                        <Skeleton className="h-10 w-10 rounded-xl" />
-
-                        <div className="space-y-2">
-
-                            <Skeleton className="h-5 w-52" />
-
-                            <Skeleton className="h-4 w-44" />
-
-                        </div>
-
-                    </div>
-
-
-                    <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-
-                        {Array.from({
-                            length: 4,
-                        }).map((_, index) => (
-                            <div
-                                key={index}
-                                className="rounded-xl border border-border bg-[#0d131f] p-5"
-                            >
-
-                                <div className="flex items-center gap-3">
-
-                                    <Skeleton className="h-11 w-11 rounded-xl" />
-
-                                    <div className="space-y-2">
-
-                                        <Skeleton className="h-4 w-28" />
-
-                                        <Skeleton className="h-3 w-24" />
-
-                                    </div>
-
-                                </div>
-
-
-                                <Skeleton className="mt-5 h-4 w-28" />
-
-                                <Skeleton className="mt-4 h-9 w-full rounded-lg" />
-
-                            </div>
-                        ))}
-
-                    </div>
-
-                </section>
-
-
-                {/* SOCIAL */}
-                <section className="rounded-2xl border border-border bg-card p-5 sm:p-6">
-
-                    <div className="flex items-center gap-3">
-
-                        <Skeleton className="h-10 w-10 rounded-xl" />
-
-                        <div className="space-y-2">
-
-                            <Skeleton className="h-5 w-48" />
-
-                            <Skeleton className="h-4 w-64" />
-
-                        </div>
-
-                    </div>
-
-
-                    <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-
-                        {Array.from({
-                            length: 4,
-                        }).map((_, index) => (
-                            <div
-                                key={index}
-                                className="rounded-xl border border-border bg-[#0d131f] p-5"
-                            >
-
-                                <div className="flex items-center gap-3">
-
-                                    <Skeleton className="h-11 w-11 rounded-xl" />
-
-                                    <div className="space-y-2">
-
-                                        <Skeleton className="h-4 w-24" />
-
-                                        <Skeleton className="h-3 w-20" />
-
-                                    </div>
-
-                                </div>
-
-
-                                <Skeleton className="mt-5 h-9 w-full rounded-lg" />
-
-                            </div>
-                        ))}
-
-                    </div>
-
-                </section>
+                <p className="mt-1 text-xs text-muted-foreground">
+                    Fetching your CodeSync data...
+                </p>
 
             </div>
-
         </div>
     )
 }
-
-
 /* ============================================================= */
 /* MAIN COMPONENT                                                */
 /* ============================================================= */
@@ -1050,7 +871,7 @@ function StudentProfile() {
     /* ========================================================= */
 
     if (loading) {
-        return <ProfileSkeleton />
+        return <ProfileLoading />
     }
 
 
@@ -1726,8 +1547,8 @@ function StudentProfile() {
                                     <label
                                         htmlFor="profile-photo"
                                         className={`absolute bottom-0 right-0 flex h-8 w-8 items-center justify-center rounded-full border-2 border-[#0d131f] bg-primary text-white shadow-lg ${uploadingPhoto
-                                                ? "cursor-not-allowed opacity-60"
-                                                : "cursor-pointer hover:bg-indigo-500"
+                                            ? "cursor-not-allowed opacity-60"
+                                            : "cursor-pointer hover:bg-indigo-500"
                                             }`}
                                     >
 
@@ -1972,10 +1793,8 @@ function StudentProfile() {
                 >
 
                     <form
-                        onSubmit={
-                            saveSocialConnection
-                        }
-                        className="w-full max-w-md"
+                        onSubmit={saveSocialConnection}
+                        className="w-full"
                     >
 
                         <ModalHeader
@@ -2125,8 +1944,8 @@ function SectionHeader({
 
             <div
                 className={`flex h-10 w-10 items-center justify-center rounded-xl ${purple
-                        ? "bg-violet-500/10 text-violet-400"
-                        : "bg-primary/10 text-primary"
+                    ? "bg-violet-500/10 text-violet-400"
+                    : "bg-primary/10 text-primary"
                     }`}
             >
                 <Icon size={19} />
@@ -2244,16 +2063,16 @@ function CodingAccountCard({
 
                             <span
                                 className={`h-2 w-2 rounded-full ${connected
-                                        ? "bg-emerald-400"
-                                        : "bg-slate-600"
+                                    ? "bg-emerald-400"
+                                    : "bg-slate-600"
                                     }`}
                             />
 
 
                             <span
                                 className={`text-xs font-medium ${connected
-                                        ? "text-emerald-400"
-                                        : "text-muted-foreground"
+                                    ? "text-emerald-400"
+                                    : "text-muted-foreground"
                                     }`}
                             >
                                 {connected
@@ -2380,8 +2199,8 @@ function SocialCard({
     return (
         <div
             className={`rounded-xl border p-5 transition-all ${connected
-                    ? "border-emerald-400/20 bg-emerald-400/[0.025]"
-                    : "border-border bg-[#0d131f]"
+                ? "border-emerald-400/20 bg-emerald-400/[0.025]"
+                : "border-border bg-[#0d131f]"
                 }`}
         >
 
@@ -2405,16 +2224,16 @@ function SocialCard({
 
                         <span
                             className={`h-2 w-2 rounded-full ${connected
-                                    ? "bg-emerald-400"
-                                    : "bg-slate-600"
+                                ? "bg-emerald-400"
+                                : "bg-slate-600"
                                 }`}
                         />
 
 
                         <span
                             className={`text-xs ${connected
-                                    ? "text-emerald-400"
-                                    : "text-muted-foreground"
+                                ? "text-emerald-400"
+                                : "text-muted-foreground"
                                 }`}
                         >
                             {connected
@@ -2560,8 +2379,8 @@ function ModalInput({
 
                 <label
                     className={`text-[10px] font-bold uppercase tracking-wider ${disabled
-                            ? "text-slate-500"
-                            : "text-slate-400"
+                        ? "text-slate-500"
+                        : "text-slate-400"
                         }`}
                 >
                     {label}
@@ -2586,8 +2405,8 @@ function ModalInput({
 
             <div
                 className={`flex h-11 items-center gap-3 rounded-xl border px-3.5 ${disabled
-                        ? "cursor-not-allowed border-border bg-[#0a0f18] opacity-60"
-                        : "border-border bg-[#101622] focus-within:border-primary/50"
+                    ? "cursor-not-allowed border-border bg-[#0a0f18] opacity-60"
+                    : "border-border bg-[#101622] focus-within:border-primary/50"
                     }`}
             >
 
@@ -2610,8 +2429,8 @@ function ModalInput({
                     onChange={onChange}
                     disabled={disabled}
                     className={`w-full bg-transparent text-sm outline-none ${disabled
-                            ? "cursor-not-allowed text-slate-500"
-                            : "text-foreground"
+                        ? "cursor-not-allowed text-slate-500"
+                        : "text-foreground"
                         }`}
                 />
 

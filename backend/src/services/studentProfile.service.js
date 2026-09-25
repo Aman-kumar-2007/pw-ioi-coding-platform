@@ -90,8 +90,7 @@ const getStudentProfile = async (username) => {
             user_id,
             full_name,
             profile_image,
-            branch,
-            batch
+            branch
             `
         )
         .eq("user_id", userId)
@@ -323,15 +322,8 @@ const getStudentProfile = async (username) => {
                 profile?.profile_image ||
                 null,
 
-            college:
-                "PW IOI",
-
             branch:
                 profile?.branch ||
-                null,
-
-            batch:
-                profile?.batch ||
                 null,
         },
 
