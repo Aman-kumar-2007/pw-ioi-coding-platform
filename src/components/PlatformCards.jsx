@@ -5,231 +5,400 @@ import {
     ExternalLink,
 } from "lucide-react"
 
-function DifficultyRow({ type, count, dotClass }) {
-    return (
-        <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-                <span className={`h-2.5 w-2.5 rounded-full ${dotClass}`} />
-                <span className="text-sm text-foreground">
-                    {type}
-                </span>
-            </div>
+function PlatformCards({ profile }) {
+    const platforms = profile?.platforms || {}
 
-            <span className="font-mono text-sm font-semibold">
-                {count}
-            </span>
-        </div>
+    const leetcode =
+        platforms.leetcode ||
+        platforms.LEETCODE ||
+        {}
+
+    const codeforces =
+        platforms.codeforces ||
+        platforms.CODEFORCES ||
+        {}
+
+    const github =
+        platforms.github ||
+        platforms.GITHUB ||
+        {}
+
+    const easy =
+        leetcode.easySolved ??
+        leetcode.easy_solved ??
+        0
+
+    const medium =
+        leetcode.mediumSolved ??
+        leetcode.medium_solved ??
+        0
+
+    const hard =
+        leetcode.hardSolved ??
+        leetcode.hard_solved ??
+        0
+
+    const leetcodeTotal =
+        leetcode.solved ??
+        leetcode.problemsSolved ??
+        leetcode.problems_solved ??
+        0
+
+    const maxDifficulty = Math.max(
+        easy,
+        medium,
+        hard,
+        1
     )
-}
 
-function ProgressRing({ percentage, className }) {
-    return (
-        <div
-            className={`relative flex h-[120px] w-[120px] items-center justify-center rounded-full ${className}`}
-        >
-            <div className="absolute inset-[9px] flex items-center justify-center rounded-full bg-card">
-                <span className="font-mono text-sm font-bold">
-                    {percentage}%
-                </span>
-            </div>
-        </div>
-    )
-}
+    const openProfile = (url) => {
+        if (!url) return
 
-function PlatformCards() {
+        window.open(
+            url,
+            "_blank",
+            "noopener,noreferrer"
+        )
+    }
+
     return (
         <section className="px-8 pt-7">
             <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
 
-                {/* LeetCode */}
+                {/* ================================================= */}
+                {/* LEETCODE                                         */}
+                {/* ================================================= */}
+
                 <div className="h-[230px] rounded-2xl border border-[#f59e0b]/30 bg-card p-5">
+
                     <div className="flex items-center justify-between">
+
                         <div className="flex items-center gap-3">
+
                             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#f59e0b]/15 text-[#f59e0b]">
-                                <Code2 size={24} strokeWidth={2} />
+                                <Code2
+                                    size={24}
+                                    strokeWidth={2}
+                                />
                             </div>
 
                             <h3 className="text-lg font-bold text-[#f59e0b]">
                                 LeetCode
                             </h3>
+
                         </div>
 
-                        <button className="flex items-center gap-1.5 text-sm font-semibold text-[#c084fc] transition-opacity hover:opacity-80">
+                        <button
+                            type="button"
+                            onClick={() =>
+                                openProfile(
+                                    leetcode.profileUrl
+                                )
+                            }
+                            disabled={
+                                !leetcode.profileUrl
+                            }
+                            className="flex items-center gap-1.5 text-sm font-semibold text-[#c084fc] transition-opacity hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-40"
+                        >
                             View Profile
                             <ExternalLink size={15} />
                         </button>
+
                     </div>
 
                     <div className="mt-7 flex items-center justify-between gap-6">
+
                         <div>
+
                             <p className="font-mono text-5xl font-bold">
-                                487
+                                {leetcodeTotal}
                             </p>
 
                             <p className="mt-2 text-sm text-muted-foreground">
                                 Problems Solved
                             </p>
+
                         </div>
 
                         <div className="w-[140px] space-y-3">
+
                             <div>
                                 <div className="mb-1.5 flex justify-between text-xs">
-                                    <span className="text-emerald-400">Easy</span>
-                                    <span className="font-mono">220</span>
+                                    <span className="text-emerald-400">
+                                        Easy
+                                    </span>
+
+                                    <span className="font-mono">
+                                        {easy}
+                                    </span>
                                 </div>
+
                                 <div className="h-1.5 rounded-full bg-muted">
-                                    <div className="h-full w-[85%] rounded-full bg-emerald-400" />
+                                    <div
+                                        className="h-full rounded-full bg-emerald-400"
+                                        style={{
+                                            width: `${(easy / maxDifficulty) * 100}%`,
+                                        }}
+                                    />
                                 </div>
                             </div>
 
                             <div>
                                 <div className="mb-1.5 flex justify-between text-xs">
-                                    <span className="text-amber-400">Medium</span>
-                                    <span className="font-mono">198</span>
+                                    <span className="text-amber-400">
+                                        Medium
+                                    </span>
+
+                                    <span className="font-mono">
+                                        {medium}
+                                    </span>
                                 </div>
+
                                 <div className="h-1.5 rounded-full bg-muted">
-                                    <div className="h-full w-[76%] rounded-full bg-amber-400" />
+                                    <div
+                                        className="h-full rounded-full bg-amber-400"
+                                        style={{
+                                            width: `${(medium / maxDifficulty) * 100}%`,
+                                        }}
+                                    />
                                 </div>
                             </div>
 
                             <div>
                                 <div className="mb-1.5 flex justify-between text-xs">
-                                    <span className="text-red-400">Hard</span>
-                                    <span className="font-mono">69</span>
+                                    <span className="text-red-400">
+                                        Hard
+                                    </span>
+
+                                    <span className="font-mono">
+                                        {hard}
+                                    </span>
                                 </div>
+
                                 <div className="h-1.5 rounded-full bg-muted">
-                                    <div className="h-full w-[35%] rounded-full bg-red-400" />
+                                    <div
+                                        className="h-full rounded-full bg-red-400"
+                                        style={{
+                                            width: `${(hard / maxDifficulty) * 100}%`,
+                                        }}
+                                    />
                                 </div>
                             </div>
+
                         </div>
+
                     </div>
+
                 </div>
 
-                {/* Codeforces */}
+                {/* ================================================= */}
+                {/* CODEFORCES                                       */}
+                {/* ================================================= */}
+
                 <div className="h-[230px] rounded-2xl border border-[#2196f3]/30 bg-card p-5">
-                    {/* Header */}
+
                     <div className="flex items-center justify-between">
+
                         <div className="flex items-center gap-3">
+
                             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#2196f3]/15 text-[#2196f3]">
-                                <Trophy size={22} strokeWidth={2} />
+                                <Trophy
+                                    size={22}
+                                    strokeWidth={2}
+                                />
                             </div>
 
                             <h3 className="text-lg font-bold text-[#2196f3]">
                                 Codeforces
                             </h3>
+
                         </div>
 
-                        <button className="flex items-center gap-1.5 text-sm font-semibold text-[#2196f3] transition-opacity hover:opacity-80">
+                        <button
+                            type="button"
+                            onClick={() =>
+                                openProfile(
+                                    codeforces.profileUrl
+                                )
+                            }
+                            disabled={
+                                !codeforces.profileUrl
+                            }
+                            className="flex items-center gap-1.5 text-sm font-semibold text-[#2196f3] transition-opacity hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-40"
+                        >
                             View Profile
                             <ExternalLink size={15} />
                         </button>
+
                     </div>
 
-                    {/* Main Stats */}
                     <div className="mt-6 grid grid-cols-[190px_1fr] gap-12">
+
                         <div>
+
                             <p className="font-mono text-3xl font-bold leading-none">
-                                312
+                                {codeforces.solved ??
+                                    codeforces.problemsSolved ??
+                                    0}
                             </p>
 
                             <p className="mt-2 text-xs text-muted-foreground">
                                 Problems Solved
                             </p>
+
                         </div>
 
                         <div>
+
                             <p className="font-mono text-3xl font-bold leading-none text-[#2196f3]">
-                                1847
+                                {codeforces.rating ??
+                                    codeforces.currentRating ??
+                                    "—"}
                             </p>
 
                             <p className="mt-2 text-xs text-muted-foreground">
                                 Current Rating
                             </p>
+
                         </div>
+
                     </div>
 
-                   {/* Bottom Stats */}
-<div className="relative mt-5 border-t border-border pt-3">
-    <div className="grid grid-cols-2">
-        {/* Max Rating */}
-        <div>
-            <p className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">
-                Max Rating
-            </p>
+                    <div className="relative mt-5 border-t border-border pt-3">
 
-            <p className="mt-1 font-mono text-sm font-bold">
-                1924
-            </p>
-        </div>
+                        <div className="grid grid-cols-2">
 
-        {/* Contests */}
-        <div className="pl-6">
-            <p className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">
-                Contests
-            </p>
+                            <div>
 
-            <p className="mt-1 font-mono text-sm font-bold">
-                34
-            </p>
-        </div>
-    </div>
+                                <p className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">
+                                    Max Rating
+                                </p>
 
-    {/* Center Divider */}
-    <div className="absolute left-1/2 top-1/2 h-7 w-px -translate-x-1/2 -translate-y-1/2 bg-border" />
-</div>
+                                <p className="mt-1 font-mono text-sm font-bold">
+                                    {codeforces.maxRating ??
+                                        "—"}
+                                </p>
+
+                            </div>
+
+                            <div className="pl-6">
+
+                                <p className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">
+                                    Contests
+                                </p>
+
+                                <p className="mt-1 font-mono text-sm font-bold">
+                                    {codeforces.contests ??
+                                        0}
+                                </p>
+
+                            </div>
+
+                        </div>
+
+                        <div className="absolute left-1/2 top-1/2 h-7 w-px -translate-x-1/2 -translate-y-1/2 bg-border" />
+
+                    </div>
+
                 </div>
 
-                {/* GitHub */}
+                {/* ================================================= */}
+                {/* GITHUB                                            */}
+                {/* ================================================= */}
+
                 <div className="h-[230px] rounded-2xl border border-emerald-500/30 bg-card p-5">
+
                     <div className="flex items-center justify-between">
+
                         <div className="flex items-center gap-3">
+
                             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-500/15 text-emerald-400">
-                                <GitBranch size={24} strokeWidth={2} />
+                                <GitBranch
+                                    size={24}
+                                    strokeWidth={2}
+                                />
                             </div>
 
                             <h3 className="text-lg font-bold text-emerald-400">
                                 GitHub
                             </h3>
+
                         </div>
 
-                        <button className="flex items-center gap-1.5 text-sm font-semibold text-emerald-400 transition-opacity hover:opacity-80">
+                        <button
+                            type="button"
+                            onClick={() =>
+                                openProfile(
+                                    github.profileUrl
+                                )
+                            }
+                            disabled={
+                                !github.profileUrl
+                            }
+                            className="flex items-center gap-1.5 text-sm font-semibold text-emerald-400 transition-opacity hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-40"
+                        >
                             View Profile
                             <ExternalLink size={15} />
                         </button>
+
                     </div>
 
                     <div className="mt-7 flex items-end justify-between gap-5">
+
                         <div>
+
                             <p className="font-mono text-5xl font-bold">
-                                203
+                                {github.contributions ??
+                                    0}
                             </p>
 
                             <p className="mt-2 text-sm text-muted-foreground">
                                 Contributions
                             </p>
+
                         </div>
 
                         <div className="flex flex-1 flex-col items-end">
+
                             <div className="flex h-[80px] items-end gap-1">
-                                {[18, 28, 42, 35, 55, 48, 62, 51, 44, 58, 68, 52, 72, 60, 78, 65, 82, 57, 70, 88].map(
-                                    (height, index) => (
+
+                                {[
+                                    18, 28, 42, 35, 55,
+                                    48, 62, 51, 44, 58,
+                                    68, 52, 72, 60, 78,
+                                    65, 82, 57, 70, 88,
+                                ].map(
+                                    (
+                                        height,
+                                        index
+                                    ) => (
                                         <div
                                             key={index}
                                             className="w-[7px] rounded-t-sm bg-emerald-500/80"
-                                            style={{ height: `${height}%` }}
+                                            style={{
+                                                height: `${height}%`,
+                                            }}
                                         />
                                     )
                                 )}
+
                             </div>
 
                             <p className="mt-4 text-sm text-muted-foreground">
+
                                 Total Repositories{" "}
+
                                 <span className="font-mono font-bold text-foreground">
-                                    28
+                                    {github.repositories ??
+                                        0}
                                 </span>
+
                             </p>
+
                         </div>
+
                     </div>
+
                 </div>
 
             </div>

@@ -26,7 +26,6 @@ const API_BASE_URL = "http://localhost:5001"
 function App() {
     const [currentPage, setCurrentPage] = useState("login")
     const [activePage, setActivePage] = useState("Dashboard")
-
     const [profile, setProfile] = useState(null)
 
     const handleAuthenticatedUser = async (session) => {
@@ -295,11 +294,7 @@ function App() {
                                 <>
                                     <DashboardHeader />
 
-                                    <QuickStats
-                                        profile={
-                                            profile
-                                        }
-                                    />
+                                    <QuickStats profile={profile}/>
                                     <PlatformCards profile={profile} />
 
                                     <RatingProgress />
