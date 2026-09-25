@@ -130,7 +130,7 @@ const getGithubStats = async (username) => {
             user.public_repos || 0,
 
         repositories:
-            repositories.length,
+            user.public_repos || 0,
 
         pullRequests:
             pullRequestData.total_count || 0,

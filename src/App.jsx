@@ -249,7 +249,7 @@ function App() {
     function DashboardLoading() {
         return (
             <div className="min-h-screen bg-background animate-pulse">
-                
+
                 <div className="space-y-8 p-8">
 
                     {/* Profile Header */}
@@ -413,7 +413,7 @@ function App() {
                                         <DashboardLoading />
                                     ) : (
                                         <>
-                                            <DashboardHeader />
+                                            <DashboardHeader profile={profile} />
                                             <QuickStats profile={profile} />
 
                                             <PlatformCards

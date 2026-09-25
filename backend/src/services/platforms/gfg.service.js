@@ -91,20 +91,45 @@ const getGfgStats = async (username) => {
 }
 
 const getGfgTopicStats = async (username) => {
-    const response = await fetch(
-        `${GFG_STATS_API}/${encodeURIComponent(username)}/topics`
-    )
-
-    const data = await response.json()
-
-    if (!response.ok || data.status !== "success") {
-        throw new Error(
-            data.message ||
-            "Unable to fetch GFG topic stats."
+    try {
+        const response = await fetch(
+            `${GFG_STATS_API}/${encodeURIComponent(username)}/topics`
         )
-    }
 
-    return data.data?.topicAnalysis || []
+        const contentType =
+            response.headers.get("content-type") || ""
+
+        if (!contentType.includes("application/json")) {
+            console.warn(
+                `GFG topic stats returned non-JSON response for ${username}.`
+            )
+
+            return []
+        }
+
+        const data = await response.json()
+
+        if (
+            !response.ok ||
+            data.status !== "success"
+        ) {
+            console.warn(
+                data.message ||
+                `Unable to fetch GFG topic stats for ${username}.`
+            )
+
+            return []
+        }
+
+        return data.data?.topicAnalysis || []
+    } catch (error) {
+        console.warn(
+            `GFG topic stats unavailable for ${username}:`,
+            error.message
+        )
+
+        return []
+    }
 }
 
 const containsVerificationCode = (

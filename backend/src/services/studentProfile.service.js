@@ -154,12 +154,16 @@ const getStudentProfile = async (username) => {
             .select(
                 `
                 platform_account_id,
-                problems_solved,
-                current_rating,
-                max_rating,
-                contest_count,
-                contributions,
-                repository_count
+    problems_solved,
+    basic_solved,
+    easy_solved,
+    medium_solved,
+    hard_solved,
+    current_rating,
+    max_rating,
+    contest_count,
+    contributions,
+    repository_count
                 `
             )
             .in(
@@ -201,6 +205,18 @@ const getStudentProfile = async (username) => {
 
             solved:
                 stats.problems_solved || 0,
+
+            basicSolved:
+                stats.basic_solved || 0,
+
+            easySolved:
+                stats.easy_solved || 0,
+
+            mediumSolved:
+                stats.medium_solved || 0,
+
+            hardSolved:
+                stats.hard_solved || 0,
 
             rating:
                 stats.current_rating ?? null,
