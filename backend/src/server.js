@@ -7,6 +7,7 @@ const verificationRoutes = require("./routes/verification.routes")
 const analyticsRoutes = require("./routes/analytics.routes")
 const leaderboardRoutes = require("./routes/leaderboard.routes")
 const studentProfileRoutes = require("./routes/studentProfile.routes")
+const profileRoutes = require("./routes/profile.routes")
 
 const {
     startPlatformSyncJob,
@@ -53,3 +54,5 @@ app.use("/api/analytics", analyticsRoutes)
 app.use("/api/leaderboard", leaderboardRoutes)
 
 app.use("/api/students", studentProfileRoutes)
+
+app.use("/api/profile", profileRoutes)
