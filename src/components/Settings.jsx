@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react"
+import { supabase } from "../lib/supabase"
 import {
     Bell,
     Trophy,
@@ -62,7 +63,6 @@ const ACCENT_COLORS = [
 const DEFAULT_NOTIFICATIONS = {
     contests: true,
     leaderboard: true,
-    activity: false,
     platform: true,
 }
 
@@ -71,22 +71,19 @@ const DEFAULT_NOTIFICATIONS = {
 /* MAIN COMPONENT                                                */
 /* ============================================================= */
 
-function Settings({ onLogout, onViewProfile }) {
+function Settings({
+    profile,
+    onLogout,
+    onViewProfile,
+}) {
     const [notifications, setNotifications] =
-        useState(() => {
-            try {
-                const saved =
-                    localStorage.getItem(
-                        "codesync-notifications"
-                    )
+        useState(DEFAULT_NOTIFICATIONS)
 
-                return saved
-                    ? JSON.parse(saved)
-                    : DEFAULT_NOTIFICATIONS
-            } catch {
-                return DEFAULT_NOTIFICATIONS
-            }
-        })
+    const [notificationsLoading, setNotificationsLoading] =
+        useState(true)
+
+    const [notificationsSaving, setNotificationsSaving] =
+        useState(false)
 
 
     const [theme, setTheme] = useState(() => {
@@ -144,18 +141,114 @@ function Settings({ onLogout, onViewProfile }) {
     /* ========================================================= */
 
     useEffect(() => {
-        localStorage.setItem(
-            "codesync-notifications",
-            JSON.stringify(notifications)
-        )
-    }, [notifications])
+        const fetchNotificationPreferences = async () => {
+            try {
+                setNotificationsLoading(true)
+
+                const {
+                    data: { session },
+                } = await supabase.auth.getSession()
+
+                if (!session?.access_token) {
+                    throw new Error(
+                        "Authentication session not found."
+                    )
+                }
+
+                const response = await fetch(
+                    "http://localhost:5001/api/preferences",
+                    {
+                        headers: {
+                            Authorization: `Bearer ${session.access_token}`,
+                        },
+                    }
+                )
+
+                const result = await response.json()
+
+                if (!response.ok || !result.success) {
+                    throw new Error(
+                        result.message ||
+                        "Failed to load notification preferences."
+                    )
+                }
+
+                setNotifications({
+                    ...DEFAULT_NOTIFICATIONS,
+                    ...result.data,
+                })
+            } catch (error) {
+                console.error(
+                    "Notification preferences fetch error:",
+                    error
+                )
+            } finally {
+                setNotificationsLoading(false)
+            }
+        }
+
+        fetchNotificationPreferences()
+    }, [])
 
 
-    const toggleNotification = (key) => {
-        setNotifications((prev) => ({
-            ...prev,
-            [key]: !prev[key],
-        }))
+    const toggleNotification = async (key) => {
+        if (notificationsSaving) {
+            return
+        }
+
+        const nextNotifications = {
+            ...notifications,
+            [key]: !notifications[key],
+        }
+
+        try {
+            setNotificationsSaving(true)
+
+            const {
+                data: { session },
+            } = await supabase.auth.getSession()
+
+            if (!session?.access_token) {
+                throw new Error(
+                    "Authentication session not found."
+                )
+            }
+
+            const response = await fetch(
+                "http://localhost:5001/api/preferences",
+                {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${session.access_token}`,
+                    },
+                    body: JSON.stringify(
+                        nextNotifications
+                    ),
+                }
+            )
+
+            const result = await response.json()
+
+            if (!response.ok || !result.success) {
+                throw new Error(
+                    result.message ||
+                    "Failed to update notification preferences."
+                )
+            }
+
+            setNotifications({
+                ...DEFAULT_NOTIFICATIONS,
+                ...result.data,
+            })
+        } catch (error) {
+            console.error(
+                "Notification preferences update error:",
+                error
+            )
+        } finally {
+            setNotificationsSaving(false)
+        }
     }
 
 
@@ -274,7 +367,7 @@ function Settings({ onLogout, onViewProfile }) {
                                 <div className="flex flex-wrap items-center gap-2">
 
                                     <h2 className="text-xl font-bold">
-                                        Aman Kumar
+                                        {profile?.name || "Student"}
                                     </h2>
 
                                     <span className="flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[8px] font-bold uppercase tracking-wide text-primary">
@@ -285,23 +378,17 @@ function Settings({ onLogout, onViewProfile }) {
                                 </div>
 
                                 <p className="mt-1 font-mono text-xs text-muted-foreground">
-                                    @amankumar_1305
+                                    @{profile?.username || "student"}
                                 </p>
 
 
                                 <div className="mt-3 flex flex-wrap gap-2">
 
-                                    <span className="rounded-lg border border-border bg-secondary px-2.5 py-1 text-[10px] text-muted-foreground">
-                                        SOTB1 (2025)
-                                    </span>
-
-                                    <span className="rounded-lg border border-border bg-secondary px-2.5 py-1 text-[10px] text-muted-foreground">
-                                        Noida
-                                    </span>
-
-                                    <span className="rounded-lg border border-border bg-secondary px-2.5 py-1 text-[10px] text-muted-foreground">
-                                        Computer Science
-                                    </span>
+                                    {profile?.branch && (
+                                        <span className="rounded-lg border border-border bg-secondary px-2.5 py-1 text-[10px] text-muted-foreground">
+                                            {profile.branch}
+                                        </span>
+                                    )}
 
                                 </div>
 
@@ -382,23 +469,6 @@ function Settings({ onLogout, onViewProfile }) {
                                     )
                                 }
                             />
-
-
-                            <NotificationRow
-                                icon={Users}
-                                iconClass="text-violet-400"
-                                title="Friend Activity"
-                                description="Activity from people you follow."
-                                enabled={
-                                    notifications.activity
-                                }
-                                onToggle={() =>
-                                    toggleNotification(
-                                        "activity"
-                                    )
-                                }
-                            />
-
 
                             <NotificationRow
                                 icon={Megaphone}
@@ -572,8 +642,8 @@ function Settings({ onLogout, onViewProfile }) {
                                         </p>
 
                                         <p className="mt-1 text-[10px] leading-4 text-muted-foreground">
-                                            Theme and accent preferences
-                                            stay saved on this device.
+                                            Your notification preferences
+                                            are saved to your CodeSync account.
                                         </p>
 
                                     </div>
@@ -765,6 +835,7 @@ function NotificationRow({
     description,
     enabled,
     onToggle,
+    disabled = false,
 }) {
     return (
         <div className="flex items-center gap-3 px-5 py-4 transition-colors hover:bg-secondary/30">
@@ -795,6 +866,7 @@ function NotificationRow({
             <Toggle
                 enabled={enabled}
                 onClick={onToggle}
+                disabled={disabled}
             />
 
         </div>
@@ -809,29 +881,32 @@ function NotificationRow({
 function Toggle({
     enabled,
     onClick,
+    disabled = false,
 }) {
     return (
         <button
             type="button"
             onClick={onClick}
+            disabled={disabled}
             aria-label={
                 enabled
                     ? "Disable notification"
                     : "Enable notification"
             }
-            className={`relative h-6 w-11 shrink-0 rounded-full p-1 transition-all ${
-                enabled
+            className={`relative h-6 w-11 shrink-0 rounded-full p-1 transition-all ${disabled
+                    ? "cursor-not-allowed opacity-60"
+                    : ""
+                } ${enabled
                     ? "bg-primary"
                     : "bg-slate-700"
-            }`}
+                }`}
         >
 
             <span
-                className={`block h-4 w-4 rounded-full bg-white shadow-sm transition-transform duration-200 ${
-                    enabled
+                className={`block h-4 w-4 rounded-full bg-white shadow-sm transition-transform duration-200 ${enabled
                         ? "translate-x-5"
                         : "translate-x-0"
-                }`}
+                    }`}
             />
 
         </button>
@@ -853,11 +928,10 @@ function ThemeOption({
         <button
             type="button"
             onClick={onClick}
-            className={`relative flex flex-col items-center justify-center gap-2 rounded-xl border p-4 transition-all ${
-                active
+            className={`relative flex flex-col items-center justify-center gap-2 rounded-xl border p-4 transition-all ${active
                     ? "border-primary bg-primary/[0.08] text-primary shadow-[0_0_25px_rgba(99,102,241,0.08)]"
                     : "border-border bg-secondary text-muted-foreground hover:border-slate-600 hover:text-foreground"
-            }`}
+                }`}
         >
 
             {active && (
@@ -892,11 +966,10 @@ function AccentButton({
             onClick={onClick}
             aria-label={`Use ${color.name} accent`}
             title={color.name}
-            className={`relative flex h-10 w-10 items-center justify-center rounded-full transition-all ${
-                active
+            className={`relative flex h-10 w-10 items-center justify-center rounded-full transition-all ${active
                     ? "ring-2 ring-white ring-offset-2 ring-offset-card"
                     : "hover:scale-110"
-            }`}
+                }`}
             style={{
                 backgroundColor: color.value,
             }}
@@ -1076,8 +1149,8 @@ function applyTheme(theme) {
     const actualTheme =
         theme === "system"
             ? window.matchMedia(
-                  "(prefers-color-scheme: dark)"
-              ).matches
+                "(prefers-color-scheme: dark)"
+            ).matches
                 ? "dark"
                 : "light"
             : theme

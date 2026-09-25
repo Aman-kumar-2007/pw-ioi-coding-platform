@@ -451,11 +451,14 @@ function App() {
                         {activePage ===
                             "Settings" && (
                                 <Settings
+                                    profile={profile}
+
                                     onViewProfile={() =>
                                         setActivePage(
                                             "Student Profile"
                                         )
                                     }
+
                                     onLogout={async () => {
                                         await supabase.auth.signOut()
 
