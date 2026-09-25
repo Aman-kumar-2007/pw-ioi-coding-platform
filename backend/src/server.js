@@ -12,6 +12,7 @@ const contestRoutes = require("./routes/contest.routes")
 const preferencesRoutes = require("./routes/preferences.routes")
 const notificationRoutes =
     require("./routes/notification.routes")
+const authRoutes = require("./routes/auth.routes")
 
 const {
     startPlatformSyncJob,
@@ -72,3 +73,5 @@ app.use(
     "/api/notifications",
     notificationRoutes
 )
+
+app.use("/api/auth", authRoutes)

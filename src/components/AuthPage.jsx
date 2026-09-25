@@ -35,12 +35,60 @@ function AuthPage({ onLogin }) {
     const handleSubmit = async (e) => {
         e.preventDefault()
 
-        const email = formData.email.trim().toLowerCase()
+        const identifier = formData.email.trim()
 
-        const { error } = await supabase.auth.signInWithPassword({
-            email,
-            password: formData.password,
-        })
+        if (!identifier) {
+            alert("Email or username is required.")
+            return
+        }
+
+        let email = identifier.toLowerCase()
+
+        // If user entered username, resolve it to email
+        if (!identifier.includes("@")) {
+            try {
+                const response = await fetch(
+                    "http://localhost:5001/api/auth/resolve-username",
+                    {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                            username: identifier,
+                        }),
+                    }
+                )
+
+                const data = await response.json()
+
+                if (!response.ok || !data.success) {
+                    alert(
+                        data.message ||
+                        "Invalid username or password."
+                    )
+                    return
+                }
+
+                email = data.data.email
+            } catch (error) {
+                console.error(
+                    "Username login error:",
+                    error
+                )
+
+                alert(
+                    "Unable to connect to the server. Please try again."
+                )
+                return
+            }
+        }
+
+        const { error } =
+            await supabase.auth.signInWithPassword({
+                email,
+                password: formData.password,
+            })
 
         if (error) {
             alert(error.message)
@@ -51,7 +99,7 @@ function AuthPage({ onLogin }) {
             onLogin()
         }
     }
-    
+
     const handleGoogleLogin = async () => {
         const { error } = await supabase.auth.signInWithOAuth({
             provider: "google",
@@ -324,13 +372,13 @@ function AuthPage({ onLogin }) {
 
                                         {/* Email */}
                                         <InputField
-                                            label="Email"
+                                            label="Email or Username"
                                             icon={Mail}
-                                            type="email"
+                                            type="text"
                                             name="email"
                                             value={formData.email}
                                             onChange={handleChange}
-                                            placeholder="you@example.com"
+                                            placeholder="you@example.com or username"
                                         />
 
                                         {/* Password */}
