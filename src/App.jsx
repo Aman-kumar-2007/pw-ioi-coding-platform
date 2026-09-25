@@ -21,9 +21,13 @@ import PublicStudentProfile from "./components/PublicStudentProfile"
 
 import { supabase } from "./lib/supabase"
 
+const API_BASE_URL = "http://localhost:5001"
+
 function App() {
     const [currentPage, setCurrentPage] = useState("login")
     const [activePage, setActivePage] = useState("Dashboard")
+
+    const [profile, setProfile] = useState(null)
 
     const handleAuthenticatedUser = async (session) => {
         if (!session?.user) {
@@ -49,32 +53,145 @@ function App() {
         }
     }
 
+    /* ========================================================= */
+    /* FETCH DASHBOARD PROFILE                                   */
+    /* ========================================================= */
+
+    useEffect(() => {
+        if (currentPage !== "app") {
+            return
+        }
+
+        const fetchProfile = async () => {
+            try {
+                const {
+                    data: {
+                        session,
+                    },
+                } = await supabase.auth.getSession()
+
+                if (!session?.access_token) {
+                    return
+                }
+
+                const response = await fetch(
+                    `${API_BASE_URL}/api/profile/me`,
+                    {
+                        headers: {
+                            Authorization:
+                                `Bearer ${session.access_token}`,
+                        },
+                    }
+                )
+
+                const result =
+                    await response.json()
+
+                if (
+                    !response.ok ||
+                    !result.success
+                ) {
+                    throw new Error(
+                        result.message ||
+                        "Failed to load dashboard profile."
+                    )
+                }
+
+                const data =
+                    result.data || {}
+
+                const ranking =
+                    data.ranking || {}
+
+                const streak =
+                    data.streak || {}
+
+                const normalizedProfile = {
+                    ...(data.profile || {}),
+
+                    rank:
+                        ranking.rank ?? null,
+
+                    score:
+                        ranking.score ?? 0,
+
+                    solved:
+                        ranking.solved ?? 0,
+
+                    currentStreak:
+                        streak.current ?? 0,
+
+                    maxStreak:
+                        streak.max ?? 0,
+
+                    platforms:
+                        data.platforms || {},
+
+                    topics:
+                        data.topics || [],
+
+                    contests:
+                        data.contests || 0,
+
+                    activity:
+                        data.activity || [],
+                }
+
+                setProfile(
+                    normalizedProfile
+                )
+            } catch (error) {
+                console.error(
+                    "Dashboard profile error:",
+                    error
+                )
+            }
+        }
+
+        fetchProfile()
+    }, [currentPage])
+
+    /* ========================================================= */
+    /* AUTH INITIALIZATION                                       */
+    /* ========================================================= */
+
     useEffect(() => {
         const initializeAuth = async () => {
             const {
-                data: { session },
+                data: {
+                    session,
+                },
             } = await supabase.auth.getSession()
 
             if (session) {
-                await handleAuthenticatedUser(session)
+                await handleAuthenticatedUser(
+                    session
+                )
             }
         }
 
         initializeAuth()
 
         const {
-            data: { subscription },
+            data: {
+                subscription,
+            },
         } = supabase.auth.onAuthStateChange(
             (event, session) => {
                 if (session) {
                     setTimeout(() => {
-                        handleAuthenticatedUser(session)
+                        handleAuthenticatedUser(
+                            session
+                        )
                     }, 0)
-                } else if (event === "SIGNED_OUT") {
+                } else if (
+                    event === "SIGNED_OUT"
+                ) {
                     setCurrentPage("login")
                     setActivePage("Dashboard")
+                    setProfile(null)
                 }
-            },
+            }
         )
 
         return () => {
@@ -82,35 +199,68 @@ function App() {
         }
     }, [])
 
+    /* ========================================================= */
+    /* LOGIN                                                      */
+    /* ========================================================= */
+
     const handleLogin = async () => {
         const {
-            data: { session },
+            data: {
+                session,
+            },
         } = await supabase.auth.getSession()
 
-        await handleAuthenticatedUser(session)
+        await handleAuthenticatedUser(
+            session
+        )
     }
+
+    /* ========================================================= */
+    /* PROFILE SETUP                                              */
+    /* ========================================================= */
 
     const handleSetupComplete = () => {
         setCurrentPage("app")
     }
 
+    /* ========================================================= */
+    /* AUTH PAGES                                                 */
+    /* ========================================================= */
+
     if (currentPage === "login") {
-        return <AuthPage onLogin={handleLogin} />
+        return (
+            <AuthPage
+                onLogin={handleLogin}
+            />
+        )
     }
 
     if (currentPage === "setup") {
-        return <ProfileSetup onComplete={handleSetupComplete} />
+        return (
+            <ProfileSetup
+                onComplete={
+                    handleSetupComplete
+                }
+            />
+        )
     }
+
+    /* ========================================================= */
+    /* APP                                                        */
+    /* ========================================================= */
 
     return (
         <Routes>
+
             {/* ================================================= */}
             {/* PUBLIC STUDENT PROFILE                           */}
             {/* ================================================= */}
 
             <Route
                 path="/student/:username"
-                element={<PublicStudentProfile />}
+                element={
+                    <PublicStudentProfile />
+                }
             />
 
             {/* ================================================= */}
@@ -122,60 +272,97 @@ function App() {
                 element={
                     <Layout
                         activePage={activePage}
-                        setActivePage={setActivePage}
+                        setActivePage={
+                            setActivePage
+                        }
                         onLogout={async () => {
                             await supabase.auth.signOut()
-                            setCurrentPage("login")
-                            setActivePage("Dashboard")
+
+                            setCurrentPage(
+                                "login"
+                            )
+
+                            setActivePage(
+                                "Dashboard"
+                            )
+
+                            setProfile(null)
                         }}
                     >
-                        {activePage === "Dashboard" && (
-                            <>
-                                <DashboardHeader />
-                                <QuickStats />
-                                <PlatformCards />
-                                <RatingProgress />
-                                <CodingHeatmap />
-                            </>
-                        )}
 
-                        {activePage === "Leaderboard" && (
-                            <Leaderboard />
-                        )}
+                        {activePage ===
+                            "Dashboard" && (
+                                <>
+                                    <DashboardHeader />
 
-                        {activePage === "Student Profile" && (
-                            <StudentProfile />
-                        )}
+                                    <QuickStats
+                                        profile={
+                                            profile
+                                        }
+                                    />
+                                    <PlatformCards profile={profile} />
 
-                        {activePage === "Contests" && (
-                            <Contests />
-                        )}
+                                    <RatingProgress />
 
-                        {activePage === "Analytics" && (
-                            <Analytics />
-                        )}
+                                    <CodingHeatmap />
+                                </>
+                            )}
 
-                        {activePage === "Settings" && (
-                            <Settings
-                                onViewProfile={() =>
-                                    setActivePage(
-                                        "Student Profile",
-                                    )
-                                }
-                                onLogout={async () => {
-                                    await supabase.auth.signOut()
-                                    setCurrentPage("login")
-                                    setActivePage("Dashboard")
-                                }}
-                            />
-                        )}
+                        {activePage ===
+                            "Leaderboard" && (
+                                <Leaderboard />
+                            )}
 
-                        {activePage === "Notifications" && (
-                            <Notifications />
-                        )}
+                        {activePage ===
+                            "Student Profile" && (
+                                <StudentProfile />
+                            )}
+
+                        {activePage ===
+                            "Contests" && (
+                                <Contests />
+                            )}
+
+                        {activePage ===
+                            "Analytics" && (
+                                <Analytics />
+                            )}
+
+                        {activePage ===
+                            "Settings" && (
+                                <Settings
+                                    onViewProfile={() =>
+                                        setActivePage(
+                                            "Student Profile"
+                                        )
+                                    }
+                                    onLogout={async () => {
+                                        await supabase.auth.signOut()
+
+                                        setCurrentPage(
+                                            "login"
+                                        )
+
+                                        setActivePage(
+                                            "Dashboard"
+                                        )
+
+                                        setProfile(
+                                            null
+                                        )
+                                    }}
+                                />
+                            )}
+
+                        {activePage ===
+                            "Notifications" && (
+                                <Notifications />
+                            )}
+
                     </Layout>
                 }
             />
+
         </Routes>
     )
 }
